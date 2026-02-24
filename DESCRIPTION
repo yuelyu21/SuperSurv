@@ -35,3 +35,5 @@ Imports:
     tidyr,
     timeROC,
     xgboost
+URL: https://github.com/yuelyu21/SuperSurv
+BugReports: https://github.com/yuelyu21/SuperSurv/issues
