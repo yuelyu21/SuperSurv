@@ -1,61 +1,40 @@
-url: https://yuelyu21.github.io/SuperSurv/
+url: https://yuelyu21.github.io/SuperSurv
+
 template:
   bootstrap: 5
   bootswatch: flatly
+
 authors:
   Yue Lyu:
     href: https://scholar.google.com/citations?hl=en&user=PFjMl6sAAAAJ
     email: yuelyu0521@gmail.com
-navbar:
-  title: SuperSurv
-  left:
-  - text: Get Started
-    href: articles/supersurv-ensemble.html
-  - text: Tutorials
-    menu:
-    - text: 1. The SuperSurv Ensemble
-      href: articles/supersurv-ensemble.html
-    - text: 2. Selection vs. Ensemble
-      href: articles/supersurv-best.html
-    - text: 3. Model Performance
-      href: articles/model-performance.html
-    - text: 4. Screening Methods
-      href: articles/screening-methods.html
-    - text: 5. Random Forests (rfsrc)
-      href: articles/base-learner-rfsrc.html
-    - text: 6. Parametric Models
-      href: articles/parametric-models.html
-    - text: 7. SHAP Interpretability
-      href: articles/shap-explanations.html
-    - text: 8. Parallel Processing
-      href: articles/scaleup-parallel.html
-  - text: Reference
-    href: reference/index.html
-  right:
-  - icon: fa-github
-    href: https://github.com/yuelyu21/SuperSurv
-reference:
-- title: Core Engine
-  desc: Main functions for training and predicting with the Double Super Learner.
-  contents: SuperSurv
-- title: Interpretability (SHAP)
-  desc: Tools for cracking open the black box and visualizing feature importance.
-  contents:
-  - explain_shap
-  - explain_survex
-  - get_risk_universal
-  - plot_global_importance
-  - plot_beeswarm
-  - plot_patient_waterfall
-  - plot_dependence
-  - plot_survival_heatmap
-- title: Evaluation & Metrics
-  desc: Functions for benchmarking model performance and clinical calibration.
-  contents:
-  - plot_benchmark
-  - plot_calibration
-  - plot_predict
-- title: Data
-  desc: Built-in datasets for testing and tutorials.
-  contents: metabric
 
+navbar:
+  title: "SuperSurv"
+  left:
+    - text: "Get Started"
+      href: articles/supersurv-ensemble.html
+    - text: "Tutorials"
+      menu:
+        - text: "1. The SuperSurv Ensemble"
+          href: articles/supersurv-ensemble.html
+        - text: "2. Selection vs. Ensemble"
+          href: articles/supersurv-best.html
+        - text: "3. Model Performance"
+          href: articles/model-performance.html
+        - text: "4. Screening Methods"
+          href: articles/screening-methods.html
+        - text: "5. Random Forests (rfsrc)"
+          href: articles/base-learner-rfsrc.html
+        - text: "6. Parametric Models"
+          href: articles/parametric-models.html
+        - text: "7. SHAP Interpretability"
+          href: articles/shap-explanations.html
+        - text: "8. Parallel Processing"
+          href: articles/scaleup-parallel.html
+    - text: "Reference"
+      href: reference/index.html
+  right:
+    - icon: fa-github
+      href: https://github.com/yuelyu21/SuperSurv
+      aria-label: "GitHub"
