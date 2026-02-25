@@ -1,0 +1,131 @@
+# 5. Machine Learning with Random Survival Forests
+
+## Introduction
+
+While classical models like the Cox Proportional Hazards model are
+highly interpretable, they rely on strict assumptions of linear,
+additive effects. In complex biological systems, predictors often
+interact in highly non-linear ways.
+
+Random Survival Forests (RSF), implemented via the `randomForestSRC`
+package, overcome this by building an ensemble of decision trees.
+`SuperSurv` natively supports RSF. This tutorial demonstrates how to
+include RSF in your ensemble and how to perform automated hyperparameter
+tuning using `SuperSurv`’s `create_surv_grid` function.
+
+## 1. Prepare the Data
+
+``` r
+library(SuperSurv)
+library(survival)
+
+data("metabric", package = "SuperSurv")
+set.seed(123)
+
+train_idx <- sample(1:nrow(metabric), 0.7 * nrow(metabric))
+train <- metabric[train_idx, ]
+test  <- metabric[-train_idx, ]
+
+X_tr <- train[, grep("^x", names(metabric))]
+X_te <- test[, grep("^x", names(metabric))]
+new.times <- seq(50, 200, by = 25)
+```
+
+## 2. The Power of Hyperparameter Tuning
+
+A single Random Forest configuration is rarely optimal for every
+dataset. In the Super Learner framework, we handle “tuning” by adding
+multiple versions of the same algorithm to our library, each with
+different hyperparameters (like tree depth or node size). The
+meta-learner automatically evaluates them via cross-validation and
+assigns the highest weight to the best configuration.
+
+### Approach A: Manual Wrappers (The Hard Way)
+
+You could manually define individual R functions for every parameter
+combination:
+
+``` r
+# A "Fast/Shallow" Forest
+surv.rfsrc.shallow <- function(..., nodesize = 15) {
+  surv.rfsrc(..., nodesize = nodesize)
+}
+
+# A "Deep/Complex" Forest
+surv.rfsrc.deep <- function(..., nodesize = 3) {
+  surv.rfsrc(..., nodesize = nodesize)
+}
+```
+
+### Approach B: Automated Tuning with `create_grid` (The SuperSurv Way)
+
+Instead of writing manual wrapper functions for every combination,
+`SuperSurv` provides the `create_grid` function. You simply supply the
+base learner name and a list of hyperparameter values. The function
+automatically generates the wrapper functions in your environment and
+returns a character vector of their names, ready to be passed into the
+Super Learner library!
+
+``` r
+# Define our hyperparameter search space
+rf_tuning_params <- list(
+  nodesize = c(3, 15, 30), # Deep vs. Shallow trees
+  ntree = c(100, 500)      # Number of trees in the forest
+)
+
+# Automatically generate 6 different Random Forest wrappers
+rf_grid <- create_grid(base_learner = "surv.rfsrc", 
+                            grid_params = rf_tuning_params)
+
+# View the dynamically generated function names
+print(rf_grid)
+#> [1] "surv.rfsrc_1" "surv.rfsrc_2" "surv.rfsrc_3" "surv.rfsrc_4" "surv.rfsrc_5"
+#> [6] "surv.rfsrc_6"
+
+# Combine the tuned ML grid with our baseline Cox model
+my_ml_library <- c("surv.coxph", rf_grid)
+```
+
+## 3. Fit the Super Learner
+
+We pass our expanded, tuned library into `SuperSurv`. The internal
+cross-validation will pit the linear Cox model against all 6 variations
+of the non-linear Random Forest.
+
+``` r
+fit_rf_ensemble <- SuperSurv(
+  time = train$duration,
+  event = train$event,
+  X = X_tr,
+  newX = X_te,
+  new.times = new.times,
+  event.SL.library = my_ml_library,
+  cens.SL.library = c("surv.coxph"), # Keep censoring simple to speed up computation
+  control = list(saveFitLibrary = TRUE),
+  verbose = FALSE,
+  selection = "ensemble",
+  nFolds = 3
+)
+```
+
+## 4. Inspecting the Learned Weights
+
+Let’s see how the meta-learner distributed the weights. This step
+essentially tells us the “winning” hyperparameter combination for this
+specific dataset.
+
+``` r
+# Extract and round the meta-learner weights
+round(fit_rf_ensemble$event.coef, 4)
+#>   surv.coxph_screen.all surv.rfsrc_1_screen.all surv.rfsrc_2_screen.all 
+#>                  0.3466                  0.1299                  0.3967 
+#> surv.rfsrc_3_screen.all surv.rfsrc_4_screen.all surv.rfsrc_5_screen.all 
+#>                  0.0000                  0.1267                  0.0000 
+#> surv.rfsrc_6_screen.all 
+#>                  0.0000
+```
+
+By leveraging `create_surv_grid()`, you can easily execute a massive
+hyperparameter search space, mathematically guaranteeing that your final
+ensemble minimizes the cross-validated risk without any manual
+trial-and-error!

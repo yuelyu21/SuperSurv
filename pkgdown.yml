@@ -1,0 +1,16 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  base-learner-rfsrc: base-learner-rfsrc.html
+  model-performance: model-performance.html
+  parametric-models: parametric-models.html
+  scaleup-parallel: scaleup-parallel.html
+  screening-methods: screening-methods.html
+  shap-explanations: shap-explanations.html
+  supersurv-best: supersurv-best.html
+  supersurv-ensemble: supersurv-ensemble.html
+last_built: 2026-02-25T14:17Z
+urls:
+  reference: https://yuelyu21.github.io/SuperSurv/reference
+  article: https://yuelyu21.github.io/SuperSurv/articles

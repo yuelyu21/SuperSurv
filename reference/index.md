@@ -1,0 +1,120 @@
+# Package index
+
+## All functions
+
+- [`SuperSurv.CV.control()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.CV.control.md)
+  : Control parameters for Cross-Validation in SuperSurv
+- [`SuperSurv()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.md)
+  : Super Learner for conditional survival functions
+- [`SuperSurv.control()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.control.md)
+  : Control parameters for the SuperSurv Ensemble
+- [`eval_brier()`](https://yuelyu21.github.io/SuperSurv/reference/eval_brier.md)
+  : IPCW Brier Score and Integrated Brier Score (IBS)
+- [`eval_cindex()`](https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.md)
+  : Calculate Concordance Index (Harrell's or Uno's)
+- [`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)
+  : Evaluate SuperSurv Predictions on Test Data
+- [`eval_timeROC()`](https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.md)
+  : Time-Dependent AUC and Integrated AUC
+- [`explain_shap()`](https://yuelyu21.github.io/SuperSurv/reference/explain_shap.md)
+  : Explain Predictions with Global SHAP (Kernel SHAP)
+- [`explain_survex()`](https://yuelyu21.github.io/SuperSurv/reference/explain_survex.md)
+  : Create a Time-Dependent Survex Explainer
+- [`list_wrappers()`](https://yuelyu21.github.io/SuperSurv/reference/list_wrappers.md)
+  : List Available Wrappers and Screeners in SuperSurv
+- [`metabric`](https://yuelyu21.github.io/SuperSurv/reference/metabric.md)
+  : METABRIC Breast Cancer Dataset
+- [`plot_beeswarm()`](https://yuelyu21.github.io/SuperSurv/reference/plot_beeswarm.md)
+  : Beeswarm Summary Plot for SuperSurv SHAP
+- [`plot_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/plot_benchmark.md)
+  : Plot Longitudinal Benchmark Metrics
+- [`plot_calibration()`](https://yuelyu21.github.io/SuperSurv/reference/plot_calibration.md)
+  : Plot Survival Calibration Curve
+- [`plot_dependence()`](https://yuelyu21.github.io/SuperSurv/reference/plot_dependence.md)
+  : Plot SHAP Dependence for SuperSurv
+- [`plot_global_importance()`](https://yuelyu21.github.io/SuperSurv/reference/plot_global_importance.md)
+  : Plot Global Feature Importance for SuperSurv
+- [`plot_patient_waterfall()`](https://yuelyu21.github.io/SuperSurv/reference/plot_patient_waterfall.md)
+  : Waterfall Plot for an Individual Patient
+- [`plot_predict()`](https://yuelyu21.github.io/SuperSurv/reference/plot_predict.md)
+  : Plot Predicted Survival Curves
+- [`plot_survival_heatmap()`](https://yuelyu21.github.io/SuperSurv/reference/plot_survival_heatmap.md)
+  : Survival Probability Heatmap
+- [`predict(`*`<SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.SuperSurv.md)
+  : Predict method for SuperSurv fits
+- [`predict(`*`<surv.bart>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.bart.md)
+  : Prediction function for BART
+- [`predict(`*`<surv.coxboost>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.coxboost.md)
+  : Prediction function for CoxBoost wrapper
+- [`predict(`*`<surv.coxph>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.coxph.md)
+  : Prediction function for Cox regression wrapper
+- [`predict(`*`<surv.gam>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.gam.md)
+  : Prediction function for GAM wrapper
+- [`predict(`*`<surv.gbm>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.gbm.md)
+  : Prediction function for GBM wrapper
+- [`predict(`*`<surv.glmnet>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.glmnet.md)
+  : Prediction function for GLMNET wrapper
+- [`predict(`*`<surv.parametric>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.parametric.md)
+  : Prediction function for Universal Parametric Wrapper
+- [`predict(`*`<surv.ranger>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.ranger.md)
+  : Prediction function for Ranger wrapper
+- [`predict(`*`<surv.rfsrc>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.rfsrc.md)
+  : Prediction function for survival random forest (RFSRC)
+- [`predict(`*`<surv.ridge>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.ridge.md)
+  : Prediction function for Ridge wrapper
+- [`predict(`*`<surv.rpart>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.rpart.md)
+  : Prediction function for rpart wrapper
+- [`predict(`*`<surv.svm>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.svm.md)
+  : Prediction function for SVM wrapper
+- [`predict(`*`<surv.xgboost>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.xgboost.md)
+  : Prediction function for XGBoost wrapper
+- [`screen.all()`](https://yuelyu21.github.io/SuperSurv/reference/screen.all.md)
+  : Keep All Variables Screener
+- [`screen.elasticnet()`](https://yuelyu21.github.io/SuperSurv/reference/screen.elasticnet.md)
+  : Elastic Net Screening Algorithm
+- [`screen.glmnet()`](https://yuelyu21.github.io/SuperSurv/reference/screen.glmnet.md)
+  : GLMNET (Lasso) Screening
+- [`screen.marg()`](https://yuelyu21.github.io/SuperSurv/reference/screen.marg.md)
+  : Marginal Cox Regression Screening
+- [`screen.rfsrc()`](https://yuelyu21.github.io/SuperSurv/reference/screen.rfsrc.md)
+  : Random Survival Forest Screening Algorithm
+- [`screen.var()`](https://yuelyu21.github.io/SuperSurv/reference/screen.var.md)
+  : High Variance Screening Algorithm (Unsupervised)
+- [`surv.aorsf()`](https://yuelyu21.github.io/SuperSurv/reference/surv.aorsf.md)
+  : Wrapper for AORSF (Oblique Random Survival Forest)
+- [`surv.bart()`](https://yuelyu21.github.io/SuperSurv/reference/surv.bart.md)
+  : Wrapper for BART (Bayesian Additive Regression Trees)
+- [`surv.coxboost()`](https://yuelyu21.github.io/SuperSurv/reference/surv.coxboost.md)
+  : Wrapper function for Component-Wise Boosting (CoxBoost)
+- [`surv.coxph()`](https://yuelyu21.github.io/SuperSurv/reference/surv.coxph.md)
+  : Wrapper for standard Cox Proportional Hazards
+- [`surv.exponential()`](https://yuelyu21.github.io/SuperSurv/reference/surv.exponential.md)
+  : Parametric Survival Prediction Wrapper (Exponential)
+- [`surv.gam()`](https://yuelyu21.github.io/SuperSurv/reference/surv.gam.md)
+  : Wrapper for Generalized Additive Cox Regression (GAM)
+- [`surv.gbm()`](https://yuelyu21.github.io/SuperSurv/reference/surv.gbm.md)
+  : Wrapper function for Gradient Boosting (GBM) prediction algorithm
+- [`surv.glmnet()`](https://yuelyu21.github.io/SuperSurv/reference/surv.glmnet.md)
+  : Wrapper function for Penalized Cox Regression (GLMNET)
+- [`surv.km()`](https://yuelyu21.github.io/SuperSurv/reference/surv.km.md)
+  : Kaplan-Meier Prediction Algorithm
+- [`surv.loglogistic()`](https://yuelyu21.github.io/SuperSurv/reference/surv.loglogistic.md)
+  : Parametric Survival Prediction Wrapper (Log-Logistic)
+- [`surv.lognormal()`](https://yuelyu21.github.io/SuperSurv/reference/surv.lognormal.md)
+  : Parametric Survival Prediction Wrapper (Log-Normal)
+- [`surv.parametric()`](https://yuelyu21.github.io/SuperSurv/reference/surv.parametric.md)
+  : Universal Parametric Survival Wrapper
+- [`surv.ranger()`](https://yuelyu21.github.io/SuperSurv/reference/surv.ranger.md)
+  : Wrapper function for Ranger Random Survival Forest
+- [`surv.rfsrc()`](https://yuelyu21.github.io/SuperSurv/reference/surv.rfsrc.md)
+  : Wrapper function for Random Survival Forests (RFSRC)
+- [`surv.ridge()`](https://yuelyu21.github.io/SuperSurv/reference/surv.ridge.md)
+  : Wrapper for Ridge Regression (Penalized Cox)
+- [`surv.rpart()`](https://yuelyu21.github.io/SuperSurv/reference/surv.rpart.md)
+  : Wrapper for Survival Regression Trees (rpart)
+- [`surv.svm()`](https://yuelyu21.github.io/SuperSurv/reference/surv.svm.md)
+  : Wrapper for Survival Support Vector Machine (survivalsvm)
+- [`surv.weibull()`](https://yuelyu21.github.io/SuperSurv/reference/surv.weibull.md)
+  : Parametric Survival Prediction Wrapper (Weibull)
+- [`surv.xgboost()`](https://yuelyu21.github.io/SuperSurv/reference/surv.xgboost.md)
+  : Wrapper for XGBoost (Robust CV-Tuned + Safe Prediction)
