@@ -18,10 +18,10 @@ navbar:
       menu:
         - text: "1. The SuperSurv Ensemble"
           href: articles/supersurv-ensemble.html
-        - text: "2. Selection vs. Ensemble"
-          href: articles/supersurv-best.html
-        - text: "3. Model Performance"
+        - text: "2. Model Performance"
           href: articles/model-performance.html
+        - text: "3. Selection vs. Ensemble"
+          href: articles/supersurv-best.html
         - text: "4. Screening Methods"
           href: articles/screening-methods.html
         - text: "5. Random Forests (rfsrc)"
