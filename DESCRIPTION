@@ -27,7 +27,7 @@ Imports:
     stats,
     dplyr,
     magrittr
-URL: https://github.com/yuelyu21/SuperSurv
+URL: https://github.com/yuelyu21/SuperSurv, https://yuelyu21.github.io/SuperSurv/
 BugReports: https://github.com/yuelyu21/SuperSurv/issues
 Suggests: 
     aorsf,
