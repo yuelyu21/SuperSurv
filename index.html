@@ -56,8 +56,43 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9">
-Implements the Double Super Learner framework for right-censored survival data. Automatically constructs optimal convex combinations of parametric, semi-parametric, and machine learning base learners to minimize cross-validated risk using Inverse Probability of Censoring Weights (IPCW). Features include high-dimensional variable screening (Elastic Net, Marginal, Variance), automated hyperparameter tuning grids, rigorous performance evaluation (Brier Score, Uno's C-index, time-dependent AUC), and clinical calibration metrics. Provides robust global and local interpretability for complex survival ensembles via Kernel SHAP and time-dependent explanations.
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="supersurv-unified-ensemble-machine-learning-for-survival-data-">SuperSurv: Unified Ensemble Machine Learning for Survival Data <img src="reference/figures/logo.png" align="right" height="139"><a class="anchor" aria-label="anchor" href="#supersurv-unified-ensemble-machine-learning-for-survival-data-"></a>
+</h1></div>
+<p><a href="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> ## Overview</p>
+<p><strong>SuperSurv</strong> provides a unified, explainable machine learning ecosystem for right-censored time-to-event data.</p>
+<p>At its core, <code>SuperSurv</code> implements the <strong>Double Super Learner</strong> framework. By utilizing Inverse Probability of Censoring Weighting (IPCW) generated from a censoring-specific meta-learner, it constructs mathematically rigorous, optimal convex combinations of parametric, semi-parametric, and machine learning base algorithms (e.g., Random Forests, XGBoost, Elastic Net) to minimize cross-validated risk.</p>
+<p>Beyond the core ensemble engine, <code>SuperSurv</code> acts as a complete Explainable AI (XAI) pipeline for survival analysis, featuring: * <strong>High-Dimensional Variable Screening:</strong> Automated Marginal, Variance, and Elastic Net screening for genomic and high-dimensional clinical data. * <strong>Automated Hyperparameter Grids:</strong> Dynamic tuning for complex algorithms. * <strong>Rigorous Performance Evaluation:</strong> Native computation of Time-Dependent Brier Scores, Uno’s C-index, and clinical calibration metrics. * <strong>State-of-the-Art Interpretability:</strong> Seamless integration with Kernel SHAP and time-dependent explanations to demystify complex survival predictions.</p>
+<div class="section level2">
+<h2 id="documentation--tutorials">Documentation &amp; Tutorials<a class="anchor" aria-label="anchor" href="#documentation--tutorials"></a>
+</h2>
+<p><strong><a href="https://yuelyu21.github.io/SuperSurv">Visit the official SuperSurv website</a></strong> for comprehensive documentation, function references, and a complete suite of 8 in-depth tutorials, including: 1. The SuperSurv Ensemble 2. Selection vs. Ensemble Methods 3. Model Performance &amp; Calibration 4. Screening Methods 5. SHAP Interpretability 6. Scaling Up with Parallel Processing</p>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>You can install the development version of <code>SuperSurv</code> directly from GitHub using:</p>
+<p>```r # install.packages(“devtools”) devtools::install_github(“yuelyu21/SuperSurv”)</p>
+<p>library(SuperSurv)</p>
+</div>
+</div>
+<div class="section level1">
+<h1 id="load-built-in-data">Load built-in data<a class="anchor" aria-label="anchor" href="#load-built-in-data"></a>
+</h1>
+<p>data(“metabric”, package = “SuperSurv”)</p>
+</div>
+<div class="section level1">
+<h1 id="define-predictor-matrix-and-time-grid">Define predictor matrix and time grid<a class="anchor" aria-label="anchor" href="#define-predictor-matrix-and-time-grid"></a>
+</h1>
+<p>X &lt;- metabric[, grep(“^x”, names(metabric))] new.times &lt;- seq(50, 200, by = 25)</p>
+</div>
+<div class="section level1">
+<h1 id="fit-the-double-super-learner">Fit the Double Super Learner<a class="anchor" aria-label="anchor" href="#fit-the-double-super-learner"></a>
+</h1>
+<p>fit &lt;- SuperSurv( time = metabric<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>u</mi><mi>r</mi><mi>a</mi><mi>t</mi><mi>i</mi><mi>o</mi><mi>n</mi><mo>,</mo><mi>e</mi><mi>v</mi><mi>e</mi><mi>n</mi><mi>t</mi><mo>=</mo><mi>m</mi><mi>e</mi><mi>t</mi><mi>a</mi><mi>b</mi><mi>r</mi><mi>i</mi><mi>c</mi></mrow><annotation encoding="application/x-tex">duration,
+  event = metabric</annotation></semantics></math>event, X = X, newX = X, new.times = new.times, event.SL.library = c(“surv.coxph”, “surv.weibull”, “surv.rfsrc”), cens.SL.library = c(“surv.coxph”), parallel = TRUE, nFolds = 5 )</p>
+</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
