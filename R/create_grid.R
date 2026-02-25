@@ -8,7 +8,7 @@
 #' @return A character vector of the newly generated function names.
 #' @export
 #' @keywords internal
-create_surv_grid <- function(base_learner, grid_params) {
+create_grid <- function(base_learner, grid_params) {
 
   # 1. Create a data.frame of all possible hyperparameter combinations
   param_grid <- expand.grid(grid_params, stringsAsFactors = FALSE)

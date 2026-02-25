@@ -74,9 +74,13 @@
 .screenFun <- function(fun, list) {
   screen_fn <- get(fun)
   # Robust screen call
-  testScreen <- try(do.call(screen_fn, list))
+  testScreen <- try(do.call(screen_fn, list), silent = TRUE)
+
   if (inherits(testScreen, "try-error")) {
-    warning(paste("Screening failed:", fun, "- defaulting to ALL"))
+    # Print the ACTUAL error so the developer can see it!
+    message("\n[WARNING] Screening crashed in: ", fun)
+    message("[ERROR LOG] ", testScreen[1])
+    message("--> Defaulting to keeping ALL variables.\n")
     out <- rep(TRUE, ncol(list$X))
   } else {
     out <- testScreen
@@ -143,7 +147,7 @@
     NumberScreen <- (sapply(survSL.library, FUN = length) - 1)
     if (sum(NumberScreen == 0) > 0) {
       for (ii in which(NumberScreen == 0)) {
-        SL.library[[ii]] <- c(SL.library[[ii]], "screen.all")
+        SL.library[[ii]] <- c(SL.library[[ii]], "")
         NumberScreen[ii] <- 1
       }
     }

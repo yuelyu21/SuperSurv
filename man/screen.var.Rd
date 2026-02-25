@@ -4,7 +4,15 @@
 \alias{screen.var}
 \title{High Variance Screening Algorithm (Unsupervised)}
 \usage{
-screen.var(time, event, X, obsWeights, keep_fraction = 0.5, minscreen = 2, ...)
+screen.var(
+  time,
+  event,
+  X,
+  obsWeights = NULL,
+  keep_fraction = 0.5,
+  minscreen = 2,
+  ...
+)
 }
 \arguments{
 \item{time}{Numeric vector of observed follow-up times (Ignored internally).}

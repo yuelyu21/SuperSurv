@@ -4,23 +4,21 @@
 \alias{plot_predict}
 \title{Plot Predicted Survival Curves}
 \usage{
-plot_predict(preds, patient_idx = 1, ...)
+plot_predict(preds, eval_times, patient_idx = 1)
 }
 \arguments{
 \item{preds}{A list containing predictions, specifically the object returned
 by the \code{predict.SuperSurv} function.}
 
-\item{patient_idx}{Integer. The row index of the patient in the test dataset
-whose survival curve you want to plot. Defaults to 1.}
+\item{eval_times}{Numeric vector of times at which predictions were evaluated.}
 
-\item{...}{Additional graphical parameters passed to the base \code{plot}
-function (e.g., \code{col}, \code{lwd}, \code{lty}, \code{main}).}
+\item{patient_idx}{Integer vector. The row indices of the patients in the test
+dataset whose survival curves you want to plot. Defaults to 1.}
 }
 \value{
-Called for its side effect of drawing a plot on the current graphics device.
-Returns \code{NULL} invisibly.
+A \code{ggplot} object showing the survival curves.
 }
 \description{
-Generates a step-function plot of the predicted survival probabilities
-over time for a specific patient.
+Generates a ggplot2 step-function plot of the predicted survival probabilities
+over time for one or more specific patients.
 }

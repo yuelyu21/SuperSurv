@@ -2,30 +2,35 @@
 % Please edit documentation in R/visualization.R
 \name{plot_benchmark}
 \alias{plot_benchmark}
-\title{Plot Comprehensive Survival Benchmarks}
+\title{Plot Longitudinal Benchmark Metrics}
 \usage{
-plot_benchmark(object, newdata, time, event, eval_times)
+plot_benchmark(
+  object,
+  newdata,
+  time,
+  event,
+  eval_times,
+  metrics = c("brier", "auc", "cindex")
+)
 }
 \arguments{
 \item{object}{A fitted SuperSurv object.}
 
-\item{newdata}{Test covariates.}
+\item{newdata}{A data.frame of test covariates.}
 
-\item{time}{True event times for the test set.}
+\item{time}{Numeric vector of observed follow-up times for the test set.}
 
-\item{event}{True event indicators for the test set.}
+\item{event}{Numeric vector of event indicators for the test set.}
 
-\item{eval_times}{Numeric vector of evaluation times.}
+\item{eval_times}{Numeric vector of times at which to evaluate predictions.}
+
+\item{metrics}{Character vector specifying which plots to return.
+Options: "brier", "auc", "cindex". Defaults to all three.}
 }
 \value{
-A list containing three elements:
-\itemize{
-\item \code{brier_plot}: A \code{ggplot} object showing the IPCW Brier score over time.
-\item \code{auc_plot}: A \code{ggplot} object showing the Time-Dependent AUC.
-\item \code{plot_data}: A \code{data.frame} containing the raw metrics used for plotting.
-}
+A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
 }
 \description{
-Generates beautiful ggplot2 visualizations for time-dependent Brier scores
-and Time-Dependent AUC without relying on external explainer packages.
+Generates time-dependent performance curves comparing the SuperSurv ensemble
+against its base learners.
 }

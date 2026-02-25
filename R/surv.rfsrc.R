@@ -37,15 +37,21 @@ surv.rfsrc <- function(time, event, X, newX, new.times, obsWeights = NULL, id = 
   data <- data.frame(time = time, event = event, X_df)
 
   # 3. Setup Arguments
+  # FIX: Removed "survival::" prefix. Using as.formula protects the parser.
   args_list <- list(
-    formula = survival::Surv(time, event) ~ .,
+    formula = as.formula("Surv(time, event) ~ ."),
     data = data,
     case.wt = obsWeights,
     ntree = ntree,
     nodesize = nodesize,
-    importance = "none", # Faster fitting
-    ...
+    importance = "none" # Faster fitting
   )
+
+  # Safely append any additional arguments passed via ... (like from create_grid)
+  extra_args <- list(...)
+  if (length(extra_args) > 0) {
+    args_list <- c(args_list, extra_args)
+  }
 
   # Only add mtry if explicitly provided, otherwise let rfsrc calculate default
   if (!is.null(mtry)) args_list$mtry <- mtry
@@ -58,6 +64,7 @@ surv.rfsrc <- function(time, event, X, newX, new.times, obsWeights = NULL, id = 
   train_times <- fit.rfsrc$time.interest
 
   # 6. Interpolate to new.times
+  # Uses constant interpolation for step-function survival curves
   pred <- t(apply(survs, 1, function(y) {
     stats::approx(train_times, y, xout = new.times, method = "constant", rule = 2, ties = mean)$y
   }))
@@ -66,6 +73,7 @@ surv.rfsrc <- function(time, event, X, newX, new.times, obsWeights = NULL, id = 
   pred[pred < 0] <- 0
   pred[pred > 1] <- 1
   if (ncol(pred) > 1) {
+    # Ensure survival curve never goes up
     pred <- t(apply(pred, 1, cummin))
   }
 

@@ -1,0 +1,87 @@
+---
+title: "8. Scaling Up with Parallel Processing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{8. Scaling Up with Parallel Processing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+The Double Super Learner is an incredibly powerful statistical framework, but it is computationally demanding. If you define 5 base algorithms and use 10-fold cross-validation, `SuperSurv` has to fit a minimum of 50 separate machine learning models just for the Event ensemble, plus another set for the Censoring ensemble!
+
+
+
+By default, R executes these models sequentially (one after the other). However, `SuperSurv` natively supports parallel processing using the modern `future` and `future.apply` ecosystem. This allows you to distribute the cross-validation folds across multiple CPU cores, dramatically reducing computation time.
+
+## 1. Prerequisites
+
+To use parallel processing, you need to have the `future` and `future.apply` packages installed. 
+
+```{r eval=FALSE}
+install.packages(c("future", "future.apply"))
+```
+
+## 2. Setting Up the Parallel Environment
+
+`SuperSurv` relies on you to define your parallel "plan" before running the function. This gives you complete control over how many resources the package is allowed to consume.
+
+```{r parallel-setup, message=FALSE, warning=FALSE, eval=FALSE}
+library(SuperSurv)
+library(future)
+library(survival)
+
+data("metabric", package = "SuperSurv")
+
+# 1. Define the parallel plan
+# 'multisession' opens background R sessions. 
+# We tell it to use 4 CPU cores (workers).
+plan(multisession, workers = 4)
+```
+
+## 3. Running SuperSurv in Parallel
+
+Once the `plan` is set, simply add `parallel = TRUE` to your `SuperSurv` call. The internal cross-validation loop will automatically detect your workers and distribute the folds simultaneously.
+
+```{r run-parallel, eval=FALSE}
+X <- metabric[, grep("^x", names(metabric))]
+new.times <- seq(50, 200, by = 25)
+
+# 2. Run the model with parallel = TRUE
+fit_parallel <- SuperSurv(
+  time = metabric$duration,
+  event = metabric$event,
+  X = X,
+  newX = X,
+  new.times = new.times,
+  event.SL.library = c("surv.coxph", "surv.weibull", "surv.rfsrc"),
+  cens.SL.library = c("surv.coxph"),
+  parallel = TRUE,     # <--- The magic argument
+  nFolds = 5
+)
+```
+
+## 4. Closing the Environment
+
+It is a best practice to close the background workers and return to standard, sequential processing once your intensive models are finished fitting. This frees up memory on your machine.
+
+```{r close-parallel, eval=FALSE}
+# 3. Return to sequential processing
+plan(sequential)
+```
+
+## A Note on Mathematical Reproducibility
+
+In standard parallel processing, random number generation (used heavily in cross-validation splits and Random Forests) can become disorganized, leading to results that change slightly every time you run the code. 
+
+`SuperSurv` handles this safely under the hood. When `parallel = TRUE`, the package automatically invokes `future.seed = TRUE`, ensuring that your parallelized ensemble yields the exact same mathematically reproducible results as your sequential ensemble, just much faster!

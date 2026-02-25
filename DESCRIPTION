@@ -1,10 +1,18 @@
 Package: SuperSurv
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Type: Package
+Title: SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data
+Version: 0.1.0
+Author: Yue Lyu [aut, cre]
+Maintainer: Yue Lyu <yuelyu0521@gmail.com>
+Description: Implements the Double Super Learner framework for right-censored 
+    survival data. Automatically constructs optimal convex combinations of 
+    parametric, semi-parametric, and machine learning base learners to minimize 
+    cross-validated risk using Inverse Probability of Censoring Weights (IPCW). 
+    Features include high-dimensional variable screening (Elastic Net, Marginal, Variance), 
+    automated hyperparameter tuning grids, rigorous performance evaluation 
+    (Brier Score, Uno's C-index, time-dependent AUC), and clinical calibration metrics. 
+    Provides robust global and local interpretability for complex survival ensembles 
+    via Kernel SHAP and time-dependent explanations.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -13,27 +21,33 @@ Depends:
     R (>= 2.10)
 LazyData: true
 Imports: 
+    survival,
+    nnls,
+    future.apply,
+    stats,
+    dplyr,
+    magrittr
+URL: https://github.com/yuelyu21/SuperSurv
+BugReports: https://github.com/yuelyu21/SuperSurv/issues
+Suggests: 
     aorsf,
     BART,
     CoxBoost,
-    dplyr,
-    fastshap,
-    future.apply,
-    gbm,
-    ggforce,
-    ggplot2,
     glmnet,
-    magrittr,
+    gbm,
     mgcv,
-    nnls,
     randomForestSRC,
     ranger,
     rpart,
-    survex,
-    survival,
     survivalsvm,
+    xgboost,
+    fastshap,
+    survex,
+    ggplot2,
     tidyr,
     timeROC,
-    xgboost
-URL: https://github.com/yuelyu21/SuperSurv
-BugReports: https://github.com/yuelyu21/SuperSurv/issues
+    ggforce,
+    patchwork,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

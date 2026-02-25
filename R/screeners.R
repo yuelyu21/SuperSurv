@@ -25,27 +25,37 @@ screen.all <- function(X, ...) {
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.marg <- function(time, event, X, obsWeights, minscreen = 2, min.p = 0.1, ...) {
+screen.marg <- function(time, event, X, obsWeights = NULL, minscreen = 2, min.p = 0.1, ...) {
 
   requireNamespace("survival", quietly = TRUE)
 
-  pvals <- apply(X, 2, function(col) {
-    # Suppress warnings in case a single feature perfectly separates the data
-    est <- suppressWarnings(
-      survival::coxph(survival::Surv(time, event) ~ col, weights = obsWeights)
-    )
+  # vapply safely iterates over data.frame columns without converting them to text
+  pvals <- vapply(X, function(col) {
+
+    # Catch hard mathematical errors, not just warnings
+    fit_try <- try({
+      if (is.null(obsWeights)) {
+        survival::coxph(survival::Surv(time, event) ~ col)
+      } else {
+        survival::coxph(survival::Surv(time, event) ~ col, weights = obsWeights)
+      }
+    }, silent = TRUE)
+
+    # If the model crashed (e.g., constant variable), assign a p-value of 1 (drop it)
+    if (inherits(fit_try, "try-error")) return(1.0)
+
     # Extract the Wald test p-value safely
-    smry <- summary(est)
+    smry <- summary(fit_try)
     if ("waldtest" %in% names(smry)) {
-      return(smry$waldtest['pvalue'])
+      return(as.numeric(smry$waldtest['pvalue']))
     } else {
-      return(1) # Return high p-value if model failed
+      return(1.0)
     }
-  })
+  }, numeric(1)) # Ensure the output is strictly numeric
 
-  whichVariable <- pvals <= min.p
+  whichVariable <- (pvals <= min.p)
 
-  # Safety net
+  # Safety net: If everything was dropped, at least keep the top 'minscreen' variables
   if(sum(whichVariable, na.rm = TRUE) < minscreen) {
     whichVariable <- rep(FALSE, ncol(X))
     whichVariable[order(pvals)[1:minscreen]] <- TRUE
@@ -71,16 +81,27 @@ screen.marg <- function(time, event, X, obsWeights, minscreen = 2, min.p = 0.1, 
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.glmnet <- function(time, event, X, obsWeights, alpha = 1, minscreen = 2, nfolds = 10, nlambda = 100, ...) {
+screen.glmnet <- function(time, event, X, obsWeights = NULL, alpha = 1, minscreen = 2, nfolds = 10, nlambda = 100, ...) {
 
   requireNamespace("glmnet", quietly = TRUE)
 
+  # Safe matrix conversion without adding dummy columns
   if (!is.matrix(X)) {
-    X <- stats::model.matrix(~-1 + ., X)
+    X <- as.matrix(sapply(X, as.numeric))
+  }
+
+  # Safe weights handling
+  if (is.null(obsWeights)) {
+    obsWeights <- rep(1, nrow(X))
   }
 
   # Hack to prevent glmnet from crashing on tied times
-  time[event == 0] <- time[event == 0] + min(diff(sort(unique(time)))) / 2
+  if (any(event == 0)) {
+    time_diffs <- diff(sort(unique(time)))
+    if (length(time_diffs) > 0) {
+      time[event == 0] <- time[event == 0] + min(time_diffs) / 2
+    }
+  }
   if(any(time == 0)) time[time == 0] <- min(time[time > 0]) / 2
 
   # Fit CV Lasso
@@ -90,15 +111,19 @@ screen.glmnet <- function(time, event, X, obsWeights, alpha = 1, minscreen = 2, 
                       alpha = alpha, nfolds = nfolds, nlambda = nlambda)
   )
 
-  # Extract active variables at optimal lambda
-  whichVariable <- (as.numeric(coef(fit.glmnet$glmnet.fit, s = fit.glmnet$lambda.min)) != 0)
+  # Extract active variables correctly
+  coefs <- as.numeric(coef(fit.glmnet, s = "lambda.min"))
+  whichVariable <- (coefs != 0)
 
   # Safety net
   if (sum(whichVariable) < minscreen) {
-    warning("Fewer than minscreen variables passed the glmnet screen, relaxing lambda.")
     sumCoef <- apply(as.matrix(fit.glmnet$glmnet.fit$beta), 2, function(x) sum((x != 0)))
     newCut <- which.max(sumCoef >= minscreen)
-    whichVariable <- (as.matrix(fit.glmnet$glmnet.fit$beta)[,newCut] != 0)
+    if (length(newCut) == 0 || is.na(newCut)) {
+      whichVariable <- rep(TRUE, ncol(X)) # Ultimate fallback
+    } else {
+      whichVariable <- (as.matrix(fit.glmnet$glmnet.fit$beta)[,newCut] != 0)
+    }
   }
 
   return(whichVariable)
@@ -173,21 +198,23 @@ screen.rfsrc <- function(time, event, X, obsWeights, minscreen = 2, ntree = 100,
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.var <- function(time, event, X, obsWeights, keep_fraction = 0.5, minscreen = 2, ...) {
+screen.var <- function(time, event, X, obsWeights = NULL, keep_fraction = 0.5, minscreen = 2, ...) {
 
-  # Calculate variance of each feature
-  vars <- apply(X, 2, var, na.rm = TRUE)
+  # Safely calculate variance of each feature, forcing numeric conversion
+  vars <- vapply(X, function(col) var(as.numeric(col), na.rm = TRUE), numeric(1))
 
   # Determine the cutoff threshold based on the fraction we want to keep
   cutoff <- stats::quantile(vars, probs = 1 - keep_fraction, na.rm = TRUE)
-
-  whichVariable <- vars >= cutoff
+  whichVariable <- (vars >= cutoff)
 
   # Safety net
-  if(sum(whichVariable) < minscreen) {
+  if(sum(whichVariable, na.rm = TRUE) < minscreen) {
     whichVariable <- rep(FALSE, ncol(X))
     whichVariable[order(vars, decreasing = TRUE)[1:minscreen]] <- TRUE
   }
+
+  # Replace any NAs created by zero-variance or all-NA columns with FALSE
+  whichVariable[is.na(whichVariable)] <- FALSE
 
   return(whichVariable)
 }

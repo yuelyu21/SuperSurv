@@ -4,7 +4,7 @@
 \alias{screen.marg}
 \title{Marginal Cox Regression Screening}
 \usage{
-screen.marg(time, event, X, obsWeights, minscreen = 2, min.p = 0.1, ...)
+screen.marg(time, event, X, obsWeights = NULL, minscreen = 2, min.p = 0.1, ...)
 }
 \arguments{
 \item{time}{Observed follow-up time.}

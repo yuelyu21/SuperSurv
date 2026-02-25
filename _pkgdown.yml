@@ -1,0 +1,15 @@
+url: ~
+template:
+  bootstrap: 5
+articles:
+- title: "Tutorials"
+  navbar: ~
+  contents:
+  - supersurv-ensemble
+  - model-performance
+  - supersurv-best
+  - screening-methods
+  - base-learner-rfsrc
+  - parametric-models
+  - shap-explanations
+  - scaleup-parallel

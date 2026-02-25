@@ -18,9 +18,9 @@ SuperSurv(
   cvControl = list(),
   obsWeights = NULL,
   metalearner = "least_squares",
-  parallel = FALSE,
-  discrete = FALSE,
-  nFolds = 10
+  selection = "ensemble",
+  nFolds = 10,
+  parallel = FALSE
 )
 }
 \arguments{
@@ -50,12 +50,14 @@ SuperSurv(
 
 \item{metalearner}{Character string specifying the optimizer (e.g., "least_squares").}
 
-\item{parallel}{Logical. If TRUE, uses future.apply for parallel execution.}
-
-\item{discrete}{Logical. If TRUE, selects the single best learner (weight = 1).
-If FALSE (default), computes the optimal ensemble weights.}
+\item{selection}{Character. Specifies how the meta-learner combines the base models.
+Use \code{"ensemble"} (default) to calculate a weighted average (convex combination)
+of the base learners. Use \code{"best"} to act as a Discrete Super Learner, which
+assigns a weight of 1.0 to the single model with the lowest cross-validated risk.}
 
 \item{nFolds}{Number of cross-validation folds (default: 10).}
+
+\item{parallel}{Logical. If TRUE, uses future.apply for parallel execution.}
 }
 \value{
 A list of class \code{SuperSurv} containing:

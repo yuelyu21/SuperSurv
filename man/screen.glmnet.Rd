@@ -8,7 +8,7 @@ screen.glmnet(
   time,
   event,
   X,
-  obsWeights,
+  obsWeights = NULL,
   alpha = 1,
   minscreen = 2,
   nfolds = 10,
