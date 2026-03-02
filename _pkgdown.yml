@@ -32,6 +32,8 @@ navbar:
           href: articles/shap-explanations.html
         - text: "8. Parallel Processing"
           href: articles/scaleup-parallel.html
+        - text: "9. Causal Inference (RMST)"
+          href: articles/causal-rmst.html
     - text: "Reference"
       href: reference/index.html
   right:
