@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>8. Scaling Up with Parallel Processing • SuperSurv</title>
+<title>10. Scaling Up with Parallel Processing • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="8. Scaling Up with Parallel Processing">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="10. Scaling Up with Parallel Processing">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,14 +33,17 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-tutorials" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Tutorials</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials">
-<li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
+<li><a class="dropdown-item" href="../articles/installation.html">0. Installation &amp; Setup</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
     <li><a class="dropdown-item" href="../articles/model-performance.html">2. Model Performance</a></li>
     <li><a class="dropdown-item" href="../articles/supersurv-best.html">3. Selection vs. Ensemble</a></li>
     <li><a class="dropdown-item" href="../articles/screening-methods.html">4. Screening Methods</a></li>
-    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">5. Random Forests (rfsrc)</a></li>
-    <li><a class="dropdown-item" href="../articles/parametric-models.html">6. Parametric Models</a></li>
-    <li><a class="dropdown-item" href="../articles/shap-explanations.html">7. SHAP Interpretability</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">8. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/grid-search.html">5. Hyperparameter Tuning</a></li>
+    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">6. Random Forests (rfsrc)</a></li>
+    <li><a class="dropdown-item" href="../articles/parametric-models.html">7. Parametric Models</a></li>
+    <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
+    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -60,7 +63,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>8. Scaling Up with Parallel Processing</h1>
+      <h1>10. Scaling Up with Parallel Processing</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/scaleup-parallel.Rmd" class="external-link"><code>vignettes/scaleup-parallel.Rmd</code></a></small>
@@ -128,8 +131,8 @@ and distribute the folds simultaneously.</p>
 <span>  X <span class="op">=</span> <span class="va">X</span>,</span>
 <span>  newX <span class="op">=</span> <span class="va">X</span>,</span>
 <span>  new.times <span class="op">=</span> <span class="va">new.times</span>,</span>
-<span>  event.SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rfsrc"</span><span class="op">)</span>,</span>
-<span>  cens.SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span><span class="op">)</span>,</span>
+<span>  event.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rfsrc"</span><span class="op">)</span>,</span>
+<span>  cens.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span><span class="op">)</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,     <span class="co"># &lt;--- The magic argument</span></span>
 <span>  nFolds <span class="op">=</span> <span class="fl">5</span></span>
 <span><span class="op">)</span></span></code></pre></div>

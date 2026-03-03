@@ -11,7 +11,7 @@ surv.xgboost(
   time,
   event,
   X,
-  newX,
+  newdata = NULL,
   new.times,
   obsWeights,
   id,
@@ -40,7 +40,7 @@ surv.xgboost(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

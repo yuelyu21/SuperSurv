@@ -1,4 +1,4 @@
-# 8. Scaling Up with Parallel Processing
+# 10. Scaling Up with Parallel Processing
 
 ## Introduction
 
@@ -59,8 +59,8 @@ fit_parallel <- SuperSurv(
   X = X,
   newX = X,
   new.times = new.times,
-  event.SL.library = c("surv.coxph", "surv.weibull", "surv.rfsrc"),
-  cens.SL.library = c("surv.coxph"),
+  event.library = c("surv.coxph", "surv.weibull", "surv.rfsrc"),
+  cens.library = c("surv.coxph"),
   parallel = TRUE,     # <--- The magic argument
   nFolds = 5
 )

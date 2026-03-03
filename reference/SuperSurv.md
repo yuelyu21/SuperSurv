@@ -10,10 +10,10 @@ SuperSurv(
   time,
   event,
   X,
-  newX = NULL,
+  newdata = NULL,
   new.times,
-  event.SL.library,
-  cens.SL.library,
+  event.library,
+  cens.library,
   id = NULL,
   verbose = FALSE,
   control = list(),
@@ -40,7 +40,7 @@ SuperSurv(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame for prediction (defaults to X).
 
@@ -48,11 +48,11 @@ SuperSurv(
 
   Times at which to obtain predicted survivals.
 
-- event.SL.library:
+- event.library:
 
   Character vector of prediction algorithms for the event.
 
-- cens.SL.library:
+- cens.library:
 
   Character vector of prediction algorithms for censoring.
 
@@ -102,10 +102,10 @@ A list of class `SuperSurv` containing:
 
 - `call`: The matched function call.
 
-- `event.SL.predict`: Matrix of in-sample cross-validated survival
+- `event.predict`: Matrix of in-sample cross-validated survival
   predictions.
 
-- `cens.SL.predict`: Matrix of in-sample cross-validated censoring
+- `cens.predict`: Matrix of in-sample cross-validated censoring
   predictions.
 
 - `event.coef`: Numeric vector of optimized ensemble weights for the

@@ -6,7 +6,7 @@ Obtains predicted survivals from a fitted `surv.rfsrc` object.
 
 ``` r
 # S3 method for class 'surv.rfsrc'
-predict(object, newX, new.times, ...)
+predict(object, newdata, new.times, ...)
 ```
 
 ## Arguments
@@ -15,7 +15,7 @@ predict(object, newX, new.times, ...)
 
   Fitted `surv.rfsrc` object.
 
-- newX:
+- newdata:
 
   New covariate data.frame.
 
@@ -30,5 +30,5 @@ predict(object, newX, new.times, ...)
 ## Value
 
 A numeric matrix of predicted survival probabilities, where rows
-correspond to the observations in `newX` and columns correspond to the
-evaluation times in `new.times`.
+correspond to the observations in `newdata` and columns correspond to
+the evaluation times in `new.times`.

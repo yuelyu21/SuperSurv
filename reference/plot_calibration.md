@@ -4,9 +4,15 @@ Evaluates the calibration of the SuperSurv ensemble at a specific time
 point by comparing predicted survival probabilities against observed
 Kaplan-Meier estimates.
 
+Evaluates the calibration of a model at a specific time point by
+comparing predicted survival probabilities against observed Kaplan-Meier
+estimates.
+
 ## Usage
 
 ``` r
+plot_calibration(object, newdata, time, event, eval_time, bins = 5)
+
 plot_calibration(object, newdata, time, event, eval_time, bins = 5)
 ```
 
@@ -14,7 +20,7 @@ plot_calibration(object, newdata, time, event, eval_time, bins = 5)
 
 - object:
 
-  A fitted SuperSurv object.
+  A fitted SuperSurv object OR a standalone base learner.
 
 - newdata:
 
@@ -38,5 +44,7 @@ plot_calibration(object, newdata, time, event, eval_time, bins = 5)
   to 5.
 
 ## Value
+
+A ggplot object showing the calibration curve.
 
 A ggplot object showing the calibration curve.

@@ -40,7 +40,7 @@ predict(object, newdata, new.times, onlySL = FALSE, threshold = 1e-04, ...)
 
 A list containing:
 
-- `event.SL.predict`: A numeric matrix (rows = observations, columns =
+- `event.predict`: A numeric matrix (rows = observations, columns =
   times) of the final predicted survival probabilities from the
   ensemble.
 
@@ -48,7 +48,7 @@ A list containing:
   models) containing the individual survival predictions from each base
   learner.
 
-- `cens.SL.predict`: A numeric matrix of the predicted censoring
+- `cens.predict`: A numeric matrix of the predicted censoring
   probabilities.
 
 - `cens.library.predict`: A 3D numeric array of the individual censoring

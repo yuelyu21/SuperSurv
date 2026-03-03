@@ -10,7 +10,7 @@ surv.ridge(
   time,
   event,
   X,
-  newX,
+  newdata,
   new.times,
   obsWeights = NULL,
   id = NULL,
@@ -33,7 +33,7 @@ surv.ridge(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

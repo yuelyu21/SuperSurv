@@ -6,7 +6,7 @@ Obtains predicted survivals from a fitted `surv.km` object.
 
 ``` r
 # S3 method for class 'surv.km'
-predict(object, newX, new.times, ...)
+predict(object, newdata, new.times, ...)
 ```
 
 ## Arguments
@@ -15,7 +15,7 @@ predict(object, newX, new.times, ...)
 
   A fitted object of class `surv.km`.
 
-- newX:
+- newdata:
 
   New covariate data.frame for which to obtain predictions (Ignored).
 
@@ -30,5 +30,5 @@ predict(object, newX, new.times, ...)
 ## Value
 
 A numeric matrix of predicted survival probabilities, where rows
-correspond to the observations in `newX` and columns correspond to the
-evaluation times.
+correspond to the observations in `newdata` and columns correspond to
+the evaluation times.

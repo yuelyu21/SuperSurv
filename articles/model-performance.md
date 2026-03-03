@@ -59,10 +59,10 @@ fit_supersurv <- SuperSurv(
   time = train$duration,
   event = train$event,
   X = X_tr,
-  newX = X_te,
+  newdata = X_te,
   new.times = new.times,
-  event.SL.library = my_library,
-  cens.SL.library = my_library,
+  event.library = my_library,
+  cens.library = my_library,
   control = list(saveFitLibrary = TRUE),
   verbose = FALSE,
   nFolds = 3

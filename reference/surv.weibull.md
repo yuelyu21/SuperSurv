@@ -5,7 +5,7 @@ Parametric Survival Prediction Wrapper (Weibull)
 ## Usage
 
 ``` r
-surv.weibull(time, event, X, newX, new.times, obsWeights, id, ...)
+surv.weibull(time, event, X, newdata, new.times, obsWeights, id, ...)
 ```
 
 ## Arguments
@@ -22,7 +22,7 @@ surv.weibull(time, event, X, newX, new.times, obsWeights, id, ...)
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

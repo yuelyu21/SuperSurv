@@ -11,7 +11,7 @@ surv.parametric(
   time,
   event,
   X,
-  newX,
+  newdata,
   new.times,
   obsWeights,
   id,
@@ -34,7 +34,7 @@ surv.parametric(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

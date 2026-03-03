@@ -11,7 +11,7 @@ surv.rfsrc(
   time,
   event,
   X,
-  newX,
+  newdata = NULL,
   new.times,
   obsWeights = NULL,
   id = NULL,
@@ -36,7 +36,7 @@ surv.rfsrc(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

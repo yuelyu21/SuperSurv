@@ -7,7 +7,7 @@ combination of smooth and linear functions.
 ## Usage
 
 ``` r
-surv.gam(time, event, X, newX, new.times, obsWeights, id, cts.num = 5, ...)
+surv.gam(time, event, X, newdata, new.times, obsWeights, id, cts.num = 5, ...)
 ```
 
 ## Arguments
@@ -24,7 +24,7 @@ surv.gam(time, event, X, newX, new.times, obsWeights, id, cts.num = 5, ...)
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

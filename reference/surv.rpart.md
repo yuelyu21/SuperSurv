@@ -11,7 +11,7 @@ surv.rpart(
   time,
   event,
   X,
-  newX,
+  newdata,
   new.times,
   obsWeights,
   id,
@@ -36,7 +36,7 @@ surv.rpart(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

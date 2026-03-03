@@ -20,14 +20,17 @@ for an ensemble of survival base learners."></head><body>
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/supersurv-ensemble.html">Get Started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-tutorials" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Tutorials</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials"><li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials"><li><a class="dropdown-item" href="../articles/installation.html">0. Installation &amp; Setup</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
     <li><a class="dropdown-item" href="../articles/model-performance.html">2. Model Performance</a></li>
     <li><a class="dropdown-item" href="../articles/supersurv-best.html">3. Selection vs. Ensemble</a></li>
     <li><a class="dropdown-item" href="../articles/screening-methods.html">4. Screening Methods</a></li>
-    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">5. Random Forests (rfsrc)</a></li>
-    <li><a class="dropdown-item" href="../articles/parametric-models.html">6. Parametric Models</a></li>
-    <li><a class="dropdown-item" href="../articles/shap-explanations.html">7. SHAP Interpretability</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">8. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/grid-search.html">5. Hyperparameter Tuning</a></li>
+    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">6. Random Forests (rfsrc)</a></li>
+    <li><a class="dropdown-item" href="../articles/parametric-models.html">7. Parametric Models</a></li>
+    <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
+    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/yuelyu21/SuperSurv" aria-label="GitHub"><span class="fa fa-github"></span></a></li>
@@ -55,10 +58,10 @@ for an ensemble of survival base learners.</p>
 <span>  <span class="va">time</span>,</span>
 <span>  <span class="va">event</span>,</span>
 <span>  <span class="va">X</span>,</span>
-<span>  newX <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  newdata <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">new.times</span>,</span>
-<span>  <span class="va">event.SL.library</span>,</span>
-<span>  <span class="va">cens.SL.library</span>,</span>
+<span>  <span class="va">event.library</span>,</span>
+<span>  <span class="va">cens.library</span>,</span>
 <span>  id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -87,7 +90,7 @@ for an ensemble of survival base learners.</p>
 <dd><p>Training covariate data.frame.</p></dd>
 
 
-<dt id="arg-newx">newX<a class="anchor" aria-label="anchor" href="#arg-newx"></a></dt>
+<dt id="arg-newdata">newdata<a class="anchor" aria-label="anchor" href="#arg-newdata"></a></dt>
 <dd><p>Test covariate data.frame for prediction (defaults to X).</p></dd>
 
 
@@ -95,11 +98,11 @@ for an ensemble of survival base learners.</p>
 <dd><p>Times at which to obtain predicted survivals.</p></dd>
 
 
-<dt id="arg-event-sl-library">event.SL.library<a class="anchor" aria-label="anchor" href="#arg-event-sl-library"></a></dt>
+<dt id="arg-event-library">event.library<a class="anchor" aria-label="anchor" href="#arg-event-library"></a></dt>
 <dd><p>Character vector of prediction algorithms for the event.</p></dd>
 
 
-<dt id="arg-cens-sl-library">cens.SL.library<a class="anchor" aria-label="anchor" href="#arg-cens-sl-library"></a></dt>
+<dt id="arg-cens-library">cens.library<a class="anchor" aria-label="anchor" href="#arg-cens-library"></a></dt>
 <dd><p>Character vector of prediction algorithms for censoring.</p></dd>
 
 
@@ -145,8 +148,8 @@ assigns a weight of 1.0 to the single model with the lowest cross-validated risk
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list of class <code>SuperSurv</code> containing:</p><ul><li><p><code>call</code>: The matched function call.</p></li>
-<li><p><code>event.SL.predict</code>: Matrix of in-sample cross-validated survival predictions.</p></li>
-<li><p><code>cens.SL.predict</code>: Matrix of in-sample cross-validated censoring predictions.</p></li>
+<li><p><code>event.predict</code>: Matrix of in-sample cross-validated survival predictions.</p></li>
+<li><p><code>cens.predict</code>: Matrix of in-sample cross-validated censoring predictions.</p></li>
 <li><p><code>event.coef</code>: Numeric vector of optimized ensemble weights for the event.</p></li>
 <li><p><code>cens.coef</code>: Numeric vector of optimized ensemble weights for censoring.</p></li>
 <li><p><code>event.library.predict</code>: 3D array of cross-validated predictions from individual event learners.</p></li>

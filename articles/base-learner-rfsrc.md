@@ -1,17 +1,15 @@
-# 5. Machine Learning with Random Survival Forests
+# 6. Machine Learning with Random Survival Forests
 
 ## Introduction
 
 While classical models like the Cox Proportional Hazards model are
 highly interpretable, they rely on strict assumptions of linear,
-additive effects. In complex biological systems, predictors often
-interact in highly non-linear ways.
+additive effects. Random Survival Forests (RSF) overcome this by
+building a non-linear ensemble of decision trees.
 
-Random Survival Forests (RSF), implemented via the `randomForestSRC`
-package, overcome this by building an ensemble of decision trees.
-`SuperSurv` natively supports RSF. This tutorial demonstrates how to
-include RSF in your ensemble and how to perform automated hyperparameter
-tuning using `SuperSurv`’s `create_surv_grid` function.
+In this tutorial, we will demonstrate how to run a standalone RSF using
+`SuperSurv`’s unified wrappers, evaluate its individual performance, and
+finally include it in a Super Learner ensemble.
 
 ## 1. Prepare the Data
 
@@ -28,104 +26,104 @@ test  <- metabric[-train_idx, ]
 
 X_tr <- train[, grep("^x", names(metabric))]
 X_te <- test[, grep("^x", names(metabric))]
-new.times <- seq(50, 200, by = 25)
+
+new.times <- seq(50, 200, by = 25) 
 ```
 
-## 2. The Power of Hyperparameter Tuning
+## 2. Standalone Machine Learning
 
-A single Random Forest configuration is rarely optimal for every
-dataset. In the Super Learner framework, we handle “tuning” by adding
-multiple versions of the same algorithm to our library, each with
-different hyperparameters (like tree depth or node size). The
-meta-learner automatically evaluates them via cross-validation and
-assigns the highest weight to the best configuration.
-
-### Approach A: Manual Wrappers (The Hard Way)
-
-You could manually define individual R functions for every parameter
-combination:
+`SuperSurv` provides unified wrappers that automatically handle the
+training and standardization of survival probabilities. You can use
+these completely independent of the Super Learner ensemble.
 
 ``` r
-# A "Fast/Shallow" Forest
-surv.rfsrc.shallow <- function(..., nodesize = 15) {
-  surv.rfsrc(..., nodesize = nodesize)
-}
-
-# A "Deep/Complex" Forest
-surv.rfsrc.deep <- function(..., nodesize = 3) {
-  surv.rfsrc(..., nodesize = nodesize)
-}
-```
-
-### Approach B: Automated Tuning with `create_grid` (The SuperSurv Way)
-
-Instead of writing manual wrapper functions for every combination,
-`SuperSurv` provides the `create_grid` function. You simply supply the
-base learner name and a list of hyperparameter values. The function
-automatically generates the wrapper functions in your environment and
-returns a character vector of their names, ready to be passed into the
-Super Learner library!
-
-``` r
-# Define our hyperparameter search space
-rf_tuning_params <- list(
-  nodesize = c(3, 15, 30), # Deep vs. Shallow trees
-  ntree = c(100, 500)      # Number of trees in the forest
-)
-
-# Automatically generate 6 different Random Forest wrappers
-rf_grid <- create_grid(base_learner = "surv.rfsrc", 
-                            grid_params = rf_tuning_params)
-
-# View the dynamically generated function names
-print(rf_grid)
-#> [1] "surv.rfsrc_1" "surv.rfsrc_2" "surv.rfsrc_3" "surv.rfsrc_4" "surv.rfsrc_5"
-#> [6] "surv.rfsrc_6"
-
-# Combine the tuned ML grid with our baseline Cox model
-my_ml_library <- c("surv.coxph", rf_grid)
-```
-
-## 3. Fit the Super Learner
-
-We pass our expanded, tuned library into `SuperSurv`. The internal
-cross-validation will pit the linear Cox model against all 6 variations
-of the non-linear Random Forest.
-
-``` r
-fit_rf_ensemble <- SuperSurv(
+# 1. Fit the standalone wrapper
+rf_standalone <- surv.rfsrc(
   time = train$duration,
   event = train$event,
   X = X_tr,
-  newX = X_te,
+  new.times = new.times 
+)
+
+# 2. Extract the fitted model object and prediction matrix
+rf_fit <- rf_standalone$fit
+rf_pred_matrix <- rf_standalone$pred
+```
+
+Because our plotting functions are universally compatible, we can plot
+individual patient curves directly from this standalone matrix:
+
+``` r
+# Plot the first 3 patients in our training set
+plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
+```
+
+![](base-learner-rfsrc_files/figure-html/plot-standalone-1.png)
+
+## 3. Evaluating the Standalone Model
+
+We can also pass this standalone model directly into our evaluation
+suite to test its performance on new data.
+
+``` r
+# The function automatically detects this is a single model and plots it!
+plot_benchmark(
+  object = rf_fit,
+  newdata = X_te,
+  time = test$duration,
+  event = test$event,
+  eval_times = new.times
+)
+#> Generating predictions for benchmark plots...
+#> Calculating time-dependent metrics...
+```
+
+![](base-learner-rfsrc_files/figure-html/eval-standalone-1.png)
+
+## 4. Train the Benchmark Ensemble
+
+While the standalone RSF is powerful, we can objectively evaluate if it
+outperforms classical models by putting them together in a `SuperSurv`
+ensemble.
+
+``` r
+my_library <- c("surv.coxph", "surv.weibull", "surv.rfsrc")
+
+fit_supersurv <- SuperSurv(
+  time = train$duration,
+  event = train$event,
+  X = X_tr,
+  newdata = X_te,
   new.times = new.times,
-  event.SL.library = my_ml_library,
-  cens.SL.library = c("surv.coxph"), # Keep censoring simple to speed up computation
+  event.library = my_library,
+  cens.library = c("surv.coxph"), 
   control = list(saveFitLibrary = TRUE),
   verbose = FALSE,
-  selection = "ensemble",
   nFolds = 3
 )
 ```
 
-## 4. Inspecting the Learned Weights
+## 5. Visualizing Ensemble vs. Base Learners
 
-Let’s see how the meta-learner distributed the weights. This step
-essentially tells us the “winning” hyperparameter combination for this
-specific dataset.
+When we pass the `SuperSurv` ensemble into the exact same benchmark
+function, it automatically unpacks the library and plots the ensemble
+against all its constituent models.
 
 ``` r
-# Extract and round the meta-learner weights
-round(fit_rf_ensemble$event.coef, 4)
-#>   surv.coxph_screen.all surv.rfsrc_1_screen.all surv.rfsrc_2_screen.all 
-#>                  0.3466                  0.1299                  0.3967 
-#> surv.rfsrc_3_screen.all surv.rfsrc_4_screen.all surv.rfsrc_5_screen.all 
-#>                  0.0000                  0.1267                  0.0000 
-#> surv.rfsrc_6_screen.all 
-#>                  0.0000
+plot_benchmark(
+  object = fit_supersurv,
+  newdata = X_te,
+  time = test$duration,
+  event = test$event,
+  eval_times = new.times
+)
+#> Generating predictions for benchmark plots...
+#> Calculating time-dependent metrics...
 ```
 
-By leveraging `create_surv_grid()`, you can easily execute a massive
-hyperparameter search space, mathematically guaranteeing that your final
-ensemble minimizes the cross-validated risk without any manual
-trial-and-error!
+![](base-learner-rfsrc_files/figure-html/plot-ensemble-benchmark-1.png)
+
+By incorporating advanced machine learning algorithms into your library,
+`SuperSurv` mathematically guarantees that your final predictions adapt
+to the complexity of your data, achieving the lowest possible Brier
+Score.

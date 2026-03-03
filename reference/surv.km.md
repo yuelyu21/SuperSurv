@@ -7,7 +7,7 @@ marginal Kaplan-Meier survival estimator using the
 ## Usage
 
 ``` r
-surv.km(time, event, X, newX, new.times, obsWeights, id, ...)
+surv.km(time, event, X, newdata, new.times, obsWeights, id, ...)
 ```
 
 ## Arguments
@@ -24,7 +24,7 @@ surv.km(time, event, X, newX, new.times, obsWeights, id, ...)
 
   Training covariate data.frame (Ignored by KM).
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>7. Interpreting the Black Box with SHAP • SuperSurv</title>
+<title>8. Interpreting the Black Box with SHAP &amp; survex • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="7. Interpreting the Black Box with SHAP">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="8. Interpreting the Black Box with SHAP &amp; survex">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,14 +33,17 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-tutorials" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Tutorials</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials">
-<li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
+<li><a class="dropdown-item" href="../articles/installation.html">0. Installation &amp; Setup</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
     <li><a class="dropdown-item" href="../articles/model-performance.html">2. Model Performance</a></li>
     <li><a class="dropdown-item" href="../articles/supersurv-best.html">3. Selection vs. Ensemble</a></li>
     <li><a class="dropdown-item" href="../articles/screening-methods.html">4. Screening Methods</a></li>
-    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">5. Random Forests (rfsrc)</a></li>
-    <li><a class="dropdown-item" href="../articles/parametric-models.html">6. Parametric Models</a></li>
-    <li><a class="dropdown-item" href="../articles/shap-explanations.html">7. SHAP Interpretability</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">8. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/grid-search.html">5. Hyperparameter Tuning</a></li>
+    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">6. Random Forests (rfsrc)</a></li>
+    <li><a class="dropdown-item" href="../articles/parametric-models.html">7. Parametric Models</a></li>
+    <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
+    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -60,7 +63,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>7. Interpreting the Black Box with SHAP</h1>
+      <h1>8. Interpreting the Black Box with SHAP &amp; survex</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/shap-explanations.Rmd" class="external-link"><code>vignettes/shap-explanations.Rmd</code></a></small>
@@ -72,19 +75,17 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Machine learning models, particularly tree-based algorithms and deep
-ensembles, are notoriously criticized as “black boxes.” While they often
-achieve superior predictive performance compared to classical linear
-models, clinicians and bioinformaticians need to know <em>why</em> a
-model is making a specific prediction.</p>
+<p>Machine learning models are notoriously criticized as “black boxes.”
+While they often achieve superior predictive performance, clinicians
+need to know <em>why</em> a model is making a specific prediction.</p>
 <p><code>SuperSurv</code> solves this using <strong>SHAP (SHapley
 Additive exPlanations)</strong>. Because Shapley values possess the
 mathematical property of linearity, <code>SuperSurv</code> can calculate
 the SHAP values for every active base learner and seamlessly combine
 them using the meta-learner’s weights.</p>
 <p>This tutorial covers Global feature importance, Local (patient-level)
-explanations, Feature dependence, and Time-Dependent survival
-heatmaps.</p>
+explanations, and Time-Dependent survival analysis using the
+<code>survex</code> package.</p>
 </div>
 <div class="section level2">
 <h2 id="setup-and-model-fitting">1. Setup and Model Fitting<a class="anchor" aria-label="anchor" href="#setup-and-model-fitting"></a>
@@ -95,7 +96,6 @@ dataset.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/yuelyu21/SuperSurv" class="external-link">SuperSurv</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Load data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"metabric"</span>, package <span class="op">=</span> <span class="st">"SuperSurv"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span></span>
@@ -107,18 +107,16 @@ dataset.</p>
 <span><span class="va">X_te</span> <span class="op">&lt;-</span> <span class="va">test</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^x"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">metabric</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">new.times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">200</span>, by <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Fit a diverse library</span></span>
-<span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rpart"</span><span class="op">)</span></span>
+<span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rfsrc"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fit_sl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  X <span class="op">=</span> <span class="va">X_tr</span>,</span>
-<span>  newX <span class="op">=</span> <span class="va">X_te</span>,</span>
+<span>  newdata <span class="op">=</span> <span class="va">X_te</span>,</span>
 <span>  new.times <span class="op">=</span> <span class="va">new.times</span>,</span>
-<span>  event.SL.library <span class="op">=</span> <span class="va">my_library</span>,</span>
-<span>  cens.SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span><span class="op">)</span>,</span>
-<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  event.library <span class="op">=</span> <span class="va">my_library</span>,</span>
+<span>  cens.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  selection <span class="op">=</span> <span class="st">"ensemble"</span>,</span>
 <span>  nFolds <span class="op">=</span> <span class="fl">3</span></span>
@@ -127,18 +125,17 @@ dataset.</p>
 <div class="section level2">
 <h2 id="global-explanations-kernel-shap">2. Global Explanations (Kernel SHAP)<a class="anchor" aria-label="anchor" href="#global-explanations-kernel-shap"></a>
 </h2>
-<p>To calculate SHAP values, we need an <code>X_explain</code> dataset
-(the patients we want to explain) and an <code>X_background</code>
-dataset (a reference population used to calculate the baseline average
-risk).</p>
+<p>To calculate static risk SHAP values, we need an
+<code>X_explain</code> dataset (the patients we want to explain) and an
+<code>X_background</code> dataset (a reference population used to
+calculate the baseline average risk).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># For speed in this tutorial, we explain the first 50 test patients</span></span>
-<span><span class="co"># using 100 training patients as the background reference.</span></span>
+<code class="sourceCode R"><span><span class="co"># Explain the first 50 test patients using 100 training patients as the background</span></span>
 <span><span class="va">X_explain_subset</span> <span class="op">&lt;-</span> <span class="va">X_te</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span>, <span class="op">]</span></span>
 <span><span class="va">X_background_subset</span> <span class="op">&lt;-</span> <span class="va">X_tr</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="op">]</span></span>
 <span></span>
-<span><span class="co"># Calculate weighted Ensemble SHAP values</span></span>
-<span><span class="va">shap_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/explain_shap.html">explain_shap</a></span><span class="op">(</span></span>
+<span><span class="co"># Calculate weighted Ensemble SHAP values using Kernel SHAP</span></span>
+<span><span class="va">shap_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/explain_kernel.html">explain_kernel</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="va">fit_sl</span>, </span>
 <span>  X_explain <span class="op">=</span> <span class="va">X_explain_subset</span>, </span>
 <span>  X_background <span class="op">=</span> <span class="va">X_background_subset</span>, </span>
@@ -157,8 +154,7 @@ the entire cohort?</p>
 <h3 id="shap-beeswarm-summary-plot">SHAP Beeswarm Summary Plot<a class="anchor" aria-label="anchor" href="#shap-beeswarm-summary-plot"></a>
 </h3>
 <p>The beeswarm plot is the gold standard for SHAP. It shows both the
-magnitude of a feature’s impact and the direction of its effect based on
-the feature’s actual value.</p>
+magnitude of a feature’s impact and the direction of its effect.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_beeswarm.html">plot_beeswarm</a></span><span class="op">(</span><span class="va">shap_vals</span>, data <span class="op">=</span> <span class="va">X_explain_subset</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <p><img src="shap-explanations_files/figure-html/plot-beeswarm-1.png" class="r-plt" alt="" width="672"><em>Interpretation: A red dot (high feature value) on the right side of
@@ -170,8 +166,8 @@ increase mortality risk.</em></p>
 <h2 id="local-patient-level-explanations">3. Local (Patient-Level) Explanations<a class="anchor" aria-label="anchor" href="#local-patient-level-explanations"></a>
 </h2>
 <p>In precision medicine, we often need to explain why a
-<em>specific</em> patient has a high or low risk score. The Waterfall
-plot breaks down the exact algorithmic logic for an individual.</p>
+<em>specific</em> patient has a high risk score. The Waterfall plot
+breaks down the exact algorithmic logic for an individual.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Explain Patient #1 from our test subset</span></span>
 <span><span class="fu"><a href="../reference/plot_patient_waterfall.html">plot_patient_waterfall</a></span><span class="op">(</span><span class="va">shap_vals</span>, patient_index <span class="op">=</span> <span class="fl">1</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
@@ -181,32 +177,125 @@ plot breaks down the exact algorithmic logic for an individual.</p>
 <h2 id="feature-dependence-plots">4. Feature Dependence Plots<a class="anchor" aria-label="anchor" href="#feature-dependence-plots"></a>
 </h2>
 <p>Does a specific biomarker have a linear or non-linear relationship
-with mortality risk? A dependence plot visualizes how the algorithm uses
-a specific feature across its entire distribution.</p>
+with mortality risk?</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Let's look at the relationship for feature 'x0'</span></span>
-<span><span class="fu"><a href="../reference/plot_dependence.html">plot_dependence</a></span><span class="op">(</span><span class="va">shap_vals</span>, data <span class="op">=</span> <span class="va">X_explain_subset</span>, feature_name <span class="op">=</span> <span class="st">"x0"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_dependence.html">plot_dependence</a></span><span class="op">(</span><span class="va">shap_vals</span>, data <span class="op">=</span> <span class="va">X_explain_subset</span>, feature_name <span class="op">=</span> <span class="st">"x0"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="shap-explanations_files/figure-html/plot-dependence-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level2">
-<h2 id="time-dependent-explanations-survex-integration">5. Time-Dependent Explanations (Survex Integration)<a class="anchor" aria-label="anchor" href="#time-dependent-explanations-survex-integration"></a>
+<h2 id="patient-risk-trajectories-survival-heatmap">5. Patient Risk Trajectories (Survival Heatmap)<a class="anchor" aria-label="anchor" href="#patient-risk-trajectories-survival-heatmap"></a>
 </h2>
-<p>Traditional SHAP looks at an overall “risk score,” but survival
-analysis is fundamentally about <em>time</em>. <code>SuperSurv</code>
-natively bridges to the <code>survex</code> package to evaluate
-predictions across the survival curve
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">S(t)</annotation></semantics></math>.</p>
 <p>We can visualize patient trajectories over time using a survival
-heatmap.</p>
+heatmap generated directly from <code>SuperSurv</code> predictions.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the survival trajectories for the first 50 test patients</span></span>
 <span><span class="fu"><a href="../reference/plot_survival_heatmap.html">plot_survival_heatmap</a></span><span class="op">(</span><span class="va">fit_sl</span>, newdata <span class="op">=</span> <span class="va">X_explain_subset</span>, times <span class="op">=</span> <span class="va">new.times</span><span class="op">)</span></span></code></pre></div>
 <p><img src="shap-explanations_files/figure-html/plot-heatmap-1.png" class="r-plt" alt="" width="672"><em>Interpretation: Patients at the top experience rapid drops in
 survival probability (high risk), while patients at the bottom maintain
-high survival probabilities throughout the follow-up period.</em></p>
-<p>By utilizing these SHAP tools, <code>SuperSurv</code> ensures that
-your advanced machine learning ensembles remain completely transparent,
-interpretable, and ready for clinical deployment.</p>
+high survival probabilities.</em></p>
+</div>
+<div class="section level2">
+<h2 id="time-dependent-explanations-survex-integration">6. Time-Dependent Explanations (<code>survex</code>
+Integration)<a class="anchor" aria-label="anchor" href="#time-dependent-explanations-survex-integration"></a>
+</h2>
+<p>Traditional SHAP looks at an overall “risk score,” but survival
+analysis is fundamentally about <em>time</em>. A feature might be highly
+predictive of early mortality (Time = 50) but irrelevant for long-term
+survival (Time = 200).</p>
+<p><code>SuperSurv</code> natively bridges to the <code>survex</code>
+package to evaluate dynamic feature importance across the entire
+survival curve
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">S(t)</annotation></semantics></math>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://modeloriented.github.io/survex/" class="external-link">survex</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 1. Create the true survival object for the explanation subset</span></span>
+<span><span class="va">y_explain</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">duration</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span><span class="op">]</span>, <span class="va">test</span><span class="op">$</span><span class="va">event</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">50</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 2. Build the survex explainer using our custom function</span></span>
+<span><span class="va">surv_explainer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/explain_survex.html">explain_survex</a></span><span class="op">(</span></span>
+<span>  model <span class="op">=</span> <span class="va">fit_sl</span>, </span>
+<span>  data <span class="op">=</span> <span class="va">X_explain_subset</span>, </span>
+<span>  y <span class="op">=</span> <span class="va">y_explain</span>, </span>
+<span>  times <span class="op">=</span> <span class="va">new.times</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Once the explainer is created, you have full access to the
+<code>survex</code> ecosystem. Let’s look at three powerful
+time-dependent visualizations.</p>
+<div class="section level3">
+<h3 id="a--dynamic-feature-importance">A. Dynamic Feature Importance<a class="anchor" aria-label="anchor" href="#a--dynamic-feature-importance"></a>
+</h3>
+<p>Which features are driving the model’s predictions at different
+clinical milestones?</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate time-dependent model parts (permutation feature importance)</span></span>
+<span><span class="va">time_importance</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://modeloriented.github.io/survex/reference/model_parts.surv_explainer.html" class="external-link">model_parts</a></span><span class="op">(</span><span class="va">surv_explainer</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot the dynamic importance over time</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">time_importance</span><span class="op">)</span></span></code></pre></div>
+<p><img src="shap-explanations_files/figure-html/survex-importance-1.png" class="r-plt" alt="" width="672"><em>Interpretation: If a feature’s curve rises over time, it means that
+biomarker becomes more critical for predicting long-term
+survival.</em></p>
+</div>
+<div class="section level3">
+<h3 id="b--time-dependent-partial-dependence-profiles">B. Time-Dependent Partial Dependence Profiles<a class="anchor" aria-label="anchor" href="#b--time-dependent-partial-dependence-profiles"></a>
+</h3>
+<p>How does the value of a specific continuous feature (e.g.,
+<code>x0</code>) change the average survival probability over time?</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate the partial dependence profile for feature 'x0'</span></span>
+<span><span class="va">pdp_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://modeloriented.github.io/survex/reference/model_profile.surv_explainer.html" class="external-link">model_profile</a></span><span class="op">(</span><span class="va">surv_explainer</span>, variables <span class="op">=</span> <span class="st">"x0"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">pdp_time</span><span class="op">)</span></span></code></pre></div>
+<p><img src="shap-explanations_files/figure-html/survex-profile-1.png" class="r-plt" alt="" width="672"><em>Interpretation: This generates a 3D-like profile showing how
+different values of <code>x0</code> shift the entire survival
+curve.</em></p>
+</div>
+<div class="section level3">
+<h3 id="c--survshapt-local-explanations-over-time">C. SurvSHAP(t): Local Explanations Over Time<a class="anchor" aria-label="anchor" href="#c--survshapt-local-explanations-over-time"></a>
+</h3>
+<p>Just like the Waterfall plot explains a static risk score,
+SurvSHAP(t) explains exactly how a specific patient’s features pushed
+their survival probability up or down <em>at every single time
+point</em>.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Explain Patient #1 over time</span></span>
+<span><span class="va">patient_1_data</span> <span class="op">&lt;-</span> <span class="va">X_explain_subset</span><span class="op">[</span><span class="fl">1</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># Calculate SurvSHAP(t)</span></span>
+<span><span class="va">survshap_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://modeloriented.github.io/survex/reference/predict_parts.surv_explainer.html" class="external-link">predict_parts</a></span><span class="op">(</span><span class="va">surv_explainer</span>, new_observation <span class="op">=</span> <span class="va">patient_1_data</span>, type <span class="op">=</span> <span class="st">"survshap"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">survshap_t</span><span class="op">)</span></span></code></pre></div>
+<p><img src="shap-explanations_files/figure-html/survex-survshap-1.png" class="r-plt" alt="" width="672"><em>Interpretation: The solid black line is the model’s average survival
+curve. The colored areas show how Patient 1’s specific covariates (like
+their specific age or tumor grade) dragged their personal survival curve
+above or below the average over time.</em></p>
+</div>
+<div class="section level3">
+<h3 id="d--ecosystem-compatibility-global-model-performance">D. Ecosystem Compatibility: Global Model Performance<a class="anchor" aria-label="anchor" href="#d--ecosystem-compatibility-global-model-performance"></a>
+</h3>
+<p>Because <code><a href="../reference/explain_survex.html">explain_survex()</a></code> creates a standard explainer
+object, you aren’t just limited to SHAP values. You can utilize the
+entire <code>survex</code> ecosystem, including their built-in
+performance metrics.</p>
+<p>While <code>SuperSurv</code> provides its own comprehensive
+benchmarking suite (<code>plot_benchmark</code>), you can easily
+cross-validate your ensemble’s Time-Dependent Brier Score and AUC using
+<code>survex</code>’s native functions:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate time-dependent performance metrics via survex</span></span>
+<span><span class="va">survex_perf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://modeloriented.github.io/survex/reference/model_performance.surv_explainer.html" class="external-link">model_performance</a></span><span class="op">(</span><span class="va">surv_explainer</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot the Brier score and AUC curves</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">survex_perf</span><span class="op">)</span></span></code></pre></div>
+<p><img src="shap-explanations_files/figure-html/survex-performance-1.png" class="r-plt" alt="" width="672"><em>Note: The Brier score should ideally stay as low as possible over
+time, while the AUC should remain high. This serves as an excellent
+independent validation of the results generated by
+<code>SuperSurv</code>’s native <code><a href="../reference/eval_summary.html">eval_summary()</a></code>!</em></p>
+<p>By utilizing these tools, <code>SuperSurv</code> ensures that your
+advanced machine learning ensembles remain completely transparent,
+dynamically interpretable, and ready for clinical deployment.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

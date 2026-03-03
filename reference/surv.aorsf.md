@@ -9,7 +9,7 @@ surv.aorsf(
   time,
   event,
   X,
-  newX,
+  newdata,
   new.times,
   obsWeights,
   id,
@@ -36,7 +36,7 @@ surv.aorsf(
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction. Should have the same
   variable names and structure as `X`.

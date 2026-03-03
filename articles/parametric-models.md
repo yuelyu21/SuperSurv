@@ -1,4 +1,4 @@
-# 6. Parametric Survival Models
+# 7. Parametric Survival Models
 
 ## Introduction
 
@@ -54,10 +54,10 @@ fit_parametric <- SuperSurv(
   time = train$duration,
   event = train$event,
   X = X_tr,
-  newX = X_te,
+  newdata = X_te,
   new.times = new.times,
-  event.SL.library = parametric_library,
-  cens.SL.library = c("surv.coxph"),
+  event.library = parametric_library,
+  cens.library = c("surv.coxph"),
   control = list(saveFitLibrary = TRUE),
   verbose = FALSE,
   selection = "ensemble",

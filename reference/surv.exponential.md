@@ -5,7 +5,7 @@ Parametric Survival Prediction Wrapper (Exponential)
 ## Usage
 
 ``` r
-surv.exponential(time, event, X, newX, new.times, obsWeights, id, ...)
+surv.exponential(time, event, X, newdata, new.times, obsWeights, id, ...)
 ```
 
 ## Arguments
@@ -22,7 +22,7 @@ surv.exponential(time, event, X, newX, new.times, obsWeights, id, ...)
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

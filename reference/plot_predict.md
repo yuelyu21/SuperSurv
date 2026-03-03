@@ -3,9 +3,14 @@
 Generates a ggplot2 step-function plot of the predicted survival
 probabilities over time for one or more specific patients.
 
+Generates a ggplot2 step-function plot of the predicted survival
+probabilities over time for one or more specific patients.
+
 ## Usage
 
 ``` r
+plot_predict(preds, eval_times, patient_idx = 1)
+
 plot_predict(preds, eval_times, patient_idx = 1)
 ```
 
@@ -13,8 +18,7 @@ plot_predict(preds, eval_times, patient_idx = 1)
 
 - preds:
 
-  A list containing predictions, specifically the object returned by the
-  `predict.SuperSurv` function.
+  A list containing SuperSurv predictions OR a raw prediction matrix.
 
 - eval_times:
 
@@ -26,5 +30,7 @@ plot_predict(preds, eval_times, patient_idx = 1)
   whose survival curves you want to plot. Defaults to 1.
 
 ## Value
+
+A `ggplot` object showing the survival curves.
 
 A `ggplot` object showing the survival curves.

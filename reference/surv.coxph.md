@@ -6,7 +6,7 @@ the Breslow estimator.
 ## Usage
 
 ``` r
-surv.coxph(time, event, X, newX, new.times, obsWeights, id, ...)
+surv.coxph(time, event, X, newdata, new.times, obsWeights, id, ...)
 ```
 
 ## Arguments
@@ -23,7 +23,7 @@ surv.coxph(time, event, X, newX, new.times, obsWeights, id, ...)
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

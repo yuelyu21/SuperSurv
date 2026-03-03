@@ -5,7 +5,7 @@ Parametric Survival Prediction Wrapper (Log-Normal)
 ## Usage
 
 ``` r
-surv.lognormal(time, event, X, newX, new.times, obsWeights, id, ...)
+surv.lognormal(time, event, X, newdata, new.times, obsWeights, id, ...)
 ```
 
 ## Arguments
@@ -22,7 +22,7 @@ surv.lognormal(time, event, X, newX, new.times, obsWeights, id, ...)
 
   Training covariate data.frame.
 
-- newX:
+- newdata:
 
   Test covariate data.frame to use for prediction.
 

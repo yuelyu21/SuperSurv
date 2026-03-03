@@ -8,6 +8,8 @@
   : Super Learner for conditional survival functions
 - [`SuperSurv.control()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.control.md)
   : Control parameters for the SuperSurv Ensemble
+- [`estimate_causal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_causal_rmst.md)
+  : Estimate Causal Restricted Mean Survival Time (RMST)
 - [`eval_brier()`](https://yuelyu21.github.io/SuperSurv/reference/eval_brier.md)
   : IPCW Brier Score and Integrated Brier Score (IBS)
 - [`eval_cindex()`](https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.md)
@@ -16,7 +18,7 @@
   : Evaluate SuperSurv Predictions on Test Data
 - [`eval_timeROC()`](https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.md)
   : Time-Dependent AUC and Integrated AUC
-- [`explain_shap()`](https://yuelyu21.github.io/SuperSurv/reference/explain_shap.md)
+- [`explain_kernel()`](https://yuelyu21.github.io/SuperSurv/reference/explain_kernel.md)
   : Explain Predictions with Global SHAP (Kernel SHAP)
 - [`explain_survex()`](https://yuelyu21.github.io/SuperSurv/reference/explain_survex.md)
   : Create a Time-Dependent Survex Explainer
@@ -30,6 +32,8 @@
   : Plot Longitudinal Benchmark Metrics
 - [`plot_calibration()`](https://yuelyu21.github.io/SuperSurv/reference/plot_calibration.md)
   : Plot Survival Calibration Curve
+- [`plot_causal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_causal_rmst_curve.md)
+  : Plot Causal RMST Difference Over Time
 - [`plot_dependence()`](https://yuelyu21.github.io/SuperSurv/reference/plot_dependence.md)
   : Plot SHAP Dependence for SuperSurv
 - [`plot_global_importance()`](https://yuelyu21.github.io/SuperSurv/reference/plot_global_importance.md)
@@ -38,6 +42,8 @@
   : Waterfall Plot for an Individual Patient
 - [`plot_predict()`](https://yuelyu21.github.io/SuperSurv/reference/plot_predict.md)
   : Plot Predicted Survival Curves
+- [`plot_rmst_vs_obs()`](https://yuelyu21.github.io/SuperSurv/reference/plot_rmst_vs_obs.md)
+  : Plot Predicted RMST vs. Observed Survival Times
 - [`plot_survival_heatmap()`](https://yuelyu21.github.io/SuperSurv/reference/plot_survival_heatmap.md)
   : Survival Probability Heatmap
 - [`predict(`*`<SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.SuperSurv.md)

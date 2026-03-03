@@ -35,14 +35,17 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-tutorials" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Tutorials</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials">
-<li><a class="dropdown-item" href="articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
+<li><a class="dropdown-item" href="articles/installation.html">0. Installation &amp; Setup</a></li>
+    <li><a class="dropdown-item" href="articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
     <li><a class="dropdown-item" href="articles/model-performance.html">2. Model Performance</a></li>
     <li><a class="dropdown-item" href="articles/supersurv-best.html">3. Selection vs. Ensemble</a></li>
     <li><a class="dropdown-item" href="articles/screening-methods.html">4. Screening Methods</a></li>
-    <li><a class="dropdown-item" href="articles/base-learner-rfsrc.html">5. Random Forests (rfsrc)</a></li>
-    <li><a class="dropdown-item" href="articles/parametric-models.html">6. Parametric Models</a></li>
-    <li><a class="dropdown-item" href="articles/shap-explanations.html">7. SHAP Interpretability</a></li>
-    <li><a class="dropdown-item" href="articles/scaleup-parallel.html">8. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="articles/grid-search.html">5. Hyperparameter Tuning</a></li>
+    <li><a class="dropdown-item" href="articles/base-learner-rfsrc.html">6. Random Forests (rfsrc)</a></li>
+    <li><a class="dropdown-item" href="articles/parametric-models.html">7. Parametric Models</a></li>
+    <li><a class="dropdown-item" href="articles/shap-explanations.html">8. SHAP Interpretability</a></li>
+    <li><a class="dropdown-item" href="articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
+    <li><a class="dropdown-item" href="articles/scaleup-parallel.html">10. Parallel Processing</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -57,39 +60,60 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="supersurv-unified-ensemble-machine-learning-for-survival-data-">SuperSurv: Unified Ensemble Machine Learning for Survival Data <img src="reference/figures/logo.png" align="right" height="139"><a class="anchor" aria-label="anchor" href="#supersurv-unified-ensemble-machine-learning-for-survival-data-"></a>
+<div class="page-header"><h1 id="supersurv-a-unified-ecosystem-for-machine-learning-ensembles-and-interpretability-in-survival-data-">SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data <img src="reference/figures/logo.png" align="right" height="139"><a class="anchor" aria-label="anchor" href="#supersurv-a-unified-ecosystem-for-machine-learning-ensembles-and-interpretability-in-survival-data-"></a>
 </h1></div>
-<p><a href="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></p>
+<p><a href="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></p>
+<p><strong>SuperSurv</strong> provides a mathematically rigorous, unified machine learning ecosystem for right-censored time-to-event data.</p>
+<p>At its core, it implements an advanced <strong>Ensemble Super Learner</strong> framework. By utilizing Inverse Probability of Censoring Weighting (IPCW), it automatically constructs optimal convex combinations of parametric, semi-parametric, and machine learning base algorithms to minimize cross-validated risk.</p>
+<p>Beyond the meta-learner, <strong>SuperSurv</strong> acts as a complete Explainable AI (XAI) pipeline, featuring automated hyperparameter tuning grids, rigorous time-dependent benchmarking, and seamless integration with XAI ecosystems like Kernel SHAP.</p>
+<hr>
 <div class="section level2">
-<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+<h2 id="id_-lets-try-the-package">🚀 Let’s Try the Package!<a class="anchor" aria-label="anchor" href="#id_-lets-try-the-package"></a>
 </h2>
-<p><strong>SuperSurv</strong> provides a unified, explainable machine learning ecosystem for right-censored time-to-event data.</p>
-<p>At its core, <code>SuperSurv</code> implements an advanced <strong>Ensemble Super Learner</strong> framework. By utilizing Inverse Probability of Censoring Weighting (IPCW) generated from a censoring-specific meta-learner, it constructs mathematically rigorous, optimal combinations of parametric, semi-parametric, and machine learning base algorithms (e.g., Random Forests, XGBoost, Elastic Net) to minimize cross-validated risk.</p>
-<p>Beyond the core ensemble engine, <code>SuperSurv</code> acts as a complete Explainable AI (XAI) pipeline for survival analysis, featuring:</p>
-<ul>
-<li>
-<strong>High-Dimensional Variable Screening:</strong> Automated Marginal, Variance, and Elastic Net screening for genomic and high-dimensional clinical data.</li>
-<li>
-<strong>Automated Hyperparameter Grids:</strong> Dynamic tuning for complex algorithms.</li>
-<li>
-<strong>Rigorous Performance Evaluation:</strong> Native computation of Time-Dependent Brier Scores, Uno’s C-index, and clinical calibration metrics.</li>
-<li>
-<strong>State-of-the-Art Interpretability:</strong> Seamless integration with Kernel SHAP and time-dependent explanations to demystify complex survival predictions.</li>
-</ul>
+<p>Ready to dive in? The best way to understand the power of SuperSurv is to see it in action.</p>
+<p>👉 <strong><a href="https://yuelyu21.github.io/SuperSurv/articles/tutorial-0-installation.html">Click here to get started with Tutorial 0: Installation &amp; Setup!</a></strong></p>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="documentation--tutorials">Documentation &amp; Tutorials<a class="anchor" aria-label="anchor" href="#documentation--tutorials"></a>
+<h2 id="id_-dependencies-philosophy">📦 Dependencies Philosophy<a class="anchor" aria-label="anchor" href="#id_-dependencies-philosophy"></a>
 </h2>
-<p><strong><a href="https://yuelyu21.github.io/SuperSurv">Visit the official SuperSurv website</a></strong> for comprehensive documentation, function references, and a complete suite of in-depth tutorials, including:</p>
-<ol style="list-style-type: decimal">
-<li>The SuperSurv Ensemble</li>
-<li>Selection vs. Ensemble Methods</li>
-<li>Model Performance &amp; Calibration</li>
-<li>Screening Methods</li>
-<li>SHAP Interpretability</li>
-<li>Scaling Up with Parallel Processing</li>
-</ol>
+<p>To keep the core SuperSurv package lightweight and incredibly fast to install, heavy machine learning libraries (like XGBoost, Random Survival Forests, and Elastic Net) are listed as <strong>Suggests</strong> rather than strict requirements.</p>
+<p>This modular design means you only need to install the specific mathematical engines you actually plan to use! If you try to call a base learner that you haven’t installed yet, SuperSurv will gently pause and remind you to install it.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="id_-the-supersurv-library">📚 The SuperSurv Library<a class="anchor" aria-label="anchor" href="#id_-the-supersurv-library"></a>
+</h2>
+<p>SuperSurv standardizes the modeling API for <strong>19 prediction algorithms</strong> and <strong>6 high-dimensional screening algorithms</strong>.</p>
+<div class="section level3">
+<h3 id="prediction-models">Prediction Models<a class="anchor" aria-label="anchor" href="#prediction-models"></a>
+</h3>
+<ul>
+<li>
+<strong>Machine Learning:</strong> Random Forest, XGBoost, Support Vector Machines, Gradient Boosting, BART, Ranger</li>
+<li>
+<strong>Penalized/High-Dimensional:</strong> Elastic Net, Ridge Regression</li>
+<li>
+<strong>Tree-Based:</strong> RPART, CoxBoost</li>
+<li>
+<strong>Parametric/Classical:</strong> Cox Proportional Hazards, Weibull, Exponential, Log-Logistic, Log-Normal, Generic Parametric</li>
+<li>
+<strong>Smoothing/Splines:</strong> Generalized Additive Models (GAM)</li>
+<li>
+<strong>Baselines:</strong> Kaplan-Meier</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="screening-algorithms">Screening Algorithms<a class="anchor" aria-label="anchor" href="#screening-algorithms"></a>
+</h3>
+<p>Used to automatically filter massive datasets (like genomic data) before fitting complex models: * Keep All Features * Marginal Cox Screening * Variance-based Screening * Penalized Screening (Elastic Net) * Random Forest Variable Hunting</p>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_-comprehensive-documentation">📊 Comprehensive Documentation<a class="anchor" aria-label="anchor" href="#id_-comprehensive-documentation"></a>
+</h2>
+<p>Visit our <a href="https://yuelyu21.github.io/SuperSurv/">official website</a> for a complete suite of in-depth tutorials: * <strong>0. Installation &amp; Setup:</strong> Get your R environment ready. * <strong>1. The SuperSurv Ensemble:</strong> Build and train your first meta-learner. * <strong>2. Model Performance:</strong> Evaluate Time-Dependent Brier Scores and Uno’s C-index. * <strong>3. Selection vs. Ensemble:</strong> Compare evaluation approaches. * <strong>4. Screening Methods:</strong> Handle high-dimensional genomic data. * <strong>5. Hyperparameter Tuning:</strong> Automate algorithmic grid searches. * <strong>6. Random Forests:</strong> A deep dive into machine learning wrappers. * <strong>7. Parametric Models:</strong> Classical statistical approaches. * <strong>8. SHAP Interpretability:</strong> Demystify black-box models with global and local XAI. * <strong>9. Causal Inference (RMST):</strong> Evaluate treatment effects over time. * <strong>10. Parallel Processing:</strong> Scale up your computations for massive datasets.</p>
 <hr>
 </div>
 <div class="section level2">
