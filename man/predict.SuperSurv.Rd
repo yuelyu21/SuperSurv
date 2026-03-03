@@ -22,11 +22,11 @@
 \value{
 A list containing:
 \itemize{
-\item \code{event.SL.predict}: A numeric matrix (rows = observations, columns = times)
+\item \code{event.predict}: A numeric matrix (rows = observations, columns = times)
 of the final predicted survival probabilities from the ensemble.
 \item \code{event.library.predict}: A 3D numeric array (observations x times x models)
 containing the individual survival predictions from each base learner.
-\item \code{cens.SL.predict}: A numeric matrix of the predicted censoring probabilities.
+\item \code{cens.predict}: A numeric matrix of the predicted censoring probabilities.
 \item \code{cens.library.predict}: A 3D numeric array of the individual censoring predictions.
 }
 }

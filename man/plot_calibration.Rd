@@ -5,9 +5,11 @@
 \title{Plot Survival Calibration Curve}
 \usage{
 plot_calibration(object, newdata, time, event, eval_time, bins = 5)
+
+plot_calibration(object, newdata, time, event, eval_time, bins = 5)
 }
 \arguments{
-\item{object}{A fitted SuperSurv object.}
+\item{object}{A fitted SuperSurv object OR a standalone base learner.}
 
 \item{newdata}{A data.frame of test covariates.}
 
@@ -21,8 +23,13 @@ plot_calibration(object, newdata, time, event, eval_time, bins = 5)
 }
 \value{
 A ggplot object showing the calibration curve.
+
+A ggplot object showing the calibration curve.
 }
 \description{
 Evaluates the calibration of the SuperSurv ensemble at a specific time point
+by comparing predicted survival probabilities against observed Kaplan-Meier estimates.
+
+Evaluates the calibration of a model at a specific time point
 by comparing predicted survival probabilities against observed Kaplan-Meier estimates.
 }

@@ -6,10 +6,10 @@
 #' @param time Observed follow-up time.
 #' @param event Observed event indicator.
 #' @param X Training covariate data.frame.
-#' @param newX Test covariate data.frame for prediction (defaults to X).
+#' @param newdata Test covariate data.frame for prediction (defaults to X).
 #' @param new.times Times at which to obtain predicted survivals.
-#' @param event.SL.library Character vector of prediction algorithms for the event.
-#' @param cens.SL.library Character vector of prediction algorithms for censoring.
+#' @param event.library Character vector of prediction algorithms for the event.
+#' @param cens.library Character vector of prediction algorithms for censoring.
 #' @param id Cluster identification variable.
 #' @param verbose Logical. If TRUE, prints progress messages.
 #' @param control List of control parameters for the Super Learner.
@@ -25,8 +25,8 @@
 #' @return A list of class \code{SuperSurv} containing:
 #' \itemize{
 #'   \item \code{call}: The matched function call.
-#'   \item \code{event.SL.predict}: Matrix of in-sample cross-validated survival predictions.
-#'   \item \code{cens.SL.predict}: Matrix of in-sample cross-validated censoring predictions.
+#'   \item \code{event.predict}: Matrix of in-sample cross-validated survival predictions.
+#'   \item \code{cens.predict}: Matrix of in-sample cross-validated censoring predictions.
 #'   \item \code{event.coef}: Numeric vector of optimized ensemble weights for the event.
 #'   \item \code{cens.coef}: Numeric vector of optimized ensemble weights for censoring.
 #'   \item \code{event.library.predict}: 3D array of cross-validated predictions from individual event learners.
@@ -35,8 +35,8 @@
 #'   \item \code{times}: The time grid used for evaluation.
 #' }
 #' @export
-SuperSurv <- function(time, event, X, newX = NULL, new.times,
-                      event.SL.library, cens.SL.library,
+SuperSurv <- function(time, event, X, newdata = NULL, new.times,
+                      event.library, cens.library,
                       id = NULL, verbose = FALSE,
                       control = list(), cvControl = list(),
                       obsWeights = NULL, metalearner = "least_squares",
@@ -52,14 +52,14 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   time <- as.numeric(time)
   event <- as.numeric(event)
   if (is.null(obsWeights)) obsWeights <- rep(1, length(time))
-  if (is.null(newX)) newX <- X
+  if (is.null(newdata)) newdata <- X
 
   varNames <- colnames(X)
   N <- dim(X)[1L]
   p <- dim(X)[2L]
 
   # Internal Checker (from internals.R)
-  .checkInputs(time=time, event=event, X=X, newX=newX, id=id, obsWeights=obsWeights, verbose=verbose)
+  .checkInputs(time=time, event=event, X=X, newdata=newdata, id=id, obsWeights=obsWeights, verbose=verbose)
 
   # ----------------------------------------------------------------------------
   # 2. Parallel Setup
@@ -123,8 +123,8 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   control <- do.call("SuperSurv.control", control)
   cvControl <- do.call("SuperSurv.CV.control", cvControl)
 
-  event.library <- .createLibrary(event.SL.library)
-  cens.library <- .createLibrary(cens.SL.library)
+  event.library <- .createLibrary(event.library)
+  cens.library <- .createLibrary(cens.library)
 
   event.k <- nrow(event.library$library)
   cens.k <- nrow(cens.library$library)
@@ -159,6 +159,9 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
                        t.grid = control$event.t.grid, library = event.library,
                        kScreen = event.kScreen, k = event.k, p = p, verbose = verbose),
                   parallel_args)
+
+
+
 
   event.crossValFUN_out <- do.call(lapply_fun, event_args)
 
@@ -214,7 +217,7 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   time_train <- proc.time() - time_train_start
 
   # ----------------------------------------------------------------------------
-  # 8. Full Fits (Prediction on newX)
+  # 8. Full Fits (Prediction on newdata)
   # ----------------------------------------------------------------------------
   if(verbose) message("Fitting full models on entire training set...")
   time_predict_start <- proc.time()
@@ -229,13 +232,15 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   # --- EVENT MODELS FIT ---
   event.pred <- lapply(seq(event.k), FUN = .predFun,
                        lib = event.library$library, time = time, event = event,
-                       dataX = X, newX = newX, t.grid = new.times,
+                       dataX = X, newdata = newdata, t.grid = new.times,
                        whichScreen = event.whichScreen, id = id,
                        obsWeights = obsWeights, verbose = verbose, control = control,
                        libraryNames = event.libraryNames)
 
+
+
   # Initialize 3D Array: [Patients x Times x Models]
-  event.libraryPred <- array(NA, dim = c(nrow(newX), length(new.times), event.k))
+  event.libraryPred <- array(NA, dim = c(nrow(newdata), length(new.times), event.k))
 
   # [SAFETY FIX] Loop with check to prevent crash on failed models
   for (j in 1:event.k) {
@@ -250,12 +255,12 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   # --- CENSORING MODELS FIT ---
   cens.pred <- lapply(seq(cens.k), FUN = .predFun,
                       lib = cens.library$library, time = time, event = 1 - event,
-                      dataX = X, newX = newX, t.grid = new.times,
+                      dataX = X, newdata = newdata, t.grid = new.times,
                       whichScreen = cens.whichScreen, id = id,
                       obsWeights = obsWeights, verbose = verbose, control = control,
                       libraryNames = cens.libraryNames)
 
-  cens.libraryPred <- array(NA, dim = c(nrow(newX), length(new.times), cens.k))
+  cens.libraryPred <- array(NA, dim = c(nrow(newdata), length(new.times), cens.k))
 
   for (j in 1:cens.k) {
     if (!is.null(cens.pred[[j]]$out)) {
@@ -295,9 +300,9 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   # --- EVENT ENSEMBLE ---
   if (event.k == 1) {
     # If only one model exists, just take its prediction matrix
-    event.SL.predict <- event.libraryPred[, , 1]
+    event.predict <- event.libraryPred[, , 1]
   } else {
-    event.SL.predict <- matrix(NA_real_, nrow = nrow(newX), ncol = length(new.times))
+    event.predict <- matrix(NA_real_, nrow = nrow(newdata), ncol = length(new.times))
 
     # Identify which models in the library actually finished without error
     valid_idx <- !event.errorsInLibrary
@@ -311,18 +316,18 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
       # [CRITICAL FIX]: Force to 2D matrix to prevent "non-conformable" errors
       # This handles cases where sum(valid_idx) is 1 or many.
       tmp_mat <- matrix(event.libraryPred[, j, valid_idx, drop = FALSE],
-                        nrow = nrow(newX),
+                        nrow = nrow(newdata),
                         ncol = sum(valid_idx))
 
-      event.SL.predict[, j] <- tmp_mat %*% current_event_coef
+      event.predict[, j] <- tmp_mat %*% current_event_coef
     }
   }
 
   # --- CENSORING ENSEMBLE ---
   if (cens.k == 1) {
-    cens.SL.predict <- cens.libraryPred[, , 1]
+    cens.predict <- cens.libraryPred[, , 1]
   } else {
-    cens.SL.predict <- matrix(NA_real_, nrow = nrow(newX), ncol = length(new.times))
+    cens.predict <- matrix(NA_real_, nrow = nrow(newdata), ncol = length(new.times))
 
     valid_idx <- !cens.errorsInLibrary
     if (sum(valid_idx) == 0) stop("All censoring models failed prediction.")
@@ -332,10 +337,10 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
     for (j in seq_along(new.times)) {
       # [CRITICAL FIX]: Force to 2D matrix
       tmp_mat <- matrix(cens.libraryPred[, j, valid_idx, drop = FALSE],
-                        nrow = nrow(newX),
+                        nrow = nrow(newdata),
                         ncol = sum(valid_idx))
 
-      cens.SL.predict[, j] <- tmp_mat %*% current_cens_coef
+      cens.predict[, j] <- tmp_mat %*% current_cens_coef
     }
   }
 
@@ -365,16 +370,16 @@ SuperSurv <- function(time, event, X, newX = NULL, new.times,
   # ----------------------------------------------------------------------------
   out <- list(
     call = match.call(),
-    event.SL.predict = event.SL.predict,
-    cens.SL.predict = cens.SL.predict,
+    event.predict = event.predict,
+    cens.predict = cens.predict,
     event.coef = event.coef,
     cens.coef = cens.coef,
     event.library.predict = event.libraryPred,
     cens.library.predict = cens.libraryPred,
     event.libraryNames = event.libraryNames,
     cens.libraryNames = cens.libraryNames,
-    event.SL.library = event.library,
-    cens.SL.library = cens.library,
+    event.library = event.library,
+    cens.library = cens.library,
     event.cvRisks = event.cvRisks,
     cens.cvRisks = cens.cvRisks,
     event.errorsInCVLibrary = event.errorsInCVLibrary,

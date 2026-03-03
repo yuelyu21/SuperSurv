@@ -234,7 +234,7 @@ eval_summary <- function(object, newdata, time, event, eval_times, risk_time = m
 
   # 4. Evaluate Ensemble
   cat("Evaluating SuperSurv Ensemble...\n")
-  results[1, 2:4] <- process_matrix(preds$event.SL.predict)
+  results[1, 2:4] <- process_matrix(preds$event.predict)
 
   # 5. Evaluate Base Learners
   for (i in seq_len(k_models)) {

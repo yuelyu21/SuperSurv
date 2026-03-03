@@ -12,9 +12,18 @@ plot_benchmark(
   eval_times,
   metrics = c("brier", "auc", "cindex")
 )
+
+plot_benchmark(
+  object,
+  newdata,
+  time,
+  event,
+  eval_times,
+  metrics = c("brier", "auc", "cindex")
+)
 }
 \arguments{
-\item{object}{A fitted SuperSurv object.}
+\item{object}{A fitted SuperSurv object OR a fitted standalone base learner wrapper (e.g., surv.rfsrc).}
 
 \item{newdata}{A data.frame of test covariates.}
 
@@ -29,8 +38,13 @@ Options: "brier", "auc", "cindex". Defaults to all three.}
 }
 \value{
 A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
+
+A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
 }
 \description{
 Generates time-dependent performance curves comparing the SuperSurv ensemble
 against its base learners.
+
+Generates time-dependent performance curves comparing the SuperSurv ensemble
+against its base learners, or evaluates a single standalone learner.
 }

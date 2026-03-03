@@ -46,7 +46,7 @@
     for(j in seq(nrow(uniqueScreen))) {
       testAlg <- try(do.call(pred_fn, list(time = tempTime, event = tempEvent,
                                            X = subset(tempLearn, select = uniqueScreen[j,], drop = FALSE),
-                                           newX = subset(tempValid, select = uniqueScreen[j,], drop = FALSE),
+                                           newdata = subset(tempValid, select = uniqueScreen[j,], drop = FALSE),
                                            new.times = t.grid,
                                            id = tempId,
                                            obsWeights = tempObsWeights)))
@@ -56,6 +56,15 @@
       } else {
         libraryRows <- which(library$library$predAlgorithm == predAlg & library$library$rowScreen %in% unlist(screenMap[j]))
         for (row in libraryRows) {
+          # --- Add this safety check ---
+          expected_length <- nrow(out[, , row]) * ncol(out[, , row])
+          actual_length <- length(testAlg$pred)
+
+          if (actual_length != expected_length) {
+            stop(sprintf("\n>>> CRASH CAUGHT! <<<\nAlgorithm Index: %s\nExpected matrix size: %s x %s\nBut the algorithm returned length: %s\nCheck if this wrapper was updated to accept 'newdata'!",
+                         row, nrow(out[, , row]), ncol(out[, , row]), actual_length))
+          }
+
           out[,,row] <- testAlg$pred
         }
       }
@@ -89,7 +98,7 @@
 }
 
 
-.predFun <- function(index, lib, time, event, dataX, newX, whichScreen, t.grid,
+.predFun <- function(index, lib, time, event, dataX, newdata, whichScreen, t.grid,
                      family, id, obsWeights, verbose, control, libraryNames) {
   if (verbose) {
     message(paste("full", libraryNames[index]))
@@ -98,13 +107,13 @@
   testAlg <- try(do.call(pred_fn, list(time = time, event = event,
                                        X = subset(dataX, select = whichScreen[lib$rowScreen[index], ],
                                                   drop = FALSE),
-                                       newX = subset(newX, select = whichScreen[lib$rowScreen[index],
+                                       newdata = subset(newdata, select = whichScreen[lib$rowScreen[index],
                                        ], drop = FALSE), id = id,
                                        obsWeights = obsWeights, new.times = t.grid)))
   if (inherits(testAlg, "try-error")) {
     warning(paste("Error in algorithm", lib$predAlgorithm[index],
                   " on full data", "\n  The Algorithm will be removed from the Super Learner (i.e. given weight 0) \n"))
-    out <- rep.int(NA, times = nrow(newX))
+    out <- rep.int(NA, times = nrow(newdata))
     model_out <- NULL
   }
   else {
@@ -117,16 +126,45 @@
 }
 
 
+# .predFun <- function(index, lib, time, event, dataX, newX, whichScreen, t.grid,
+#                      family, id, obsWeights, verbose, control, libraryNames) {
+#   if (verbose) {
+#     message(paste("full", libraryNames[index]))
+#   }
+#   pred_fn <- get(lib$predAlgorithm[index])
+#   testAlg <- try(do.call(pred_fn, list(time = time, event = event,
+#                                        X = subset(dataX, select = whichScreen[lib$rowScreen[index], ],
+#                                                   drop = FALSE),
+#                                        newX = subset(newX, select = whichScreen[lib$rowScreen[index],
+#                                        ], drop = FALSE), id = id,
+#                                        obsWeights = obsWeights, new.times = t.grid)))
+#   if (inherits(testAlg, "try-error")) {
+#     warning(paste("Error in algorithm", lib$predAlgorithm[index],
+#                   " on full data", "\n  The Algorithm will be removed from the Super Learner (i.e. given weight 0) \n"))
+#     out <- rep.int(NA, times = nrow(newX))
+#     model_out <- NULL
+#   }
+#   else {
+#     out <- testAlg$pred
+#     if(control$saveFitLibrary) model_out <- testAlg$fit
+#     else model_out <- NULL
+#   }
+#
+#   invisible(list(out = out, model_out = model_out))
+# }
+
+
+
 ########## function previously inside the main function
 #' @noRd
-.checkInputs <- function(time, event, X, newX, id, obsWeights, verbose) {
+.checkInputs <- function(time, event, X, newdata, id, obsWeights, verbose) {
   if(any(time < 0)) stop("Only non-negative event/censoring times allowed!")
   if(any(!(event %in% c(0,1)))) stop("Event must be binary.")
   if(any(is.na(time)) | any(is.na(event))) stop("No missing values allowed in time or event.")
-  if(any(is.na(X)) | any(is.na(newX))) stop("No missing values allowed in X or new X.")
+  if(any(is.na(X)) | any(is.na(newdata))) stop("No missing values allowed in X or new X.")
   if(length(time) != length(event) | length(time) != nrow(X)) stop("time and event must be n x 1 vectors and X must have n rows.")
-  if(!is.data.frame(X) | !is.data.frame(newX)) stop("X and newX must be data frames.")
-  if(!identical(names(X), names(newX))) stop("X and newX must have the same features.")
+  if(!is.data.frame(X) | !is.data.frame(newdata)) stop("X and newdata must be data frames.")
+  if(!identical(names(X), names(newdata))) stop("X and newdata must have the same features.")
   if(any(obsWeights < 0)) stop("obsWeights < 0 not allowed.")
   if(!(verbose %in% c(TRUE, FALSE))) stop("verbose must be TRUE/FALSE.")
   if(!is.null(id) && !identical(length(id), length(time))) stop("id vector must have the same dimension as time")
@@ -309,7 +347,7 @@
 
   # Initialization Step
   if (control$initWeight == "censoring") {
-    initFit <- initWeightAlg(time = time, event = 1 - event, X = X, newX = X,
+    initFit <- initWeightAlg(time = time, event = 1 - event, X = X, newdata = X,
                              new.times = time - epsilon,
                              obsWeights = obsWeights, id = id)
     obs.cens.vals <- rep(diag(initFit$pred), length(control$event.t.grid))
@@ -324,7 +362,7 @@
     )
     obs.event.vals <- rep(c(event.Z.obs %*% S.coef), length(control$cens.t.grid))
   } else {
-    initFit <- initWeightAlg(time = time, event = event, X = X, newX = X,
+    initFit <- initWeightAlg(time = time, event = event, X = X, newdata = X,
                              new.times = time,
                              obsWeights = obsWeights, id = id)
     obs.event.vals <- rep(diag(initFit$pred), length(control$cens.t.grid))

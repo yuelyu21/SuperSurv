@@ -1,8 +1,8 @@
 ---
-title: "8. Scaling Up with Parallel Processing"
+title: "10. Scaling Up with Parallel Processing"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{8. Scaling Up with Parallel Processing}
+  %\VignetteIndexEntry{10. Scaling Up with Parallel Processing}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -64,8 +64,8 @@ fit_parallel <- SuperSurv(
   X = X,
   newX = X,
   new.times = new.times,
-  event.SL.library = c("surv.coxph", "surv.weibull", "surv.rfsrc"),
-  cens.SL.library = c("surv.coxph"),
+  event.library = c("surv.coxph", "surv.weibull", "surv.rfsrc"),
+  cens.library = c("surv.coxph"),
   parallel = TRUE,     # <--- The magic argument
   nFolds = 5
 )

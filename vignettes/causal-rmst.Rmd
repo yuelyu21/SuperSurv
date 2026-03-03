@@ -1,9 +1,9 @@
 ---
-title: "9. Causal Inference and Treatment Effects (RMST)"
-description: "Estimating Average Treatment Effects using G-computation and the Ensemble Super Learner."
+title: "9. Causal Effects and Adjusted Marginal Contrasts (RMST)"
+description: "Estimating absolute treatment effects and covariate-adjusted group differences using G-computation."
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{9. Causal Inference and Treatment Effects (RMST)}
+  %\VignetteIndexEntry{9. Causal Effects and Adjusted Marginal Contrasts (RMST)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,19 +17,30 @@ knitr::opts_chunk$set(
 
 ## Moving Beyond the Hazard Ratio
 
-In clinical trials and observational studies, the ultimate goal is causal inference: *Did the treatment actually work?* Historically, this is answered using the Hazard Ratio (HR) from a Cox Proportional Hazards model. However, the HR is non-collapsible and strictly relies on the proportional hazards assumption. If survival curves cross, or if unmeasured covariates exist, the HR becomes mathematically biased.
+In clinical trials and observational studies, researchers often wish to compare survival outcomes between two groups. Historically, this is answered using the Hazard Ratio (HR) from a Cox Proportional Hazards model. However, the HR is non-collapsible—meaning the omission of unmeasured covariates will mathematically bias the effect toward the null—and strictly relies on the proportional hazards assumption. If survival curves cross, the HR becomes mathematically invalid.
 
-`SuperSurv` solves this by estimating the **Causal Difference in Restricted Mean Survival Time ($\Delta$RMST)** using G-computation (Standardization) on top of our Ensemble Super Learner. 
+`SuperSurv` solves this by evaluating group differences on the absolute time scale using the **Restricted Mean Survival Time (RMST)** via G-computation (Standardization) on top of our Ensemble Super Learner. 
 
-RMST calculates the area under the survival curve up to a specific time horizon, $\tau$. By comparing the expected RMST if *everyone* received the treatment versus if *no one* received the treatment, we obtain a robust, absolute measure of the Average Treatment Effect (ATE):
 
-$$ \text{ATE} = E[Y(1)] - E[Y(0)] = \text{RMST}_{\text{Treated}}(\tau) - \text{RMST}_{\text{Control}}(\tau) $$
 
-## Estimating the Causal Effect with `SuperSurv`
+RMST calculates the area under the survival curve up to a specific time horizon, $\tau$. By comparing the expected RMST if *everyone* in the dataset belonged to Group 1 versus if *everyone* belonged to Group 0, we obtain a robust, absolute measure of the difference:
 
-Because the `SuperSurv` ensemble utilizes base learners that do not rely on the proportional hazards assumption (like Random Survival Forests), it can estimate highly accurate, patient-specific counterfactual survival curves.
+$$ \Delta \text{RMST} = E[Y(1)] - E[Y(0)] = \text{RMST}_{\text{Group 1}}(\tau) - \text{RMST}_{\text{Group 0}}(\tau) $$
 
-Let's demonstrate this using the built-in `metabric` dataset. We will evaluate the causal effect of the binary biomarker **`x4`** (where 1 indicates the presence of the marker, and 0 indicates its absence) on patient survival.
+## Philosophy: "Causal Effect" vs. "Marginal Contrast"
+
+How you interpret this $\Delta \text{RMST}$ depends entirely on the nature of your exposure variable. The math of G-computation is identical for both, but the statistical terminology must be used responsibly.
+
+
+
+1. **Causal Average Treatment Effect (ATE):** You can claim a *Causal Effect* if your variable is a **manipulable intervention**. Examples include administering a drug, performing a surgery, or applying a policy. 
+   * *Interpretation:* "Administering this drug causally adds an average of 4.2 months of life over a 5-year period compared to the placebo."
+2. **Adjusted Marginal Contrast:** You must claim an *Adjusted Marginal Contrast* if your variable is an **immutable trait or biological group**. Examples include biological sex, race, or a genetic biomarker. Because you cannot "causally" intervene to change someone's genetics, we are simply comparing two groups while rigorously adjusting for all other confounding variables.
+   * *Interpretation:* "After adjusting for all baseline clinical covariates, the presence of this biomarker is marginally associated with 4.2 additional months of survival over a 5-year period."
+
+## Estimating the Effect with `SuperSurv`
+
+Let's demonstrate this using the built-in `metabric` dataset. We will evaluate the effect of the binary biomarker **`x4`** (1 = present, 0 = absent). Because `x4` is a biomarker, we will interpret the result as an **Adjusted Marginal Contrast**.
 
 ```{r setup, message=FALSE, warning=FALSE}
 library(SuperSurv)
@@ -38,55 +49,33 @@ set.seed(123)
 # Load built-in data
 data("metabric", package = "SuperSurv")
 
-# Define predictors (which automatically includes x4) and time grid
+# Define predictors and time grid
 X <- metabric[, grep("^x", names(metabric))]
 new.times <- seq(10, 150, by = 10)
 ```
 
 ### 1. Train the Super Learner
-First, we train our ensemble on the observed data. The ensemble learns the complex relationships between the baseline covariates, our biomarker of interest (`x4`), and the survival outcome.
+First, train the ensemble. We must set `control = list(saveFitLibrary = TRUE)` so the models are saved for the G-computation prediction phase. 
 
 ```{r train-model, eval=FALSE}
 fit <- SuperSurv(
   time = metabric$duration,
   event = metabric$event,
   X = X,
-  newX = X,
+  newdata = X,
   new.times = new.times,
-  event.SL.library = c("surv.coxph", "surv.rfsrc"),
-  cens.SL.library = c("surv.coxph")
+  event.library = c("surv.coxph", "surv.rfsrc"),
+  cens.library = c("surv.coxph"),
+  control = list(saveFitLibrary = TRUE) 
 )
 ```
 
-
-
-```{r}
-# 1. Create the two counterfactual datasets manually
-data_trt1 <- metabric
-data_trt1$x4 <- 1
-X_trt1 <- data_trt1[, grep("^x", names(data_trt1))]
-
-data_trt0 <- metabric
-data_trt0$x4 <- 0
-X_trt0 <- data_trt0[, grep("^x", names(data_trt0))]
-
-# 2. Get predictions for both
-pred1 <- predict(fit, newX = X_trt1)$event.SL.predict
-pred0 <- predict(fit, newX = X_trt0)$event.SL.predict
-
-# 3. Check if they are completely identical
-identical(pred1, pred0)
-```
-
-
-
-
 ### 2. Calculate the Counterfactual RMST
-Now, we use the `estimate_causal_rmst()` function. This function uses G-computation: it takes our dataset, forces the biomarker `x4` to 1 for all patients, predicts their survival curves via the Super Learner, and calculates the RMST. It then repeats this with `x4` forced to 0.
+We use the `estimate_causal_rmst()` function. This forces the biomarker `x4` to 1 for all patients, predicts their survival curves, and calculates the RMST, then repeats with `x4` forced to 0.
 
 ```{r causal-effect, eval=FALSE}
-# Estimate the causal effect up to tau = 100 months
-causal_results <- estimate_causal_rmst(
+# Estimate the adjusted difference up to tau = 100 months
+results <- estimate_causal_rmst(
   fit = fit, 
   data = metabric, 
   trt_col = "x4", 
@@ -94,16 +83,18 @@ causal_results <- estimate_causal_rmst(
   tau = 100
 )
 
-print(causal_results$ATE_RMST)
+print(results$ATE_RMST)
 ```
 
-**Interpretation:** If the ATE value is `4.2`, we can conclude: *"After adjusting for complex baseline covariates via the Super Learner ensemble, the presence of biomarker x4 causally adds an average of 4.2 months of survival time over a 100-month horizon compared to its absence."*
+**Interpretation:** If the resulting $\Delta$RMST value is `4.2`, we interpret this marginal contrast as: *"After adjusting for complex baseline covariates via the Super Learner ensemble, patients with biomarker x4 live an average of 4.2 months longer over a 100-month horizon compared to those without the biomarker."*
 
-### 3. Visualizing the Treatment Effect Over Time
-The causal effect might be near zero early on, but substantial at month 100. We can visualize how the $\Delta$RMST evolves across different time horizons using `plot_causal_rmst_curve()`.
+### 3. Visualizing the Effect Over Time
+The difference between groups might be near zero early on but substantial later. We can visualize how the $\Delta$RMST evolves across different time horizons using `plot_causal_rmst_curve()`.
+
+
 
 ```{r plot-curve, eval=FALSE}
-# Plot the ATE across a sequence of tau values
+# Plot the Delta RMST across a sequence of tau values
 tau_grid <- seq(20, 140, by = 20)
 plot_causal_rmst_curve(
   fit = fit, 
@@ -115,7 +106,9 @@ plot_causal_rmst_curve(
 ```
 
 ### 4. Diagnostic: Predicted RMST vs. Observed Time
-To evaluate how well our model's restricted expectations align with reality, we can plot the predicted RMST for the actual observed data against their true survival times. Patients who experienced the event should ideally lie close to the diagonal line (up to the restriction time $\tau$).
+To evaluate how well our model's restricted expectations align with reality, we can plot the predicted RMST for the observed data against their true survival times. Patients who experienced the event should lie close to the diagonal line up to $\tau$.
+
+
 
 ```{r plot-obs, eval=FALSE}
 plot_rmst_vs_obs(

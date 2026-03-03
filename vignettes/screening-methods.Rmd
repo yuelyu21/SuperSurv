@@ -97,10 +97,10 @@ fit_highdim <- SuperSurv(
   time = train$duration,
   event = train$event,
   X = X_tr,
-  newX = X_te,
+  newdata = X_te,
   new.times = new.times,
-  event.SL.library = my_screen_library, # Pass our screened library
-  cens.SL.library = cens_library,
+  event.library = my_screen_library, # Pass our screened library
+  cens.library = cens_library,
   control = list(saveFitLibrary = TRUE),
   verbose = T,
   nFolds = 3

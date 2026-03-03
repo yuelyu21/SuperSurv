@@ -8,10 +8,10 @@ SuperSurv(
   time,
   event,
   X,
-  newX = NULL,
+  newdata = NULL,
   new.times,
-  event.SL.library,
-  cens.SL.library,
+  event.library,
+  cens.library,
   id = NULL,
   verbose = FALSE,
   control = list(),
@@ -30,13 +30,13 @@ SuperSurv(
 
 \item{X}{Training covariate data.frame.}
 
-\item{newX}{Test covariate data.frame for prediction (defaults to X).}
+\item{newdata}{Test covariate data.frame for prediction (defaults to X).}
 
 \item{new.times}{Times at which to obtain predicted survivals.}
 
-\item{event.SL.library}{Character vector of prediction algorithms for the event.}
+\item{event.library}{Character vector of prediction algorithms for the event.}
 
-\item{cens.SL.library}{Character vector of prediction algorithms for censoring.}
+\item{cens.library}{Character vector of prediction algorithms for censoring.}
 
 \item{id}{Cluster identification variable.}
 
@@ -63,8 +63,8 @@ assigns a weight of 1.0 to the single model with the lowest cross-validated risk
 A list of class \code{SuperSurv} containing:
 \itemize{
 \item \code{call}: The matched function call.
-\item \code{event.SL.predict}: Matrix of in-sample cross-validated survival predictions.
-\item \code{cens.SL.predict}: Matrix of in-sample cross-validated censoring predictions.
+\item \code{event.predict}: Matrix of in-sample cross-validated survival predictions.
+\item \code{cens.predict}: Matrix of in-sample cross-validated censoring predictions.
 \item \code{event.coef}: Numeric vector of optimized ensemble weights for the event.
 \item \code{cens.coef}: Numeric vector of optimized ensemble weights for censoring.
 \item \code{event.library.predict}: 3D array of cross-validated predictions from individual event learners.

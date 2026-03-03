@@ -5,10 +5,11 @@
 \title{Plot Predicted Survival Curves}
 \usage{
 plot_predict(preds, eval_times, patient_idx = 1)
+
+plot_predict(preds, eval_times, patient_idx = 1)
 }
 \arguments{
-\item{preds}{A list containing predictions, specifically the object returned
-by the \code{predict.SuperSurv} function.}
+\item{preds}{A list containing SuperSurv predictions OR a raw prediction matrix.}
 
 \item{eval_times}{Numeric vector of times at which predictions were evaluated.}
 
@@ -17,8 +18,13 @@ dataset whose survival curves you want to plot. Defaults to 1.}
 }
 \value{
 A \code{ggplot} object showing the survival curves.
+
+A \code{ggplot} object showing the survival curves.
 }
 \description{
+Generates a ggplot2 step-function plot of the predicted survival probabilities
+over time for one or more specific patients.
+
 Generates a ggplot2 step-function plot of the predicted survival probabilities
 over time for one or more specific patients.
 }
