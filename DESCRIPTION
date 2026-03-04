@@ -1,24 +1,16 @@
 Package: SuperSurv
 Type: Package
-Title: SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data
+Title: Unified Machine Learning Ensembles and Interpretability for Survival Data
 Version: 0.1.0
-Author: Yue Lyu [aut, cre]
-Maintainer: Yue Lyu <yuelyu0521@gmail.com>
-Description: Implements the Double Super Learner framework for right-censored 
-    survival data. Automatically constructs optimal convex combinations of 
-    parametric, semi-parametric, and machine learning base learners to minimize 
-    cross-validated risk using Inverse Probability of Censoring Weights (IPCW). 
-    Features include high-dimensional variable screening (Elastic Net, Marginal, Variance), 
-    automated hyperparameter tuning grids, rigorous performance evaluation 
-    (Brier Score, Uno's C-index, time-dependent AUC), and clinical calibration metrics. 
-    Provides robust global and local interpretability for complex survival ensembles 
-    via Kernel SHAP and time-dependent explanations.
+Authors@R: 
+    person("Yue", "Lyu", email = "yuelyu0521@gmail.com", role = c("aut", "cre"))
+Description: Implements a Double Super Learner framework for right-censored survival data. The package fits convex combinations of parametric, semiparametric, and machine-learning base learners by minimizing cross-validated risk with inverse probability of censoring weighting (IPCW). Includes high-dimensional variable screening methods, automated hyperparameter grid search, and prediction performance evaluation (e.g., Brier score, Uno’s C-index, time-dependent AUC). Provides global and local interpretability tools for survival ensembles, including SHAP-based explanations.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.0
 Depends: 
-    R (>= 2.10)
+    R (>= 4.0.0)
 LazyData: true
 Imports: 
     survival,

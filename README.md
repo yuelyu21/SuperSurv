@@ -1,4 +1,4 @@
-# SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data <img src="man/figures/logo.png" align="right" height="139" />
+# SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data
 
 [![R-CMD-check](https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -15,7 +15,7 @@ Beyond the meta-learner, **SuperSurv** acts as a complete Explainable AI (XAI) p
 
 Ready to dive in? The best way to understand the power of SuperSurv is to see it in action. 
 
-👉 **[Click here to get started with Tutorial 0: Installation & Setup!](https://yuelyu21.github.io/SuperSurv/articles/tutorial-0-installation.html)**
+👉 **[Click here to get started with Tutorial 0: Installation & Setup!](https://yuelyu21.github.io/SuperSurv/articles/installation.html)**
 
 ---
 
