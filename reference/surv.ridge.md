@@ -57,7 +57,7 @@ surv.ridge(
 - ...:
 
   Additional arguments passed to
-  [`cv.glmnet`](https://glmnet.stanford.edu/reference/cv.glmnet.html).
+  [`cv.glmnet`](https://rdrr.io/pkg/glmnet/man/cv.glmnet.html).
 
 ## Value
 

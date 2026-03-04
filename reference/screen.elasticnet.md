@@ -1,11 +1,11 @@
 # Elastic Net Screening Algorithm
 
 This screening algorithm uses
-[`cv.glmnet`](https://glmnet.stanford.edu/reference/cv.glmnet.html) to
-select covariates. Unlike LASSO (`alpha = 1`), which drops correlated
-features, Elastic Net (`alpha = 0.5` by default) shrinks correlated
-groups of features together, making it ideal for selecting entire
-biological pathways.
+[`cv.glmnet`](https://rdrr.io/pkg/glmnet/man/cv.glmnet.html) to select
+covariates. Unlike LASSO (`alpha = 1`), which drops correlated features,
+Elastic Net (`alpha = 0.5` by default) shrinks correlated groups of
+features together, making it ideal for selecting entire biological
+pathways.
 
 ## Usage
 
