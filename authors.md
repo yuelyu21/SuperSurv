@@ -4,19 +4,19 @@
 
 - **[Yue
   Lyu](https://scholar.google.com/citations?hl=en&user=PFjMl6sAAAAJ)**.
-  Maintainer.
+  Author, maintainer.
 
 ## Citation
 
 Source:
 [`DESCRIPTION`](https://github.com/yuelyu21/SuperSurv/blob/master/DESCRIPTION)
 
-Lyu Y (2026). *SuperSurv: SuperSurv: A Unified Ecosystem for Machine
-Learning, Ensembles, and Interpretability in Survival Data*. R package
-version 0.1.0, <https://github.com/yuelyu21/SuperSurv>.
+Lyu Y (2026). *SuperSurv: Unified Machine Learning Ensembles and
+Interpretability for Survival Data*. R package version 0.1.0,
+<https://github.com/yuelyu21/SuperSurv>.
 
     @Manual{,
-      title = {SuperSurv: SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data},
+      title = {SuperSurv: Unified Machine Learning Ensembles and Interpretability for Survival Data},
       author = {Yue Lyu},
       year = {2026},
       note = {R package version 0.1.0},
