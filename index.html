@@ -13,6 +13,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Unified Machine Learning Ensembles and Interpretability for Survival Data">
 <meta name="description" content="Implements a Double Super Learner framework for right-censored survival data. The package fits convex combinations of parametric, semiparametric, and machine-learning base learners by minimizing cross-validated risk with inverse probability of censoring weighting (IPCW). Includes high-dimensional variable screening methods, automated hyperparameter grid search, and prediction performance evaluation (e.g., Brier score, Uno’s C-index, time-dependent AUC). Provides global and local interpretability tools for survival ensembles, including SHAP-based explanations.">
 <meta property="og:description" content="Implements a Double Super Learner framework for right-censored survival data. The package fits convex combinations of parametric, semiparametric, and machine-learning base learners by minimizing cross-validated risk with inverse probability of censoring weighting (IPCW). Includes high-dimensional variable screening methods, automated hyperparameter grid search, and prediction performance evaluation (e.g., Brier score, Uno’s C-index, time-dependent AUC). Provides global and local interpretability tools for survival ensembles, including SHAP-based explanations.">
+<meta property="og:image" content="https://yuelyu21.github.io/SuperSurv/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -60,8 +61,10 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="supersurv-a-unified-ecosystem-for-machine-learning-ensembles-and-interpretability-in-survival-data-">SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data <img src="reference/figures/logo.png" align="right" width="140"><a class="anchor" aria-label="anchor" href="#supersurv-a-unified-ecosystem-for-machine-learning-ensembles-and-interpretability-in-survival-data-"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="supersurv-a-unified-ecosystem-for-machine-learning-ensembles-and-interpretability-in-survival-data-">SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data <a class="anchor" aria-label="anchor" href="#supersurv-a-unified-ecosystem-for-machine-learning-ensembles-and-interpretability-in-survival-data-"></a>
+</h1>
+</div>
 <p><a href="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></p>
 <p><strong>SuperSurv</strong> provides a mathematically rigorous, unified machine learning ecosystem for right-censored time-to-event data.</p>
 <p>At its core, it implements an advanced <strong>Ensemble Super Learner</strong> framework. By utilizing Inverse Probability of Censoring Weighting (IPCW), it automatically constructs optimal convex combinations of parametric, semi-parametric, and machine learning base algorithms to minimize cross-validated risk.</p>
