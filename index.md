@@ -1,4 +1,4 @@
-# SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data
+# SuperSurv: A Unified Ecosystem for Machine Learning, Ensembles, and Interpretability in Survival Data ![](reference/figures/logo.png)
 
 [![R-CMD-check](https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yuelyu21/SuperSurv/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle:
