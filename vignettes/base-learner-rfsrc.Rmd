@@ -72,7 +72,7 @@ plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
 
 We can also pass this standalone model directly into our evaluation suite to test its performance on new data. 
 
-```{r eval-standalone, fig.align='center', fig.height=9}
+```{r eval-standalone, fig.align='center', fig.height=4, fig.width= 9}
 # The function automatically detects this is a single model and plots it!
 plot_benchmark(
   object = rf_fit,
@@ -82,6 +82,24 @@ plot_benchmark(
   eval_times = new.times
 )
 ```
+
+
+
+```{r}
+
+# plot_calibration(
+#   object   = rf_fit,
+#   newdata  = X_te,
+#   time     = test$duration,
+#   event    = test$event,
+#   eval_time = 150,
+#   bins     = 2
+# )
+
+```
+
+
+
 
 ## 4. Train the Benchmark Ensemble
 

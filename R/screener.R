@@ -1,3 +1,21 @@
+#' @keywords internal
+.make_design_matrix <- function(X) {
+  X_df <- as.data.frame(X)
+
+  # If user passed a matrix, preserve colnames
+  if (is.matrix(X)) X_df <- as.data.frame(X)
+
+  # model.matrix handles factors/characters safely via one-hot encoding
+  mm <- stats::model.matrix(~ . - 1, data = X_df)
+
+  # Ensure it's a plain numeric matrix
+  mm <- as.matrix(mm)
+  storage.mode(mm) <- "double"
+  mm
+}
+
+
+
 #' Keep All Variables Screener
 #' @param X Training covariate data.frame.
 #' @param ... Additional ignored arguments.
@@ -25,45 +43,46 @@ screen.all <- function(X, ...) {
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.marg <- function(time, event, X, obsWeights = NULL, minscreen = 2, min.p = 0.1, ...) {
+#' @export
+screen.marg <- function(time, event, X, obsWeights = NULL,
+                        minscreen = 2, min.p = 0.1, ...) {
 
   requireNamespace("survival", quietly = TRUE)
 
-  # vapply safely iterates over data.frame columns without converting them to text
-  pvals <- vapply(X, function(col) {
+  X_mat <- .make_design_matrix(X)
 
-    # Catch hard mathematical errors, not just warnings
+  pvals <- vapply(seq_len(ncol(X_mat)), function(j) {
+    colj <- X_mat[, j]
+
     fit_try <- try({
       if (is.null(obsWeights)) {
-        survival::coxph(survival::Surv(time, event) ~ col)
+        survival::coxph(survival::Surv(time, event) ~ colj)
       } else {
-        survival::coxph(survival::Surv(time, event) ~ col, weights = obsWeights)
+        survival::coxph(survival::Surv(time, event) ~ colj, weights = obsWeights)
       }
     }, silent = TRUE)
 
-    # If the model crashed (e.g., constant variable), assign a p-value of 1 (drop it)
     if (inherits(fit_try, "try-error")) return(1.0)
 
-    # Extract the Wald test p-value safely
     smry <- summary(fit_try)
-    if ("waldtest" %in% names(smry)) {
-      return(as.numeric(smry$waldtest['pvalue']))
-    } else {
-      return(1.0)
-    }
-  }, numeric(1)) # Ensure the output is strictly numeric
+    # Single coefficient p-value
+    p <- suppressWarnings(as.numeric(smry$coefficients[,"Pr(>|z|)"][1]))
+    if (is.na(p)) p <- 1.0
+    p
+  }, numeric(1))
 
   whichVariable <- (pvals <= min.p)
 
-  # Safety net: If everything was dropped, at least keep the top 'minscreen' variables
-  if(sum(whichVariable, na.rm = TRUE) < minscreen) {
-    whichVariable <- rep(FALSE, ncol(X))
-    whichVariable[order(pvals)[1:minscreen]] <- TRUE
+  # Safety net: keep at least minscreen
+  if (sum(whichVariable, na.rm = TRUE) < minscreen) {
+    whichVariable <- rep(FALSE, ncol(X_mat))
+    whichVariable[order(pvals)[seq_len(minscreen)]] <- TRUE
   }
 
+  # IMPORTANT: return mask in original X_mat space (design matrix columns)
+  # This is OK if downstream uses the same design matrix builder.
   return(whichVariable)
 }
-
 
 
 
@@ -81,48 +100,53 @@ screen.marg <- function(time, event, X, obsWeights = NULL, minscreen = 2, min.p 
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.glmnet <- function(time, event, X, obsWeights = NULL, alpha = 1, minscreen = 2, nfolds = 10, nlambda = 100, ...) {
+screen.glmnet <- function(time, event, X, obsWeights = NULL,
+                          alpha = 1, minscreen = 2,
+                          nfolds = 10, nlambda = 100, ...) {
 
   requireNamespace("glmnet", quietly = TRUE)
+  requireNamespace("survival", quietly = TRUE)
 
-  # Safe matrix conversion without adding dummy columns
-  if (!is.matrix(X)) {
-    X <- as.matrix(sapply(X, as.numeric))
-  }
+  # ---- Fix 1: Cox family requires strictly positive times ----
+  time <- pmax(time, 1e-5)
 
-  # Safe weights handling
-  if (is.null(obsWeights)) {
-    obsWeights <- rep(1, nrow(X))
-  }
+  # Build a safe numeric design matrix (same philosophy as your wrappers)
+  X_df <- as.data.frame(X)
+  X_mat <- stats::model.matrix(~ . - 1, data = X_df)
+  X_mat <- as.matrix(X_mat)
+  storage.mode(X_mat) <- "double"
 
-  # Hack to prevent glmnet from crashing on tied times
-  if (any(event == 0)) {
-    time_diffs <- diff(sort(unique(time)))
-    if (length(time_diffs) > 0) {
-      time[event == 0] <- time[event == 0] + min(time_diffs) / 2
-    }
-  }
-  if(any(time == 0)) time[time == 0] <- min(time[time > 0]) / 2
+  if (is.null(obsWeights)) obsWeights <- rep(1, nrow(X_mat))
 
-  # Fit CV Lasso
   fit.glmnet <- suppressWarnings(
-    glmnet::cv.glmnet(y = survival::Surv(time, event), x = X,
-                      weights = obsWeights, family = 'cox',
-                      alpha = alpha, nfolds = nfolds, nlambda = nlambda)
+    glmnet::cv.glmnet(
+      x = X_mat,
+      y = survival::Surv(time, event),
+      weights = obsWeights,
+      family = "cox",
+      alpha = alpha,
+      nfolds = nfolds,
+      nlambda = nlambda
+    )
   )
 
-  # Extract active variables correctly
-  coefs <- as.numeric(coef(fit.glmnet, s = "lambda.min"))
-  whichVariable <- (coefs != 0)
+  # ---- Fix 2: use exported coef() ----
+  beta_min <- as.matrix(stats::coef(fit.glmnet, s = "lambda.min"))
+  whichVariable <- as.vector(beta_min != 0)
 
-  # Safety net
+  # Safety net: keep at least minscreen
   if (sum(whichVariable) < minscreen) {
-    sumCoef <- apply(as.matrix(fit.glmnet$glmnet.fit$beta), 2, function(x) sum((x != 0)))
-    newCut <- which.max(sumCoef >= minscreen)
-    if (length(newCut) == 0 || is.na(newCut)) {
-      whichVariable <- rep(TRUE, ncol(X)) # Ultimate fallback
+    beta_path <- as.matrix(fit.glmnet$glmnet.fit$beta)  # p x nlambda
+    nnz <- apply(beta_path, 2, function(b) sum(b != 0))
+
+    idx <- which(nnz >= minscreen)
+    if (length(idx) > 0) {
+      use <- idx[1]
+      whichVariable <- as.vector(beta_path[, use] != 0)
     } else {
-      whichVariable <- (as.matrix(fit.glmnet$glmnet.fit$beta)[,newCut] != 0)
+      use <- which.max(nnz)
+      whichVariable <- as.vector(beta_path[, use] != 0)
+      if (sum(whichVariable) == 0) whichVariable <- rep(TRUE, ncol(X_mat))
     }
   }
 
@@ -150,28 +174,42 @@ screen.glmnet <- function(time, event, X, obsWeights = NULL, alpha = 1, minscree
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.rfsrc <- function(time, event, X, obsWeights, minscreen = 2, ntree = 100, ...) {
+screen.rfsrc <- function(time, event, X, obsWeights = NULL,
+                         minscreen = 2, ntree = 100, ...) {
+
   requireNamespace("randomForestSRC", quietly = TRUE)
+  requireNamespace("survival", quietly = TRUE)
 
-  # Fit a fast forest for screening
-  data_rf <- data.frame(time = time, event = event, X)
-  fit_rf <- randomForestSRC::rfsrc(survival::Surv(time, event) ~ .,
-                                   data = data_rf,
-                                   ntree = ntree,
-                                   case.wt = obsWeights,
-                                   importance = TRUE,
-                                   nsplit = 2) # Fast splitting
+  X_df <- as.data.frame(X)
 
-  # Extract Variable Importance (VIMP)
+  if (is.null(obsWeights)) obsWeights <- rep(1, nrow(X_df))
+
+  data_rf <- data.frame(time = time, event = event, X_df)
+
+  fit_rf <- randomForestSRC::rfsrc(
+    survival::Surv(time, event) ~ .,
+    data = data_rf,
+    ntree = ntree,
+    case.wt = obsWeights,
+    importance = TRUE,
+    nsplit = 2,
+    ...
+  )
+
   vimp <- fit_rf$importance
+  if (is.null(vimp)) {
+    # fallback: keep all if VIMP is unavailable
+    return(rep(TRUE, ncol(X_df)))
+  }
 
-  # Keep variables with positive importance
+  # vimp is named by original X columns (not model.matrix columns)
+  vimp <- as.numeric(vimp)
   whichVariable <- vimp > 0
+  whichVariable[is.na(whichVariable)] <- FALSE
 
-  # Safety net
-  if(sum(whichVariable) < minscreen) {
-    whichVariable <- rep(FALSE, ncol(X))
-    whichVariable[order(vimp, decreasing = TRUE)[1:minscreen]] <- TRUE
+  if (sum(whichVariable) < minscreen) {
+    whichVariable <- rep(FALSE, length(vimp))
+    whichVariable[order(vimp, decreasing = TRUE)[seq_len(minscreen)]] <- TRUE
   }
 
   return(whichVariable)
@@ -198,27 +236,24 @@ screen.rfsrc <- function(time, event, X, obsWeights, minscreen = 2, ntree = 100,
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
 #' @export
-screen.var <- function(time, event, X, obsWeights = NULL, keep_fraction = 0.5, minscreen = 2, ...) {
+screen.var <- function(time, event, X, obsWeights = NULL,
+                       keep_fraction = 0.5, minscreen = 2, ...) {
 
-  # Safely calculate variance of each feature, forcing numeric conversion
-  vars <- vapply(X, function(col) var(as.numeric(col), na.rm = TRUE), numeric(1))
+  X_mat <- .make_design_matrix(X)
 
-  # Determine the cutoff threshold based on the fraction we want to keep
+  vars <- apply(X_mat, 2, function(col) stats::var(col, na.rm = TRUE))
+
   cutoff <- stats::quantile(vars, probs = 1 - keep_fraction, na.rm = TRUE)
   whichVariable <- (vars >= cutoff)
-
-  # Safety net
-  if(sum(whichVariable, na.rm = TRUE) < minscreen) {
-    whichVariable <- rep(FALSE, ncol(X))
-    whichVariable[order(vars, decreasing = TRUE)[1:minscreen]] <- TRUE
-  }
-
-  # Replace any NAs created by zero-variance or all-NA columns with FALSE
   whichVariable[is.na(whichVariable)] <- FALSE
+
+  if (sum(whichVariable) < minscreen) {
+    whichVariable <- rep(FALSE, length(vars))
+    whichVariable[order(vars, decreasing = TRUE)[seq_len(minscreen)]] <- TRUE
+  }
 
   return(whichVariable)
 }
-
 
 
 

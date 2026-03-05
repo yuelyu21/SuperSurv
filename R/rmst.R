@@ -6,16 +6,25 @@
 #' @keywords internal
 get_rmst <- function(surv_matrix, times, tau) {
   surv_matrix <- as.matrix(surv_matrix)
+  ord <- order(times)
+  times <- times[ord]
+  surv_matrix <- surv_matrix[, ord, drop = FALSE]
+
+  if (tau <= 0) return(rep(0, nrow(surv_matrix)))
+  if (tau <= min(times)) return(rep(tau, nrow(surv_matrix)))  # assume S(t)=1 before first grid
+
   valid_idx <- which(times <= tau)
   t_valid <- times[valid_idx]
   S_valid <- surv_matrix[, valid_idx, drop = FALSE]
+
   t_calc <- c(0, t_valid, tau)
   dt <- diff(t_calc)
-  dt_matrix <- matrix(dt, ncol = 1)
+
   S_calc <- cbind(1, S_valid, S_valid[, ncol(S_valid), drop = FALSE])
-  S_final <- as.matrix(S_calc[, -ncol(S_calc), drop = FALSE])
-  rmst <- as.vector(S_final %*% dt_matrix)
-  return(rmst)
+  S_left <- as.matrix(S_calc[, -ncol(S_calc), drop = FALSE])
+
+  rmst <- as.vector(S_left %*% matrix(dt, ncol = 1))
+  rmst
 }
 
 
@@ -33,7 +42,7 @@ get_rmst <- function(surv_matrix, times, tau) {
 #'
 #' @return A numeric value representing the estimated causal RMST difference (Treatment - Control).
 #' @export
-estimate_causal_rmst <- function(fit, data, trt_col, times, tau) {
+estimate_marginal_rmst <- function(fit, data, trt_col, times, tau) {
   if(tau > max(times)) stop("tau cannot be greater than the maximum predicted time.")
 
   # Dynamically extract the exact variables the model was trained on
@@ -90,7 +99,7 @@ estimate_causal_rmst <- function(fit, data, trt_col, times, tau) {
 #'
 #' @return A \code{ggplot} object visualizing the causal RMST difference curve.
 #' @export
-plot_causal_rmst_curve <- function(fit, data, trt_col, times, tau_seq) {
+plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq) {
   requireNamespace("ggplot2", quietly = TRUE)
   results <- lapply(tau_seq, function(t) {
     res <- estimate_causal_rmst(fit, data, trt_col, times, tau = t)

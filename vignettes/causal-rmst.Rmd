@@ -75,7 +75,7 @@ We use the `estimate_causal_rmst()` function. This forces the biomarker `x4` to 
 
 ```{r causal-effect, eval=FALSE}
 # Estimate the adjusted difference up to tau = 100 months
-results <- estimate_causal_rmst(
+results <- estimate_marginal_rmst(
   fit = fit, 
   data = metabric, 
   trt_col = "x4", 
@@ -96,7 +96,7 @@ The difference between groups might be near zero early on but substantial later.
 ```{r plot-curve, eval=FALSE}
 # Plot the Delta RMST across a sequence of tau values
 tau_grid <- seq(20, 140, by = 20)
-plot_causal_rmst_curve(
+plot_marginal_rmst_curve(
   fit = fit, 
   data = metabric, 
   trt_col = "x4", 

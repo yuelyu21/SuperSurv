@@ -10,35 +10,33 @@
 #' @keywords internal
 create_grid <- function(base_learner, grid_params) {
 
-  # 1. Create a data.frame of all possible hyperparameter combinations
   param_grid <- expand.grid(grid_params, stringsAsFactors = FALSE)
 
-  # Initialize a vector to store the names of the new functions we are about to make
   generated_learners <- character(nrow(param_grid))
 
   for (i in seq_len(nrow(param_grid))) {
 
-    # 2. Create a clean, unique name for this specific learner (e.g., "surv.gbm_1")
-    learner_name <- paste0(base_learner, "_", i)
-    generated_learners[i] <- learner_name
-
-    # Extract the specific parameters for this exact row as a list
     specific_params <- as.list(param_grid[i, , drop = FALSE])
 
-    # 3. Dynamically construct the new wrapper function
-    # We use local() to lock in the specific parameters for this iteration of the loop
+    # Create descriptive learner name
+    param_string <- paste(
+      paste0(names(specific_params), specific_params),
+      collapse = "_"
+    )
+
+    learner_name <- paste0(base_learner, "_", param_string)
+
+    generated_learners[i] <- learner_name
+
     new_fun <- local({
 
       .base_learner <- base_learner
       .specific_params <- specific_params
 
-      # *** UPDATED: Changed newX to newdata in the function signature ***
       function(time, event, X, newdata, new.times, obsWeights = NULL, id = NULL, ...) {
 
-        # Grab the original base algorithm (e.g., surv.gbm)
         base_fun <- get(.base_learner, mode = "function")
 
-        # *** UPDATED: Changed newX to newdata in the arguments list ***
         args_to_pass <- list(
           time = time,
           event = event,
@@ -49,19 +47,16 @@ create_grid <- function(base_learner, grid_params) {
           id = id
         )
 
-        # Merge the standard args, the grid's tuned hyperparameters, and any ...
         call_args <- c(args_to_pass, .specific_params, list(...))
 
-        # Execute the base learner with these perfectly locked-in settings
         do.call(base_fun, call_args)
       }
+
     })
 
-    # 4. Inject the newly created function into the global R environment
     assign(learner_name, new_fun, envir = parent.frame())
   }
 
-  # Return the vector of names so it can be combined into the SuperSurv library list
   return(generated_learners)
 }
 
@@ -77,8 +72,7 @@ create_grid <- function(base_learner, grid_params) {
 #' @param risk_score Numeric vector of risk scores.
 #' @param new.times Numeric vector of times at which to evaluate the baseline hazard.
 #'
-#' @return A numeric vector representing the baseline survival probabilities
-#'   evaluated at the specified \code{new.times}.
+#' @return A numeric vector of cumulative baseline hazard \hat H_0(t).
 #' @export
 #' @keywords internal
 

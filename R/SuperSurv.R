@@ -39,7 +39,7 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
                       event.library, cens.library,
                       id = NULL, verbose = FALSE,
                       control = list(), cvControl = list(),
-                      obsWeights = NULL, metalearner = "least_squares",
+                      obsWeights = NULL, metalearner = "brier",
                       selection = "ensemble", nFolds = 10,parallel = FALSE )  {
 
   # ----------------------------------------------------------------------------
@@ -53,6 +53,7 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   event <- as.numeric(event)
   if (is.null(obsWeights)) obsWeights <- rep(1, length(time))
   if (is.null(newdata)) newdata <- X
+  metalearner <- match.arg(metalearner, choices = c("brier", "logloss", "entropy"))
 
   varNames <- colnames(X)
   N <- dim(X)[1L]

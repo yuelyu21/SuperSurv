@@ -92,7 +92,7 @@ fit_ls <- SuperSurv(
   new.times = new.times,       # Our evaluation time grid
   event.library = my_library,
   cens.library = my_library,
-  metalearner = "least_squares", 
+  metalearner = "brier", 
   control = list(saveFitLibrary = TRUE), 
   verbose = T,             # Turn to TRUE in practice to see progress!
   selection = "ensemble",
@@ -108,7 +108,7 @@ fit_nll <- SuperSurv(
   new.times = new.times,
   event.library = my_library,
   cens.library = my_library,
-  metalearner = "nloglik",       # Swap to nloglik
+  metalearner = "logloss",       # Swap to nloglik
   control = list(saveFitLibrary = TRUE), 
   verbose = FALSE,
   selection = "ensemble",

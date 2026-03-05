@@ -70,6 +70,10 @@ surv.rfsrc <- function(time, event, X, newdata = NULL, new.times, obsWeights = N
     stats::approx(train_times, y, xout = new.times, method = "constant", rule = 2, ties = mean)$y
   }))
 
+  if (is.null(dim(pred))) {
+    pred <- matrix(pred, nrow = nrow(newdata_df), ncol = length(new.times))
+  }
+
   # 7. Safety: Monotonicity and Clamping
   pred[pred < 0] <- 0
   pred[pred > 1] <- 1
@@ -234,8 +238,15 @@ surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights,
   # 7. Safety Clamp
   pred[pred < 0] <- 0; pred[pred > 1] <- 1
 
-  fit_obj <- list(object = fit, basehaz = bh, times = new.times, stats = list(mean = tr_mean))
+
+  fit_obj <- list(
+    object  = fit,
+    basehaz = bh,
+    times   = new.times,
+    stats   = list(mean = tr_mean, features = colnames(X_mat))
+  )
   class(fit_obj) <- c("surv.xgboost")
+
 
   list(pred = pred, fit = fit_obj)
 }
@@ -265,7 +276,13 @@ predict.surv.xgboost <- function(object, newdata, new.times, ...) {
 
   # 2. Format Matrix and Align Columns
   # Must use the exact features the XGBoost model expects
-  expected_cols <- object$object$feature_names
+  expected_cols <- object$stats$features
+  if (is.null(expected_cols)) {
+    expected_cols <- object$object$feature_names
+  }
+  if (is.null(expected_cols)) stop("Cannot determine expected feature names for xgboost model.")
+
+
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
 
   missing_cols <- setdiff(expected_cols, colnames(newdata_mat))
@@ -369,7 +386,7 @@ surv.svm <- function(time, event, X, newdata, new.times, obsWeights, id,
   )
 
   # 5. Extract Baseline Hazard from Calibrator
-  bh_df <- survival::basehaz(calib_fit, centered = TRUE)
+  bh_df <- survival::basehaz(calib_fit, centered = FALSE)
   bh <- stats::approx(
     bh_df$time, bh_df$hazard, xout = new.times,
     method = "constant", f = 0, rule = 2, ties = mean
@@ -386,6 +403,8 @@ surv.svm <- function(time, event, X, newdata, new.times, obsWeights, id,
     newdata = data.frame(score = lp_new_raw),
     type = "lp"
   )
+
+  lp_new_calibrated <- pmin(lp_new_calibrated, 700)
 
   # 7. Convert to Survival Probabilities
   pred <- outer(lp_new_calibrated, bh, function(lp, h) exp(-exp(lp) * h))
@@ -1206,6 +1225,14 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
   X_mat <- stats::model.matrix(~ . - 1, data = X)
   newdata_mat <- stats::model.matrix(~ . - 1, data = newdata)
 
+  missing_cols <- setdiff(colnames(X_mat), colnames(newdata_mat))
+  if (length(missing_cols) > 0) {
+    pad_mat <- matrix(0, nrow = nrow(newdata_mat), ncol = length(missing_cols))
+    colnames(pad_mat) <- missing_cols
+    newdata_mat <- cbind(newdata_mat, pad_mat)
+  }
+  newdata_mat <- newdata_mat[, colnames(X_mat), drop = FALSE]
+
   if(missing(obsWeights) || is.null(obsWeights)) obsWeights <- rep(1, length(time))
 
   # 2. Fit the Penalized Model
@@ -1243,7 +1270,7 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
   # 5. Safety Clamp
   pred[pred < 0] <- 0; pred[pred > 1] <- 1
 
-  fit_obj <- list(object = fit, basehaz = bh, times = new.times)
+  fit_obj <- list(object=fit, basehaz=bh, times=new.times, stats=list(features=colnames(X_mat)))
   class(fit_obj) <- c("surv.glmnet")
 
   list(pred = pred, fit = fit_obj)
@@ -1279,7 +1306,17 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
 
   # 2. Convert newdata to matrix safely
   # model.matrix removes NAs, so we ensure the dataframe is intact
+
+  expected_cols <- object$stats$features
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
+
+  missing_cols <- setdiff(expected_cols, colnames(newdata_mat))
+  if (length(missing_cols) > 0) {
+    pad_mat <- matrix(0, nrow = nrow(newdata_mat), ncol = length(missing_cols))
+    colnames(pad_mat) <- missing_cols
+    newdata_mat <- cbind(newdata_mat, pad_mat)
+  }
+  newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
   # 3. Predict Linear Predictor
   lp_new <- as.numeric(predict(
@@ -1352,6 +1389,14 @@ surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
   # Force characters to factors
   X[] <- lapply(X, function(x) if(is.character(x)) as.factor(x) else x)
   newdata[] <- lapply(newdata, function(x) if(is.character(x)) as.factor(x) else x)
+
+  # Align factor levels in newdata to match training
+  for (nm in intersect(names(X), names(newdata))) {
+    if (is.factor(X[[nm]])) {
+      newdata[[nm]] <- factor(newdata[[nm]], levels = levels(X[[nm]]))
+    }
+  }
+
 
   # 2. CRITICAL FIX: Safety for Small Folds
   # If a CV fold is tiny, n.minobsinnode=10 will crash GBM.
@@ -1898,19 +1943,18 @@ predict.surv.coxboost <- function(object, newdata, new.times, ...) {
 #'     evaluated at the specified \code{new.times} grid.
 #' }
 #' @export
-surv.bart <- function(time, event, X, newdata, new.times, obsWeights, id,
-                      ntree = 30, ndpost = 200, nskip = 100, ...) {
+surv.bart <- function(time, event, X, newdata = NULL, new.times, obsWeights = NULL, id = NULL,
+                      ntree = 10, ndpost = 30, nskip = 10, ...) {
 
   requireNamespace("BART", quietly = TRUE)
 
-  # ==========================================
-  # THE BULLETPROOF TIME BLOCK
-  # 1. Round first (Optional: speeds up BART heavily)
-  time <- round(time, 1)
+  # 0) Defaults (important for SL internals)
+  if (is.null(newdata)) newdata <- X
 
-  # 2. Clamp SECOND (Ensures no exact zeroes ever exist)
+  # 1) Time safety (avoid exact 0)
   time <- pmax(time, 1e-5)
-  # 2. Prepare Matrices & Align Columns
+
+  # 2) Design matrices + column alignment
   X_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(X))
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
 
@@ -1922,49 +1966,58 @@ surv.bart <- function(time, event, X, newdata, new.times, obsWeights, id,
   }
   newdata_mat <- newdata_mat[, colnames(X_mat), drop = FALSE]
 
-  # 3. Fit & Predict (BART runs newdata during fitting)
-  # mc.cores = 1 is standard to prevent nested parallelization crashes in SuperLearner
+  # 3) Fit + predict (BART predicts x.test during fitting)
   fit <- BART::mc.surv.bart(
-    x.train = X_mat,
-    times   = time,
-    delta   = event,
-    x.test  = newdata_mat,
-    ntree   = ntree,
-    ndpost  = ndpost,
-    nskip   = nskip,
+    x.train  = X_mat,
+    times    = time,
+    delta    = event,
+    x.test   = newdata_mat,
+    ntree    = ntree,
+    ndpost   = ndpost,
+    nskip    = nskip,
     mc.cores = 1,
-    seed    = 99,
+    seed     = 99,
     ...
   )
 
-  # 4. Reshape Flat Output
+  # 4) Extract BART-native time grid
   unique_times <- fit$times
+  unique_times <- sort(unique_times)
+  unique_times <- unique_times[unique_times > 0]
+
   n_new <- nrow(newdata_mat)
   n_t   <- length(unique_times)
 
-  surv_raw <- matrix(
-    fit$surv.test.mean,
-    nrow = n_new,
-    ncol = n_t,
-    byrow = TRUE
-  )
+  # 5) Reshape survival output robustly
+  surv_vec <- fit$surv.test.mean
+  if (length(surv_vec) != n_new * n_t) {
+    stop(
+      "BART returned an unexpected prediction length: ",
+      length(surv_vec), " (expected ", n_new * n_t, ")."
+    )
+  }
 
-  # 5. Vectorized Interpolation to new.times
-  # stepfun ensures survival at t=0 is 1.0
+  surv_raw <- matrix(surv_vec, nrow = n_new, ncol = n_t, byrow = TRUE)
+
+  # 6) Interpolate to requested new.times (step-function style)
+  #    yleft=1 ensures S(t)=1 before first event time.
   pred <- t(apply(surv_raw, 1, function(y) {
-    stats::stepfun(unique_times, c(1, y), right = FALSE)(new.times)
+    stats::approx(
+      x = unique_times, y = y, xout = new.times,
+      method = "constant", f = 0, rule = 2, ties = mean,
+      yleft = 1
+    )$y
   }))
 
-  # 6. Safety Clamps
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
-  if (ncol(pred) > 1) {
-    pred <- t(apply(pred, 1, cummin))
-  }
+  # 7) Safety clamps + monotonicity
+  pred[pred < 0] <- 0
+  pred[pred > 1] <- 1
+  if (ncol(pred) > 1) pred <- t(apply(pred, 1, cummin))
 
   fit_obj <- list(
     object = fit,
-    times = unique_times,
-    stats = list(features = colnames(X_mat))
+    times  = unique_times,
+    stats  = list(features = colnames(X_mat), n_t = n_t)
   )
   class(fit_obj) <- c("surv.bart")
 
@@ -1986,9 +2039,10 @@ surv.bart <- function(time, event, X, newdata, new.times, obsWeights, id,
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
 #' @export
+#' @export
 predict.surv.bart <- function(object, newdata, new.times, ...) {
 
-  # 1. Format Matrix and Align Columns (9 columns for METABRIC)
+  # 1) Align features
   expected_cols <- object$stats$features
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
 
@@ -2000,50 +2054,66 @@ predict.surv.bart <- function(object, newdata, new.times, ...) {
   }
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
-  # 2. Extract unique times from the trained object
-  unique_times <- object$times
-  n_new <- nrow(newdata_mat)
-  n_t   <- length(unique_times)
+  # 2) Predict survival on the BART-native time grid
+  #    (This is the least fragile approach; avoid manual "(t, X)" expansion.)
+  p_obj <- tryCatch(
+    {
+      # Many BART objects support x.test style
+      predict(object$object, x.test = newdata_mat)
+    },
+    error = function(e) NULL
+  )
 
-  # 3. Create Expanded Matrix
-  # Repeat each patient row for every unique time
-  expanded_newdata <- newdata_mat[rep(1:n_new, each = n_t), , drop = FALSE]
-
-  # Add the time column 't' at the very beginning (Making it 10 columns!)
-  t_col <- rep(unique_times, times = n_new)
-  expanded_newdata <- cbind(t = t_col, expanded_newdata)
-
-  # 4. Predict discrete hazards using the main object directly
-  pbart_pred <- predict(object$object, newdata = expanded_newdata)
-
-  # 5. Extract the mean hazard across all posterior draws
-  # Depending on the BART version, it returns prob.test or prob.test.mean
-  if (!is.null(pbart_pred$prob.test)) {
-    hazards <- colMeans(pbart_pred$prob.test)
-  } else {
-    hazards <- pbart_pred$prob.test.mean
+  if (is.null(p_obj)) {
+    stop(
+      "BART survival predictions on new data are not supported for this fitted object. ",
+      "In SuperSurv, the BART wrapper is intended primarily for CV-time predictions ",
+      "(via x.test during model fitting). If you need out-of-sample predictions, ",
+      "consider using other learners or refitting BART with x.test=newdata inside the wrapper."
+    )
   }
 
-  # 6. Reshape and Convert Hazards to Survival S(t)
-  haz_mat <- matrix(hazards, nrow = n_new, ncol = n_t, byrow = TRUE)
+  # 3) Extract time grid + survival
+  # Try common fields (these vary by version)
+  if (!is.null(p_obj$times)) {
+    bart_times <- p_obj$times
+  } else if (!is.null(object$times)) {
+    bart_times <- object$times
+  } else {
+    stop("Cannot find BART prediction time grid.")
+  }
 
-  # S(t) = cumulative product of (1 - discrete hazard)
-  surv_raw <- t(apply(haz_mat, 1, function(h) cumprod(1 - h)))
+  # Survival output candidates
+  surv_raw <- NULL
+  if (!is.null(p_obj$surv.test.mean)) {
+    # common
+    surv_raw <- p_obj$surv.test.mean
+  } else if (!is.null(p_obj$surv.mean)) {
+    surv_raw <- p_obj$surv.mean
+  } else if (!is.null(p_obj$surv)) {
+    surv_raw <- p_obj$surv
+  }
 
-  # 7. Vectorized Interpolation to new.times
+  if (is.null(surv_raw)) stop("Cannot find survival predictions in BART predict output.")
+
+  # Ensure matrix shape: n_new x n_time
+  n_new <- nrow(newdata_mat)
+  n_t   <- length(bart_times)
+  if (is.null(dim(surv_raw))) {
+    surv_raw <- matrix(surv_raw, nrow = n_new, ncol = n_t, byrow = TRUE)
+  }
+
+  # 4) Interpolate to requested new.times (step function, survival monotone)
   pred <- t(apply(surv_raw, 1, function(y) {
-    stats::stepfun(unique_times, c(1, y), right = FALSE)(new.times)
+    stats::stepfun(bart_times, c(1, y), right = FALSE)(new.times)
   }))
 
-  # 8. Safety Clamps
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
-  if (ncol(pred) > 1) {
-    pred <- t(apply(pred, 1, cummin))
-  }
+  pred[pred < 0] <- 0
+  pred[pred > 1] <- 1
+  if (ncol(pred) > 1) pred <- t(apply(pred, 1, cummin))
 
-  return(pred)
+  pred
 }
-
 
 
 
