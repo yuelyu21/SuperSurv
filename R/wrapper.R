@@ -21,12 +21,34 @@
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
 #' }
+#' @examples
+#' if (requireNamespace("randomForestSRC", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.rfsrc(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     ntree = 10,
+#'     nodesize = 3
+#'   )
+#'
+#'   dim(fit$pred)
+#' }
 #' @export
 surv.rfsrc <- function(time, event, X, newdata = NULL, new.times, obsWeights = NULL, id = NULL,
                        ntree = 1000, nodesize = 15, mtry = NULL, ...) {
 
   requireNamespace("randomForestSRC", quietly = TRUE)
   requireNamespace("survival", quietly = TRUE)
+  Surv <- survival::Surv
 
   # 1. Handle Defaults
   if(is.null(obsWeights)) obsWeights <- rep(1, length(time))
@@ -100,6 +122,28 @@ surv.rfsrc <- function(time, event, X, newdata = NULL, new.times, obsWeights = N
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("randomForestSRC", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.rfsrc(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     ntree = 10,
+#'     nodesize = 3
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 # 1. Change the argument here to 'newdata'
 predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
@@ -164,6 +208,30 @@ predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+#' @examples
+#' if (requireNamespace("xgboost", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.xgboost(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     nrounds = 5,
+#'     early_stopping_rounds = 2,
+#'     max_depth = 1
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights, id,
@@ -266,6 +334,31 @@ surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("xgboost", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.xgboost(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     nrounds = 5,
+#'     early_stopping_rounds = 2,
+#'     max_depth = 1
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.xgboost <- function(object, newdata, new.times, ...) {
 
@@ -347,6 +440,26 @@ predict.surv.xgboost <- function(object, newdata, new.times, ...) {
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
 #' }
+#' @examples
+#' if (requireNamespace("survivalsvm", quietly = TRUE) &&
+#'  requireNamespace("quadprog", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:25, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.svm(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times
+#'   )
+#'
+#'   dim(fit$pred)
+#' }
 #' @export
 surv.svm <- function(time, event, X, newdata, new.times, obsWeights, id,
                      gamma.mu = 0.1, type = "vanbelle2",
@@ -362,6 +475,7 @@ surv.svm <- function(time, event, X, newdata, new.times, obsWeights, id,
   df_train <- data.frame(Y = Y, X)
 
   # 2. Fit Survival SVM
+  makediff3 <- utils::getFromNamespace("makediff3", "survivalsvm")
   fit <- survivalsvm::survivalsvm(
     formula = Y ~ .,
     data = df_train,
@@ -436,6 +550,27 @@ surv.svm <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("survivalsvm", quietly = TRUE) &&
+#'   requireNamespace("quadprog", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:25, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.svm(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.svm <- function(object, newdata, new.times, ...) {
 
@@ -495,6 +630,30 @@ predict.surv.svm <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+#' @examples
+#' if (requireNamespace("rpart", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.rpart(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     cp = 0.01,
+#'     minsplit = 5,
+#'     maxdepth = 3
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.rpart <- function(time, event, X, newdata, new.times, obsWeights, id,
@@ -584,6 +743,31 @@ surv.rpart <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("rpart", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.rpart(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     cp = 0.01,
+#'     minsplit = 5,
+#'     maxdepth = 3
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.rpart <- function(object, newdata, new.times, ...) {
 
@@ -642,6 +826,26 @@ predict.surv.rpart <- function(object, newdata, new.times, ...) {
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
 #' }
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.ridge(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     nfolds = 3
+#'   )
+#'
+#'   dim(fit$pred)
+#' }
 #' @export
 surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id = NULL, nfolds = 10, ...) {
 
@@ -676,7 +880,7 @@ surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id
   )
 
   # 3. Predict Risk Scores & Center them
-  lp_train <- as.numeric(predict(fit, newdata = X_mat, s = "lambda.min", type = "link"))
+  lp_train <- as.numeric(predict(fit, newx = X_mat, s = "lambda.min", type = "link"))
   tr_mean <- mean(lp_train)
   lp_train_centered <- lp_train - tr_mean
 
@@ -689,7 +893,7 @@ surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id
   )
 
   # 5. Predict on newdata
-  lp_new <- as.numeric(predict(fit, newdata = newdata_mat, s = "lambda.min", type = "link"))
+  lp_new <- as.numeric(predict(fit, newx = newdata_mat, s = "lambda.min", type = "link"))
   lp_new_centered <- lp_new - tr_mean
   lp_new_centered <- pmin(lp_new_centered, 700)
 
@@ -722,6 +926,27 @@ surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.ridge(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     nfolds = 3
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.ridge <- function(object, newdata, new.times, ...) {
 
@@ -742,7 +967,7 @@ predict.surv.ridge <- function(object, newdata, new.times, ...) {
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
   # 3. Predict Linear Predictor
-  lp_new <- as.numeric(predict(object$object, newdata = newdata_mat, s = "lambda.min", type = "link"))
+  lp_new <- as.numeric(predict(object$object, newx = newdata_mat, s = "lambda.min", type = "link"))
 
   # 4. Center and Clamp
   lp_new_centered <- lp_new - object$stats$mean
@@ -790,6 +1015,29 @@ predict.surv.ridge <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+#' @examples
+#' if (requireNamespace("ranger", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.ranger(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     num.trees = 10,
+#'     min.node.size = 3
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.ranger <- function(time, event, X, newdata, new.times, obsWeights, id,
@@ -844,6 +1092,8 @@ surv.ranger <- function(time, event, X, newdata, new.times, obsWeights, id,
 }
 
 
+
+
 #' Prediction function for Ranger wrapper
 #'
 #' Obtains predicted survivals from a fitted \code{surv.ranger} object.
@@ -855,6 +1105,30 @@ surv.ranger <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("ranger", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.ranger(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     num.trees = 10,
+#'     min.node.size = 3
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.ranger <- function(object, newdata, new.times, ...) {
 
@@ -910,6 +1184,26 @@ predict.surv.ranger <- function(object, newdata, new.times, ...) {
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
 #' }
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.parametric(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL,
+#'   dist = "weibull"
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.parametric <- function(time, event, X, newdata, new.times, obsWeights, id, dist = "weibull", ...) {
   requireNamespace("survival", quietly = TRUE)
@@ -965,7 +1259,9 @@ surv.parametric <- function(time, event, X, newdata, new.times, obsWeights, id, 
   list(pred = pred, fit = fit_obj)
 }
 
-# --- Specific Wrappers Pointing to the Universal One ---
+
+
+
 
 #' Parametric Survival Prediction Wrapper (Exponential)
 #'
@@ -979,12 +1275,33 @@ surv.parametric <- function(time, event, X, newdata, new.times, obsWeights, id, 
 #' @param ... Additional ignored arguments.
 #'
 #' @return A list containing the fitted model and predictions.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.exponential(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.exponential <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
   surv.parametric(time = time, event = event, X = X, newdata = newdata,
                   new.times = new.times, obsWeights = obsWeights, id = id,
                   dist = "exponential", ...)
 }
+
+
 
 #' Parametric Survival Prediction Wrapper (Log-Logistic)
 #'
@@ -998,12 +1315,33 @@ surv.exponential <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @param ... Additional ignored arguments.
 #'
 #' @return A list containing the fitted model and predictions.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.loglogistic(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.loglogistic <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
   surv.parametric(time = time, event = event, X = X, newdata = newdata,
                   new.times = new.times, obsWeights = obsWeights, id = id,
                   dist = "loglogistic", ...)
 }
+
+
 
 #' Parametric Survival Prediction Wrapper (Log-Normal)
 #'
@@ -1017,6 +1355,25 @@ surv.loglogistic <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @param ... Additional ignored arguments.
 #'
 #' @return A list containing the fitted model and predictions.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.lognormal(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.lognormal <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
   surv.parametric(time = time, event = event, X = X, newdata = newdata,
@@ -1036,6 +1393,25 @@ surv.lognormal <- function(time, event, X, newdata, new.times, obsWeights, id, .
 #' @param ... Additional ignored arguments.
 #'
 #' @return A list containing the fitted model and predictions.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.weibull(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.weibull <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
   surv.parametric(time = time, event = event, X = X, newdata = newdata,
@@ -1060,6 +1436,27 @@ surv.weibull <- function(time, event, X, newdata, new.times, obsWeights, id, ...
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.parametric(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL,
+#'   dist = "weibull"
+#' )
+#'
+#' pred <- predict(fit$fit, newdata = newX, new.times = times)
+#' dim(pred)
 #' @export
 predict.surv.parametric <- function(object, newdata, new.times, ...) {
 
@@ -1115,6 +1512,25 @@ predict.surv.parametric <- function(object, newdata, new.times, ...) {
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at \code{new.times}.
 #' }
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.km(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.km <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
 
@@ -1143,6 +1559,7 @@ surv.km <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
 }
 
 
+
 #' Predict Method for Kaplan-Meier Wrapper
 #'
 #' Obtains predicted survivals from a fitted \code{surv.km} object.
@@ -1154,8 +1571,27 @@ surv.km <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
 #'
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation times.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.km(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' pred <- predict(fit$fit, newdata = newX, new.times = times)
+#' dim(pred)
 #' @export
-#' @keywords internal
 predict.surv.km <- function(object, newdata, new.times, ...) {
 
   # Extract the original fitted KM object
@@ -1181,14 +1617,6 @@ predict.surv.km <- function(object, newdata, new.times, ...) {
 
 
 
-
-
-############################################################
-## GLMNET (Lasso/ElasticNet) — wrapper + predict method
-## Pattern: Risk Score + Cox Offset Calibration
-############################################################
-
-
 #' Wrapper function for Penalized Cox Regression (GLMNET)
 #'
 #' Final Production Wrapper for GLMNET (Tunable & Robust).
@@ -1211,6 +1639,30 @@ predict.surv.km <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.glmnet(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     alpha = 1,
+#'     nfolds = 3
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
@@ -1247,8 +1699,21 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
     ...
   )
 
+  beta_min <- as.matrix(stats::coef(fit, s = "lambda.min"))
+  s_use <- "lambda.min"
+
+  if (sum(beta_min != 0) == 0) {
+    beta_path <- as.matrix(fit$glmnet.fit$beta)
+    nnz_path <- colSums(beta_path != 0)
+
+    idx_nonzero <- which(nnz_path > 0)
+    if (length(idx_nonzero) > 0) {
+      s_use <- fit$glmnet.fit$lambda[idx_nonzero[1]]
+    }
+  }
+
   # 3. Calibrate Baseline Hazard (Breslow Estimator)
-  lp_train <- as.numeric(predict(fit, newdata = X_mat, s = "lambda.min", type = "link"))
+  lp_train <- as.numeric(predict(fit, newx = X_mat, s = s_use, type = "link"))
   cox_off <- survival::coxph(
     survival::Surv(time, event) ~ offset(lp_train),
     weights = obsWeights,
@@ -1263,14 +1728,22 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
   bh <- cummax(replace(bh, is.na(bh), 0))
 
   # 4. Predict on newdata
-  lp_new <- as.numeric(predict(fit, newdata = newdata_mat, s = "lambda.min", type = "link"))
+  lp_new <- as.numeric(predict(fit, newx = newdata_mat, s = s_use, type = "link"))
   pred <- outer(lp_new, bh, function(lp, h) exp(-exp(lp) * h))
   pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
 
   # 5. Safety Clamp
   pred[pred < 0] <- 0; pred[pred > 1] <- 1
 
-  fit_obj <- list(object=fit, basehaz=bh, times=new.times, stats=list(features=colnames(X_mat)))
+  fit_obj <- list(
+    object = fit,
+    basehaz = bh,
+    times = new.times,
+    stats = list(
+      features = colnames(X_mat),
+      s_use = s_use
+    )
+  )
   class(fit_obj) <- c("surv.glmnet")
 
   list(pred = pred, fit = fit_obj)
@@ -1290,6 +1763,30 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.glmnet(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     alpha = 1,
+#'     nfolds = 3
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.glmnet <- function(object, newdata, new.times, ...) {
 
@@ -1318,13 +1815,18 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
   }
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
+
   # 3. Predict Linear Predictor
+  s_use <- object$stats$s_use
+  if (is.null(s_use)) s_use <- "lambda.min"
+
   lp_new <- as.numeric(predict(
     object$object,
-    newdata = newdata_mat,
-    s = "lambda.min",
+    newx = newdata_mat,
+    s = s_use,
     type = "link"
   ))
+
 
   # 4. Convert LP to Survival Probability Matrix
   pred <- outer(lp_new, bh, function(lp, h) exp(-exp(lp) * h))
@@ -1341,11 +1843,6 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
 
 
 
-
-
-############################################################
-## GBM (coxph) — wrapper + predict method (robust)
-############################################################
 
 #' Wrapper function for Gradient Boosting (GBM) prediction algorithm
 #'
@@ -1373,6 +1870,32 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+#' @examples
+#' if (requireNamespace("gbm", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.gbm(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     n.trees = 20,
+#'     interaction.depth = 1,
+#'     shrinkage = 0.05,
+#'     cv.folds = 0,
+#'     n.minobsinnode = 3
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
@@ -1465,6 +1988,7 @@ surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
   list(pred = pred, fit = fit_obj)
 }
 
+
 #' Prediction function for GBM wrapper
 #'
 #' Obtains predicted survivals from a fitted \code{surv.gbm} object.
@@ -1477,6 +2001,33 @@ surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("gbm", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.gbm(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     n.trees = 20,
+#'     interaction.depth = 1,
+#'     shrinkage = 0.05,
+#'     cv.folds = 0,
+#'     n.minobsinnode = 3
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.gbm <- function(object, newdata, new.times, ...) {
 
@@ -1531,6 +2082,28 @@ predict.surv.gbm <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+#' @examples
+#' if (requireNamespace("mgcv", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.gam(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     cts.num = 5
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.gam <- function(time, event, X, newdata, new.times, obsWeights, id, cts.num = 5, ...) {
@@ -1606,6 +2179,29 @@ surv.gam <- function(time, event, X, newdata, new.times, obsWeights, id, cts.num
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("mgcv", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.gam(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     cts.num = 5
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.gam <- function(object, newdata, new.times, ...) {
 
@@ -1655,6 +2251,25 @@ predict.surv.gam <- function(object, newdata, new.times, ...) {
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
 #' }
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.coxph(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' dim(fit$pred)
 #' @export
 surv.coxph <- function(time, event, X, newdata, new.times, obsWeights, id, ...) {
   requireNamespace("survival", quietly = TRUE)
@@ -1736,6 +2351,26 @@ surv.coxph <- function(time, event, X, newdata, new.times, obsWeights, id, ...) 
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:30, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:5, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.coxph(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' pred <- predict(fit$fit, newdata = newX, new.times = times)
+#' dim(pred)
 #' @export
 predict.surv.coxph <- function(object, newdata, new.times, ...) {
 
@@ -1789,6 +2424,29 @@ predict.surv.coxph <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+#' @examples
+#' if (requireNamespace("CoxBoost", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.coxboost(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     stepno = 10,
+#'     penalty = 50
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.coxboost <- function(time, event, X, newdata, new.times, obsWeights, id,
@@ -1862,6 +2520,7 @@ surv.coxboost <- function(time, event, X, newdata, new.times, obsWeights, id,
   list(pred = pred, fit = fit_obj)
 }
 
+
 #' Prediction function for CoxBoost wrapper
 #'
 #' Obtains predicted survivals from a fitted \code{surv.coxboost} object.
@@ -1873,6 +2532,30 @@ surv.coxboost <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("CoxBoost", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.coxboost(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     stepno = 10,
+#'     penalty = 50
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.coxboost <- function(object, newdata, new.times, ...) {
 
@@ -1942,9 +2625,39 @@ predict.surv.coxboost <- function(object, newdata, new.times, ...) {
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
 #' }
+#' @examples
+#' if (.Platform$OS.type != "windows" &&
+#'   requireNamespace("BART", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:20, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.bart(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     ntree = 3,
+#'     ndpost = 5,
+#'     nskip = 5
+#'   )
+#'
+#'   dim(fit$pred)
+#' }
 #' @export
 surv.bart <- function(time, event, X, newdata = NULL, new.times, obsWeights = NULL, id = NULL,
                       ntree = 10, ndpost = 30, nskip = 10, ...) {
+
+  if (.Platform$OS.type == "windows") {
+    stop(
+      "surv.bart() is not supported on Windows because ",
+      "BART::mc.surv.bart() requires multicore forking."
+    )
+  }
 
   requireNamespace("BART", quietly = TRUE)
 
@@ -2038,7 +2751,30 @@ surv.bart <- function(time, event, X, newdata = NULL, new.times, obsWeights = NU
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
-#' @export
+#' @examples
+#' if (.Platform$OS.type != "windows" &&
+#'   requireNamespace("BART", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:20, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.bart(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     ntree = 3,
+#'     ndpost = 5,
+#'     nskip = 5
+#'   )
+#'
+#'   pred <- fit$pred
+#'   dim(pred)
+#' }
 #' @export
 predict.surv.bart <- function(object, newdata, new.times, ...) {
 
@@ -2121,9 +2857,6 @@ predict.surv.bart <- function(object, newdata, new.times, ...) {
 
 
 
-############################################################
-## AORSF — survSuperLearner wrapper + predict method
-############################################################
 
 
 #' Wrapper for AORSF (Oblique Random Survival Forest)
@@ -2147,6 +2880,30 @@ predict.surv.bart <- function(object, newdata, new.times, ...) {
 #'     If the model fails to fit, this may be an object of class \code{try-error}.
 #'   \item \code{pred}: A numeric matrix of cross-validated survival predictions
 #'     evaluated at the specified \code{new.times} grid.
+#' }
+
+#' @examples
+#' if (requireNamespace("aorsf", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.aorsf(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     n_tree = 10,
+#'     leaf_min_events = 2
+#'   )
+#'
+#'   dim(fit$pred)
 #' }
 #' @export
 surv.aorsf <- function(time, event, X, newdata, new.times, obsWeights, id,
@@ -2216,8 +2973,31 @@ surv.aorsf <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @return A numeric matrix of predicted survival probabilities, where rows correspond
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
+#' @examples
+#' if (requireNamespace("aorsf", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:30, ]
+#'   x_cols <- grep("^x", names(dat))[1:3]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   newX <- X[1:5, , drop = FALSE]
+#'   times <- seq(50, 150, by = 50)
+#'
+#'   fit <- surv.aorsf(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = newX,
+#'     new.times = times,
+#'     obsWeights = rep(1, nrow(dat)),
+#'     id = NULL,
+#'     n_tree = 10,
+#'     leaf_min_events = 2
+#'   )
+#'
+#'   pred <- predict(fit$fit, newdata = newX, new.times = times)
+#'   dim(pred)
+#' }
 #' @export
-#' @keywords internal
 predict.surv.aorsf <- function(object, newdata, new.times, ...) {
 
   # 1. Predict directly at the requested new.times

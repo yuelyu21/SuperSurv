@@ -8,7 +8,7 @@ screen.elasticnet(
   time,
   event,
   X,
-  obsWeights,
+  obsWeights = NULL,
   alpha = 0.5,
   minscreen = 2,
   nfolds = 10,
@@ -45,4 +45,22 @@ This screening algorithm uses \code{\link[glmnet]{cv.glmnet}} to select covariat
 Unlike LASSO (\code{alpha = 1}), which drops correlated features, Elastic Net
 (\code{alpha = 0.5} by default) shrinks correlated groups of features together,
 making it ideal for selecting entire biological pathways.
+}
+\examples{
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:40, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+
+  screen.elasticnet(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    alpha = 0.5,
+    minscreen = 2,
+    nfolds = 3,
+    nlambda = 20
+  )
+}
 }

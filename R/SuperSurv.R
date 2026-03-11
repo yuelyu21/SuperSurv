@@ -34,6 +34,27 @@
 #'   \item \code{event.fitLibrary}: List of the fitted base learner models (if \code{saveFitLibrary = TRUE}).
 #'   \item \code{times}: The time grid used for evaluation.
 #' }
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   new.times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = new.times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   fit$event.library.predict
+#' }
 #' @export
 SuperSurv <- function(time, event, X, newdata = NULL, new.times,
                       event.library, cens.library,

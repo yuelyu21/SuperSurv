@@ -39,10 +39,36 @@ get_rmst <- function(surv_matrix, times, tau) {
 #' @param trt_col Character string. The exact name of the binary treatment indicator column in \code{data} (e.g., "treatment").
 #' @param times Numeric vector of time points matching the prediction grid.
 #' @param tau Numeric. A single truncation time limit up to which the RMST will be calculated.
-#'
+#' @param verbose Logical; if \code{TRUE}, progress messages are shown.
 #' @return A numeric value representing the estimated causal RMST difference (Treatment - Control).
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:80, ]
+#' x_cols <- grep("^x", names(dat))[1:5]
+#' X <- dat[, x_cols, drop = FALSE]
+#' new.times <- seq(20, 120, by = 20)
+#'
+#' fit <- SuperSurv(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = X,
+#'   new.times = new.times,
+#'   event.library = c("surv.coxph", "surv.glmnet"),
+#'   cens.library = c("surv.coxph"),
+#'   control = list(saveFitLibrary = TRUE)
+#' )
+#'
+#' rmst_res <- estimate_marginal_rmst(
+#'   fit = fit,
+#'   data = dat,
+#'   trt_col = "x4",
+#'   times = new.times,
+#'   tau = 100
+#' )
+#' rmst_res$ATE_RMST
 #' @export
-estimate_marginal_rmst <- function(fit, data, trt_col, times, tau) {
+estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,verbose = FALSE) {
   if(tau > max(times)) stop("tau cannot be greater than the maximum predicted time.")
 
   # Dynamically extract the exact variables the model was trained on
@@ -80,7 +106,7 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau) {
     patient_rmst_control = rmst_0
   )
 
-  message(sprintf("Adjusted Delta RMST at tau=%s: %s time units", tau, round(ATE, 3)))
+  if (isTRUE(verbose)) {  message(sprintf( "Adjusted Delta RMST at tau=%s: %s time units", tau, round(ATE, 3))) }
   return(res)
 }
 
@@ -96,19 +122,44 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau) {
 #' @param trt_col Character string. The exact name of the binary treatment indicator column in \code{data}.
 #' @param times Numeric vector of time points matching the prediction grid.
 #' @param tau_seq Numeric vector. A sequence of truncation times (\code{tau}) to evaluate and plot.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:80, ]
+#' x_cols <- grep("^x", names(dat))[1:5]
+#' X <- dat[, x_cols, drop = FALSE]
+#' new.times <- seq(20, 120, by = 20)
 #'
+#' fit <- SuperSurv(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = X,
+#'   new.times = new.times,
+#'   event.library = c("surv.coxph", "surv.glmnet"),
+#'   cens.library = c("surv.coxph"),
+#'   control = list(saveFitLibrary = TRUE)
+#' )
+#'
+#' tau_grid <- seq(40, 120, by = 20)
+#' plot_marginal_rmst_curve(
+#'   fit = fit,
+#'   data = dat,
+#'   trt_col = "x4",
+#'   times = new.times,
+#'   tau_seq = tau_grid
+#' )
 #' @return A \code{ggplot} object visualizing the causal RMST difference curve.
 #' @export
 plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq) {
   requireNamespace("ggplot2", quietly = TRUE)
   results <- lapply(tau_seq, function(t) {
-    res <- estimate_causal_rmst(fit, data, trt_col, times, tau = t)
+    res <- estimate_marginal_rmst(fit, data, trt_col, times, tau = t)
     data.frame(Tau = t, ATE = res$ATE_RMST)
   })
   res_df <- do.call(rbind, results)
 
   ggplot2::ggplot(res_df, ggplot2::aes(x = Tau, y = ATE)) +
-    ggplot2::geom_line(color = "#e63946", size = 1.2) +
+    ggplot2::geom_line(color = "#e63946", linewidth = 1.2) +
     ggplot2::geom_point(color = "#1d3557", size = 3) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
     ggplot2::theme_minimal() +
@@ -133,6 +184,32 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq) {
 #' @param tau Numeric. A single truncation time limit up to which the RMST is calculated.
 #'
 #' @return A \code{ggplot} object comparing predicted RMST to observed outcomes.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:80, ]
+#' x_cols <- grep("^x", names(dat))[1:5]
+#' X <- dat[, x_cols, drop = FALSE]
+#' new.times <- seq(20, 120, by = 20)
+#'
+#' fit <- SuperSurv(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = X,
+#'   new.times = new.times,
+#'   event.library = c("surv.coxph", "surv.glmnet"),
+#'   cens.library = c("surv.coxph"),
+#'   control = list(saveFitLibrary = TRUE)
+#' )
+#'
+#' plot_rmst_vs_obs(
+#'   fit = fit,
+#'   data = dat,
+#'   time_col = "duration",
+#'   event_col = "event",
+#'   times = new.times,
+#'   tau = 350
+#' )
 #' @export
 plot_rmst_vs_obs <- function(fit, data, time_col, event_col, times, tau) {
   requireNamespace("ggplot2", quietly = TRUE)

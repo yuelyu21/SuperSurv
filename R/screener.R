@@ -1,4 +1,5 @@
 #' @keywords internal
+#' @noRd
 .make_design_matrix <- function(X) {
   X_df <- as.data.frame(X)
 
@@ -23,9 +24,18 @@
 #' @return A logical vector of the same length as the number of columns in \code{X},
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:20, ]
+#' x_cols <- grep("^x", names(dat))[1:5]
+#' X <- dat[, x_cols, drop = FALSE]
+#'
+#' screen.all(X)
 #' @export
 screen.all <- function(X, ...) {
-  rep(TRUE, ncol(X))
+  whichVariable <- rep(TRUE, ncol(X))
+  names(whichVariable) <- colnames(X)
+  return(whichVariable)
 }
 
 
@@ -42,7 +52,19 @@ screen.all <- function(X, ...) {
 #' @return A logical vector of the same length as the number of columns in \code{X},
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
-#' @export
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:40, ]
+#' x_cols <- grep("^x", names(dat))[1:5]
+#' X <- dat[, x_cols, drop = FALSE]
+#'
+#' screen.marg(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   minscreen = 2,
+#'   min.p = 0.2
+#' )
 #' @export
 screen.marg <- function(time, event, X, obsWeights = NULL,
                         minscreen = 2, min.p = 0.1, ...) {
@@ -78,6 +100,7 @@ screen.marg <- function(time, event, X, obsWeights = NULL,
     whichVariable <- rep(FALSE, ncol(X_mat))
     whichVariable[order(pvals)[seq_len(minscreen)]] <- TRUE
   }
+  names(whichVariable) <- colnames(X_mat)
 
   # IMPORTANT: return mask in original X_mat space (design matrix columns)
   # This is OK if downstream uses the same design matrix builder.
@@ -99,6 +122,23 @@ screen.marg <- function(time, event, X, obsWeights = NULL,
 #' @return A logical vector of the same length as the number of columns in \code{X},
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:40, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'
+#'   screen.glmnet(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     alpha = 1,
+#'     minscreen = 2,
+#'     nfolds = 3,
+#'     nlambda = 20
+#'   )
+#' }
 #' @export
 screen.glmnet <- function(time, event, X, obsWeights = NULL,
                           alpha = 1, minscreen = 2,
@@ -150,6 +190,8 @@ screen.glmnet <- function(time, event, X, obsWeights = NULL,
     }
   }
 
+  names(whichVariable) <- colnames(X_mat)
+
   return(whichVariable)
 }
 
@@ -173,12 +215,28 @@ screen.glmnet <- function(time, event, X, obsWeights = NULL,
 #' @return A logical vector of the same length as the number of columns in \code{X},
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
+#' @examples
+#' if (requireNamespace("randomForestSRC", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:40, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'
+#'   screen.rfsrc(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     minscreen = 2,
+#'     ntree = 10
+#'   )
+#' }
 #' @export
 screen.rfsrc <- function(time, event, X, obsWeights = NULL,
                          minscreen = 2, ntree = 100, ...) {
 
   requireNamespace("randomForestSRC", quietly = TRUE)
   requireNamespace("survival", quietly = TRUE)
+  Surv <- survival::Surv
 
   X_df <- as.data.frame(X)
 
@@ -187,7 +245,7 @@ screen.rfsrc <- function(time, event, X, obsWeights = NULL,
   data_rf <- data.frame(time = time, event = event, X_df)
 
   fit_rf <- randomForestSRC::rfsrc(
-    survival::Surv(time, event) ~ .,
+    Surv(time, event) ~ .,
     data = data_rf,
     ntree = ntree,
     case.wt = obsWeights,
@@ -212,6 +270,8 @@ screen.rfsrc <- function(time, event, X, obsWeights = NULL,
     whichVariable[order(vimp, decreasing = TRUE)[seq_len(minscreen)]] <- TRUE
   }
 
+  names(whichVariable) <- colnames(X_df)
+
   return(whichVariable)
 }
 
@@ -235,6 +295,19 @@ screen.rfsrc <- function(time, event, X, obsWeights = NULL,
 #' @return A logical vector of the same length as the number of columns in \code{X},
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:40, ]
+#' x_cols <- grep("^x", names(dat))[1:6]
+#' X <- dat[, x_cols, drop = FALSE]
+#'
+#' screen.var(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   keep_fraction = 0.5,
+#'   minscreen = 2
+#' )
 #' @export
 screen.var <- function(time, event, X, obsWeights = NULL,
                        keep_fraction = 0.5, minscreen = 2, ...) {
@@ -251,6 +324,7 @@ screen.var <- function(time, event, X, obsWeights = NULL,
     whichVariable <- rep(FALSE, length(vars))
     whichVariable[order(vars, decreasing = TRUE)[seq_len(minscreen)]] <- TRUE
   }
+  names(whichVariable) <- colnames(X_mat)
 
   return(whichVariable)
 }
@@ -278,8 +352,25 @@ screen.var <- function(time, event, X, obsWeights = NULL,
 #' @return A logical vector of the same length as the number of columns in \code{X},
 #'   indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 #'   \code{FALSE} to drop).
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:40, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'
+#'   screen.elasticnet(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     alpha = 0.5,
+#'     minscreen = 2,
+#'     nfolds = 3,
+#'     nlambda = 20
+#'   )
+#' }
 #' @export
-screen.elasticnet <- function(time, event, X, obsWeights, alpha = 0.5, minscreen = 2, nfolds = 10, nlambda = 100, ...) {
+screen.elasticnet <- function(time, event, X, obsWeights = NULL, alpha = 0.5, minscreen = 2, nfolds = 10, nlambda = 100, ...) {
 
   # We simply pass the arguments directly to our robust screen.glmnet wrapper,
   # forcing alpha = 0.5 instead of alpha = 1.

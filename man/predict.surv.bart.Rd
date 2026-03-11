@@ -24,3 +24,28 @@ times in \code{new.times}.
 Obtains predicted survivals from a fitted \code{surv.bart} object.
 Manually expands the time grid to bypass the 10-column expectation.
 }
+\examples{
+if (.Platform$OS.type != "windows" &&
+  requireNamespace("BART", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:20, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.bart(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    ntree = 3,
+    ndpost = 5,
+    nskip = 5
+  )
+
+  pred <- fit$pred
+  dim(pred)
+}
+}

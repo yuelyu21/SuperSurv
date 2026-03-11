@@ -29,3 +29,17 @@ indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 \description{
 Marginal Cox Regression Screening
 }
+\examples{
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:40, ]
+x_cols <- grep("^x", names(dat))[1:5]
+X <- dat[, x_cols, drop = FALSE]
+
+screen.marg(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  minscreen = 2,
+  min.p = 0.2
+)
+}

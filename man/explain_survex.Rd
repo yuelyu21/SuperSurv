@@ -25,3 +25,35 @@ An explainer object of class \code{survex_explainer} created by
 Bridges a fitted SuperSurv ensemble or a single base learner to the
 \code{survex} package for Time-Dependent SHAP and Model Parts.
 }
+\examples{
+if (requireNamespace("survex", quietly = TRUE) &&
+    requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:80, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  times <- seq(20, 120, by = 20)
+  y <- survival::Surv(dat$duration, dat$event)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  explainer <- explain_survex(
+    model = fit,
+    data = X,
+    y = y,
+    times = times,
+    label = "SuperSurv_demo"
+  )
+
+  class(explainer)
+}
+}

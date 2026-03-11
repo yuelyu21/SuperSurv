@@ -43,3 +43,21 @@ indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 \description{
 GLMNET (Lasso) Screening
 }
+\examples{
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:40, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+
+  screen.glmnet(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    alpha = 1,
+    minscreen = 2,
+    nfolds = 3,
+    nlambda = 20
+  )
+}
+}

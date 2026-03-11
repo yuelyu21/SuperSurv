@@ -1,7 +1,11 @@
 ^SuperSurv\.Rproj$
 ^\.Rproj\.user$
-^LICENSE\.md$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^\.DS_Store$
+^\.RData$
+^\.Rhistory$
+^\.git$
 ^\.github$
+^LICENSE\.md$

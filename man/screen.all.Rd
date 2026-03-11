@@ -19,3 +19,11 @@ indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 \description{
 Keep All Variables Screener
 }
+\examples{
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:20, ]
+x_cols <- grep("^x", names(dat))[1:5]
+X <- dat[, x_cols, drop = FALSE]
+
+screen.all(X)
+}

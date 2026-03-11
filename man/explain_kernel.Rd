@@ -4,7 +4,14 @@
 \alias{explain_kernel}
 \title{Explain Predictions with Global SHAP (Kernel SHAP)}
 \usage{
-explain_kernel(model, X_explain, X_background, nsim = 20, only_best = FALSE)
+explain_kernel(
+  model,
+  X_explain,
+  X_background,
+  nsim = 20,
+  only_best = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{model}{A fitted SuperSurv object OR a single wrapper output.}
@@ -16,10 +23,42 @@ explain_kernel(model, X_explain, X_background, nsim = 20, only_best = FALSE)
 \item{nsim}{Number of simulations. Defaults to 20.}
 
 \item{only_best}{Logical. If TRUE and model is SuperSurv, only explains the highest-weighted base learner.}
+
+\item{verbose}{Logical; if \code{TRUE}, progress messages are shown.}
 }
 \value{
 A data.frame of class \code{c("explain", "data.frame")} containing the calculated SHAP values. The columns correspond to the covariates in \code{X_explain}.
 }
 \description{
 Explain Predictions with Global SHAP (Kernel SHAP)
+}
+\examples{
+if (requireNamespace("fastshap", quietly = TRUE) &&
+    requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:80, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  new.times <- seq(20, 120, by = 20)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = new.times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  shap_values <- explain_kernel(
+    model = fit,
+    X_explain = X[1:10, , drop = FALSE],
+    X_background = X[11:40, , drop = FALSE],
+    nsim = 5
+  )
+
+  dim(shap_values)
+}
 }

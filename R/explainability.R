@@ -5,9 +5,40 @@
 #' @param X_background The reference dataset for fastshap (e.g., `X_train[1:100, ]`).
 #' @param nsim Number of simulations. Defaults to 20.
 #' @param only_best Logical. If TRUE and model is SuperSurv, only explains the highest-weighted base learner.
+#' @param verbose Logical; if \code{TRUE}, progress messages are shown.
 #' @return A data.frame of class \code{c("explain", "data.frame")} containing the calculated SHAP values. The columns correspond to the covariates in \code{X_explain}.
+#' @examples
+#' if (requireNamespace("fastshap", quietly = TRUE) &&
+#'     requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   new.times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = new.times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   shap_values <- explain_kernel(
+#'     model = fit,
+#'     X_explain = X[1:10, , drop = FALSE],
+#'     X_background = X[11:40, , drop = FALSE],
+#'     nsim = 5
+#'   )
+#'
+#'   dim(shap_values)
+#' }
 #' @export
-explain_kernel <- function(model, X_explain, X_background, nsim = 20, only_best = FALSE) {
+explain_kernel <- function(model, X_explain, X_background, nsim = 20,
+                           only_best = FALSE,verbose = FALSE) {
 
   requireNamespace("fastshap", quietly = TRUE)
 
@@ -32,7 +63,7 @@ explain_kernel <- function(model, X_explain, X_background, nsim = 20, only_best 
       weight <- active_weights[i]
       model_name <- names(model$event.fitLibrary)[idx]
 
-      message(sprintf(" -> SHAP for %s (Weight: %.3f)", model_name, weight))
+      if (isTRUE(verbose)) { message(sprintf(" -> SHAP for %s (Weight: %.3f)", model_name, weight))  }
 
       s <- fastshap::explain(
         object = model_fit,
@@ -55,7 +86,7 @@ explain_kernel <- function(model, X_explain, X_background, nsim = 20, only_best 
   } else if (is.list(model) && !is.null(model$fit)) {
 
     model_to_explain <- model$fit
-    message(" -> Calculating SHAP for single learner of class: ", class(model_to_explain)[1])
+    if (isTRUE(verbose)) {  message(  " -> Calculating SHAP for single learner of class: ",  class(model_to_explain)[1]    ) }
 
     s <- fastshap::explain(
       object = model_to_explain,
@@ -90,6 +121,37 @@ explain_kernel <- function(model, X_explain, X_background, nsim = 20, only_best 
 #' @param label Optional character string to name the explainer.
 #' @return An explainer object of class \code{survex_explainer} created by
 #'   \code{\link[survex]{explain_survival}}, which can be passed to DALEX and survex functions for further model diagnostics and plotting.
+#' @examples
+#' if (requireNamespace("survex", quietly = TRUE) &&
+#'     requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   times <- seq(20, 120, by = 20)
+#'   y <- survival::Surv(dat$duration, dat$event)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   explainer <- explain_survex(
+#'     model = fit,
+#'     data = X,
+#'     y = y,
+#'     times = times,
+#'     label = "SuperSurv_demo"
+#'   )
+#'
+#'   class(explainer)
+#' }
 #' @export
 explain_survex <- function(model, data, y, times, label = NULL) {
 
@@ -103,18 +165,22 @@ explain_survex <- function(model, data, y, times, label = NULL) {
     model_obj <- model
     if (is.null(label)) label <- class(model$fit)[1]
   } else {
-    stop("Input must be a fitted 'SuperSurv' object or a valid single learner wrapper output.")
+    stop("Input must be a fitted 'SuperSurv' object or a valid single learner wrapper output 'surv.*'.")
   }
 
   # 2. Define the Custom Prediction Wrapper
+
   custom_predict <- function(mod, newdata, ...) {
     if (inherits(mod, "SuperSurv")) {
       preds <- predict(object = mod, newdata = newdata, new.times = times)
       return(preds$event.predict)
-    } else {
-      p <- predict(mod$fit, newX = newdata, new.times = times)
-      return(p)
     }
+
+    if (is.list(mod) && !is.null(mod$fit)) {
+      return(predict(mod$fit, newdata = newdata, new.times = times))
+    }
+
+    stop("Unsupported model type supplied to custom_predict().")
   }
 
   # 3. Create the Explainer
@@ -137,9 +203,38 @@ explain_survex <- function(model, data, y, times, label = NULL) {
 
 #' Plot Global Feature Importance for SuperSurv
 #' @param title Plot title.
-#' @param shap_values The output from explain_shap.SuperSurv
+#' @param shap_values The output from \code{explain_kernel()}.
 #' @param top_n Number of features to show (default 10)
 #' @return A \code{ggplot} object visualizing the SHAP values.
+#' @examples
+#' if (requireNamespace("fastshap", quietly = TRUE) &&
+#'     requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   new.times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = new.times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   shap_values <- explain_kernel(
+#'     model = fit,
+#'     X_explain = X[1:10, , drop = FALSE],
+#'     X_background = X[11:40, , drop = FALSE],
+#'     nsim = 5
+#'   )
+#'
+#'   plot_global_importance(shap_values, top_n = 5)
+#' }
 #' @export
 plot_global_importance <- function(shap_values, title = "SuperSurv: Ensemble Feature Importance", top_n = 10) {
 
@@ -177,10 +272,44 @@ plot_global_importance <- function(shap_values, title = "SuperSurv: Ensemble Fea
 
 #' Beeswarm Summary Plot for SuperSurv SHAP
 #'
-#' @param shap_values The output from explain_shap.SuperSurv
+#' @param shap_values The output from \code{explain_kernel()}.
 #' @param data The covariate data used (X_explain)
 #' @param top_n Number of features to display
 #' @return A \code{ggplot} object visualizing the SHAP values.
+#' @examples
+#' if (requireNamespace("fastshap", quietly = TRUE) &&
+#'     requireNamespace("ggforce", quietly = TRUE) &&
+#'     requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   new.times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = new.times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   shap_values <- explain_kernel(
+#'     model = fit,
+#'     X_explain = X[1:20, , drop = FALSE],
+#'     X_background = X[21:50, , drop = FALSE],
+#'     nsim = 5
+#'   )
+#'
+#'   plot_beeswarm(
+#'     shap_values = shap_values,
+#'     data = X[1:20, , drop = FALSE],
+#'     top_n = 5
+#'   )
+#' }
 #' @export
 plot_beeswarm <- function(shap_values, data, top_n = 10) {
 
@@ -256,10 +385,43 @@ plot_beeswarm <- function(shap_values, data, top_n = 10) {
 
 #' Waterfall Plot for an Individual Patient
 #'
-#' @param shap_values The output from explain_shap.*
+#' @param shap_values The output from \code{explain_kernel()}.
 #' @param patient_index The row index of the patient to explain
 #' @param top_n Number of features to show (default 10)
 #' @return A \code{ggplot} object visualizing the SHAP values.
+#' @examples
+#' if (requireNamespace("fastshap", quietly = TRUE) &&
+#'     requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   new.times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = new.times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   shap_values <- explain_kernel(
+#'     model = fit,
+#'     X_explain = X[1:10, , drop = FALSE],
+#'     X_background = X[11:40, , drop = FALSE],
+#'     nsim = 5
+#'   )
+#'
+#'   plot_patient_waterfall(
+#'     shap_values = shap_values,
+#'     patient_index = 1,
+#'     top_n = 5
+#'   )
+#' }
 #' @export
 plot_patient_waterfall <- function(shap_values, patient_index = 1, top_n = 10) {
 
@@ -299,11 +461,44 @@ plot_patient_waterfall <- function(shap_values, patient_index = 1, top_n = 10) {
 
 #' Plot SHAP Dependence for SuperSurv
 #'
-#' @param shap_values The output from explain_shap.SuperSurv
+#' @param shap_values The output from \code{explain_kernel()}.
 #' @param data The original covariate data used for the explanation (X_explain)
 #' @param feature_name String name of the column to plot
 #' @param title Optional custom title.
 #' @return A \code{ggplot} object visualizing the SHAP values.
+#' @examples
+#' if (requireNamespace("fastshap", quietly = TRUE) &&
+#'     requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   new.times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = new.times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   shap_values <- explain_kernel(
+#'     model = fit,
+#'     X_explain = X[1:20, , drop = FALSE],
+#'     X_background = X[21:50, , drop = FALSE],
+#'     nsim = 5
+#'   )
+#'
+#'   plot_dependence(
+#'     shap_values = shap_values,
+#'     data = X[1:20, , drop = FALSE],
+#'     feature_name = colnames(X)[1]
+#'   )
+#' }
 #' @export
 plot_dependence <- function(shap_values, data, feature_name, title = NULL) {
 
@@ -343,6 +538,31 @@ plot_dependence <- function(shap_values, data, feature_name, title = NULL) {
 #' @param newdata Test covariates (e.g., `X_te[1:50, ]`)
 #' @param times The time grid to visualize
 #' @return A \code{ggplot} object visualizing the SHAP values.
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:80, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   plot_survival_heatmap(
+#'     object = fit,
+#'     newdata = X[1:20, , drop = FALSE],
+#'     times = times
+#'   )
+#' }
 #' @export
 plot_survival_heatmap <- function(object, newdata, times) {
 

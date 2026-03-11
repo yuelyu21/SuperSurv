@@ -26,3 +26,30 @@ A \code{ggplot} object comparing predicted RMST to observed outcomes.
 Evaluates the calibration of the causal RMST estimator by plotting the model's
 predicted RMST for each patient against their actual observed follow-up time.
 }
+\examples{
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:80, ]
+x_cols <- grep("^x", names(dat))[1:5]
+X <- dat[, x_cols, drop = FALSE]
+new.times <- seq(20, 120, by = 20)
+
+fit <- SuperSurv(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  newdata = X,
+  new.times = new.times,
+  event.library = c("surv.coxph", "surv.glmnet"),
+  cens.library = c("surv.coxph"),
+  control = list(saveFitLibrary = TRUE)
+)
+
+plot_rmst_vs_obs(
+  fit = fit,
+  data = dat,
+  time_col = "duration",
+  event_col = "event",
+  times = new.times,
+  tau = 350
+)
+}

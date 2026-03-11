@@ -7,7 +7,7 @@
 plot_patient_waterfall(shap_values, patient_index = 1, top_n = 10)
 }
 \arguments{
-\item{shap_values}{The output from explain_shap.*}
+\item{shap_values}{The output from \code{explain_kernel()}.}
 
 \item{patient_index}{The row index of the patient to explain}
 
@@ -18,4 +18,38 @@ A \code{ggplot} object visualizing the SHAP values.
 }
 \description{
 Waterfall Plot for an Individual Patient
+}
+\examples{
+if (requireNamespace("fastshap", quietly = TRUE) &&
+    requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:80, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  new.times <- seq(20, 120, by = 20)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = new.times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  shap_values <- explain_kernel(
+    model = fit,
+    X_explain = X[1:10, , drop = FALSE],
+    X_background = X[11:40, , drop = FALSE],
+    nsim = 5
+  )
+
+  plot_patient_waterfall(
+    shap_values = shap_values,
+    patient_index = 1,
+    top_n = 5
+  )
+}
 }

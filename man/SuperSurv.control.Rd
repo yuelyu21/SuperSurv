@@ -35,3 +35,4 @@ A list of control parameters.
 \description{
 Control parameters for the SuperSurv Ensemble
 }
+\keyword{internal}

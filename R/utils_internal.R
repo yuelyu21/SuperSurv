@@ -87,9 +87,9 @@
 
   if (inherits(testScreen, "try-error")) {
     # Print the ACTUAL error so the developer can see it!
-    message("\n[WARNING] Screening crashed in: ", fun)
-    message("[ERROR LOG] ", testScreen[1])
-    message("--> Defaulting to keeping ALL variables.\n")
+    warning("Screening crashed in: ", fun, call. = FALSE)
+    warning("Error log: ", testScreen[1], call. = FALSE)
+    warning("Defaulting to keeping all variables.", call. = FALSE)
     out <- rep(TRUE, ncol(list$X))
   } else {
     out <- testScreen
@@ -126,32 +126,7 @@
 }
 
 
-# .predFun <- function(index, lib, time, event, dataX, newX, whichScreen, t.grid,
-#                      family, id, obsWeights, verbose, control, libraryNames) {
-#   if (verbose) {
-#     message(paste("full", libraryNames[index]))
-#   }
-#   pred_fn <- get(lib$predAlgorithm[index])
-#   testAlg <- try(do.call(pred_fn, list(time = time, event = event,
-#                                        X = subset(dataX, select = whichScreen[lib$rowScreen[index], ],
-#                                                   drop = FALSE),
-#                                        newX = subset(newX, select = whichScreen[lib$rowScreen[index],
-#                                        ], drop = FALSE), id = id,
-#                                        obsWeights = obsWeights, new.times = t.grid)))
-#   if (inherits(testAlg, "try-error")) {
-#     warning(paste("Error in algorithm", lib$predAlgorithm[index],
-#                   " on full data", "\n  The Algorithm will be removed from the Super Learner (i.e. given weight 0) \n"))
-#     out <- rep.int(NA, times = nrow(newX))
-#     model_out <- NULL
-#   }
-#   else {
-#     out <- testAlg$pred
-#     if(control$saveFitLibrary) model_out <- testAlg$fit
-#     else model_out <- NULL
-#   }
-#
-#   invisible(list(out = out, model_out = model_out))
-# }
+
 
 
 
@@ -283,280 +258,7 @@
 
 
 
-# ==============================================================================
-# INTERNAL HELPER FUNCTIONS FOR SUPERSURV
-# ==============================================================================
 
-#' #' Internal function to perform iterative Super Learner optimization
-#' #' @noRd
-#' .surviterativeSL <- function(event.Z, cens.Z, time, event, X, obsWeights, id, control, verbose,
-#'                              event.errorsInLibrary, cens.errorsInLibrary,
-#'                              metalearner = "brier") {
-#'
-#'   if(verbose) message("Performing iterative SuperLearner optimization...")
-#'   if (!metalearner %in% c("brier","entropy","logloss")) {
-#'     stop("metalearner must be one of: 'brier', 'entropy', 'logloss'")
-#'   }
-#'
-#'   event.k <- dim(event.Z)[3]
-#'   cens.k <- dim(cens.Z)[3]
-#'   N <- length(time)
-#'   event.n.time <- length(control$event.t.grid)
-#'   cens.n.time <- length(control$cens.t.grid)
-#'
-#'   # Epsilon for offsets (Left-continuity)
-#'   epsilon <- max(min(diff(sort(unique(time)))), 1e-5)
-#'
-#'   # Flatten Arrays (Long Format)
-#'   event.Z.long <- matrix(NA, nrow = N * event.n.time, ncol = event.k)
-#'   for(j in seq(dim(event.Z)[3])) event.Z.long[,j] <- c(event.Z[,,j])
-#'
-#'   cens.Z.long <- matrix(NA, nrow = N * cens.n.time, ncol = cens.k)
-#'   for(j in seq(dim(cens.Z)[3])) cens.Z.long[,j] <- c(cens.Z[,,j])
-#'
-#'   # Create "Observed" Predictions (Interpolated)
-#'   event.Z.obs <- matrix(NA, nrow = N, ncol = event.k)
-#'   for(i in seq(N)) {
-#'     for(j in seq(event.k)) {
-#'       event.Z.obs[i,j] <- stats::approx(control$event.t.grid, event.Z[i,,j], xout = time[i], method = 'constant', rule = 2, ties = mean)$y
-#'     }
-#'   }
-#'
-#'   cens.Z.obs <- matrix(NA, nrow = N, ncol = cens.k)
-#'   for(i in seq(N)) {
-#'     for(j in seq(cens.k)) {
-#'       cens.Z.obs[i,j] <- stats::approx(c(-1,control$cens.t.grid), c(1,cens.Z[i,,j]), xout = time[i] - epsilon, method = 'constant', rule = 2, ties = mean)$y
-#'     }
-#'   }
-#'
-#'   # Setup Long Vectors for Optimization
-#'   obsWeights.event.long <- rep(obsWeights, event.n.time)
-#'   obsWeights.cens.long <- rep(obsWeights, cens.n.time)
-#'   time.event.long <- rep(time, event.n.time)
-#'   time.cens.long <- rep(time, cens.n.time)
-#'   event.event.long <- rep(event, event.n.time)
-#'   event.cens.long <- rep(event, cens.n.time)
-#'   event.t.grid.long <- rep(control$event.t.grid, each = N)
-#'   cens.t.grid.long <- rep(control$cens.t.grid, each = N)
-#'
-#'   # Initial Weights
-#'   initWeightAlg <- get(control$initWeightAlg)
-#'
-#'   # Initialize variables
-#'   obs.cens.vals <- NULL
-#'   obs.event.vals <- NULL
-#'   S.coef <- rep(0, event.k)
-#'   G.coef <- rep(0, cens.k)
-#'
-#'   # Initialization Step
-#'   # Initialization Step
-#'   if (control$initWeight == "censoring") {
-#'
-#'     initFit <- initWeightAlg(
-#'       time = time, event = 1 - event, X = X, newdata = X,
-#'       new.times = time - epsilon,
-#'       obsWeights = obsWeights, id = id
-#'     )
-#'     obs.cens.vals <- rep(diag(initFit$pred), length(control$event.t.grid))
-#'
-#'     # IMPORTANT:
-#'     # logloss needs G_t_long (= G(t|X) on the grid), which is NOT available yet here.
-#'     # So we initialize S.coef using brier (Westling) if metalearner == "logloss".
-#'     init_method <- if (metalearner == "logloss") "brier" else metalearner
-#'
-#'     # Calculate Event Coefs
-#'     S.coef[!event.errorsInLibrary] <- .survcomputeCoef(
-#'       time = time.event.long, event = event.event.long,
-#'       t.vals = event.t.grid.long, cens.vals = obs.cens.vals,
-#'       preds = event.Z.long[, !event.errorsInLibrary, drop = FALSE],
-#'       obsWeights = obsWeights.event.long,
-#'       method = init_method
-#'     )
-#'
-#'     obs.event.vals <- rep(c(event.Z.obs %*% S.coef), length(control$cens.t.grid))
-#'
-#'   } else {
-#'
-#'     initFit <- initWeightAlg(
-#'       time = time, event = event, X = X, newdata = X,
-#'       new.times = time,
-#'       obsWeights = obsWeights, id = id
-#'     )
-#'     obs.event.vals <- rep(diag(initFit$pred), length(control$cens.t.grid))
-#'   }
-#'
-#'
-#'   obs.event.vals[obs.event.vals == 0] <- min(obs.event.vals[obs.event.vals > 0])
-#'
-#'   # Iteration Loop
-#'
-#'   G_t_long <- NULL
-#'   iter <- 1
-#'
-#'
-#'   while(TRUE) {
-#'     if(iter > control$max.SL.iter) {
-#'       warning("Did not converge in ", control$max.SL.iter, " iterations")
-#'       break
-#'     }
-#'     if(!is.null(obs.cens.vals)) obs.cens.vals.old <- obs.cens.vals
-#'     if(!is.null(obs.event.vals)) obs.event.vals.old <- obs.event.vals
-#'
-#'     # Update Censoring Weights
-#'     G.coef[!cens.errorsInLibrary] <- .survcomputeCoef(
-#'       time = time.cens.long, event = 1 - event.cens.long,
-#'       t.vals = cens.t.grid.long, cens.vals = obs.event.vals,
-#'       preds = cens.Z.long[,!cens.errorsInLibrary, drop=FALSE],
-#'       obsWeights = obsWeights.cens.long,
-#'       method = metalearner
-#'     )
-#'
-#'     # If using proper IPCW log-loss, we need G(t|X) for each (i,t) row
-#'     if (metalearner == "logloss") {
-#'       G_t_long <- drop(
-#'         cens.Z.long[, !cens.errorsInLibrary, drop = FALSE] %*% G.coef[!cens.errorsInLibrary]
-#'       )
-#'       G_t_long <- pmax(G_t_long, 1e-4)
-#'     }
-#'
-#'
-#'     # obs.cens.vals <- rep(c(cens.Z.obs %*% G.coef), length(control$event.t.grid))
-#'     # obs.cens.vals[obs.cens.vals == 0] <- min(obs.cens.vals[obs.cens.vals > 0])
-#'
-#'     obs.cens.vals <- rep(c(cens.Z.obs %*% G.coef), length(control$event.t.grid))
-#'     obs.cens.vals <- pmax(obs.cens.vals, 1e-4)
-#'     # Update Event Weights
-#'     if (metalearner == "logloss") {
-#'
-#'       if (is.null(G_t_long)) stop("G_t_long missing for logloss. Check censoring learner.")
-#'
-#'
-#'       S.coef[!event.errorsInLibrary] <- .survcomputeCoef(
-#'         time = time.event.long, event = event.event.long,
-#'         t.vals = event.t.grid.long,
-#'         cens.vals = obs.cens.vals,               # G(tildeT|X) replicated across t
-#'         G_t = G_t_long,                          # G(t|X) at each (i,t) row
-#'         preds = event.Z.long[, !event.errorsInLibrary, drop = FALSE],
-#'         obsWeights = obsWeights.event.long,
-#'         method = "logloss"
-#'       )
-#'     } else {
-#'       S.coef[!event.errorsInLibrary] <- .survcomputeCoef(
-#'         time = time.event.long, event = event.event.long,
-#'         t.vals = event.t.grid.long, cens.vals = obs.cens.vals,
-#'         preds = event.Z.long[, !event.errorsInLibrary, drop = FALSE],
-#'         obsWeights = obsWeights.event.long,
-#'         method = metalearner   # "brier" or "entropy"
-#'       )
-#'     }
-#'
-#'     obs.event.vals <- rep(c(event.Z.obs %*% S.coef), length(control$cens.t.grid))
-#'     obs.event.vals <- pmax(obs.event.vals, 1e-4)
-#'     # obs.event.vals[obs.event.vals == 0] <- min(obs.event.vals[obs.event.vals > 0])
-#'
-#'     # Convergence Check
-#'     if(!is.null(obs.cens.vals.old) & !is.null(obs.event.vals.old)) {
-#'       cens.delta <- max(abs(obs.cens.vals - obs.cens.vals.old))
-#'       event.delta <- max(abs(obs.event.vals - obs.event.vals.old))
-#'       if(cens.delta + event.delta < 1e-5) {
-#'         if(verbose) message("Converged in ", iter, " iterations.")
-#'         break
-#'       }
-#'     }
-#'     iter <- iter + 1
-#'   }
-#'
-#'   # ----------------------------------------------------------------------------
-#'   # Calculate Final CV Risks (Dynamic based on Method)
-#'   # ----------------------------------------------------------------------------
-#'   calc_risk <- function(preds, time, event, t.grid,
-#'                         cens_T,   # G(tildeT|X) replicated across t  (long vector)
-#'                         weights,
-#'                         method,
-#'                         G_t = NULL) {  # optional G(t|X) for logloss
-#'
-#'     # Preds is (N*T) x K matrix, risk returned length K
-#'
-#'     if (method == "brier") {
-#'       Y_ipcw <- 1 - (as.numeric(time <= t.grid) * event / cens_T)
-#'       risks <- apply(preds, 2, function(col) {
-#'         mean(weights * (Y_ipcw - col)^2, na.rm = TRUE)
-#'       })
-#'       return(risks)
-#'     }
-#'
-#'     if (method == "entropy") {
-#'       Y_ipcw <- 1 - (as.numeric(time <= t.grid) * event / cens_T)
-#'       Y_clamp <- pmax(pmin(Y_ipcw, 1), 0)
-#'       risks <- apply(preds, 2, function(col) {
-#'         p <- pmax(pmin(col, 1 - 1e-15), 1e-15)
-#'         loss <- -(weights * (Y_clamp * log(p) + (1 - Y_clamp) * log(1 - p)))
-#'         mean(loss, na.rm = TRUE)
-#'       })
-#'       return(risks)
-#'     }
-#'
-#'     if (method == "logloss") {
-#'       if (is.null(G_t)) stop("calc_risk(method='logloss') requires G_t.")
-#'       if (length(G_t) != length(t.grid)) {
-#'         stop("calc_risk(logloss): length(G_t) must equal length(t.grid) (long (i,t) rows).")
-#'       }
-#'
-#'       G_T <- pmax(cens_T, 1e-4)
-#'       G_t <- pmax(G_t, 1e-4)
-#'
-#'       fail <- as.numeric(time <= t.grid) * event
-#'       surv <- as.numeric(time >  t.grid)
-#'
-#'       w_cap <- 100
-#'       w_fail <- pmin(fail / G_T, w_cap)
-#'       w_surv <- pmin(surv / G_t, w_cap)
-#'
-#'       risks <- apply(preds, 2, function(col) {
-#'         S <- pmin(pmax(col, 1e-10), 1 - 1e-10)
-#'         loss <- -weights * (w_fail * log(1 - S) + w_surv * log(S))
-#'         mean(loss, na.rm = TRUE)
-#'       })
-#'       return(risks)
-#'     }
-#'
-#'     stop("Unknown method in calc_risk")
-#'   }
-#'
-#'   # Final G(t|X) on the long grid, needed for logloss risk
-#'   if (metalearner == "logloss") {
-#'     G_t_long_final <- drop(
-#'       cens.Z.long[, !cens.errorsInLibrary, drop = FALSE] %*% G.coef[!cens.errorsInLibrary]
-#'     )
-#'     G_t_long_final <- pmax(G_t_long_final, 1e-4)
-#'   } else {
-#'     G_t_long_final <- NULL
-#'   }
-#'
-#'
-#'   event.cvRisks <- calc_risk(
-#'     preds = event.Z.long,
-#'     time = time.event.long,
-#'     event = event.event.long,
-#'     t.grid = event.t.grid.long,
-#'     cens_T = obs.cens.vals,
-#'     weights = obsWeights.event.long,
-#'     method = metalearner,
-#'     G_t = G_t_long_final
-#'   )
-#'
-#'   cens.cvRisks <- calc_risk(
-#'     preds = cens.Z.long,
-#'     time = time.cens.long,
-#'     event = event.cens.long,
-#'     t.grid = cens.t.grid.long,
-#'     cens_T = obs.event.vals,
-#'     weights = obsWeights.cens.long,
-#'     method = "brier"
-#'   )
-#'
-#'   return(list(event.coef = S.coef, cens.coef = G.coef, event.cvRisks = event.cvRisks, cens.cvRisks = cens.cvRisks))
-#' }
 
 
 
@@ -780,11 +482,13 @@
       labS <- if (!is.null(names(S.coef))) names(S.coef)[ordS] else as.character(ordS)
       labG <- if (!is.null(names(G.coef))) names(G.coef)[ordG] else as.character(ordG)
 
-      cat(sprintf("[iter=%d] top S: %s | top G: %s\n",
+      if (isTRUE(verbose)) {
+        message(sprintf("[iter=%d] top S: %s | top G: %s",
                   iter,
                   paste(paste0(labS, "=", round(S.coef[ordS], 3)), collapse = ", "),
                   paste(paste0(labG, "=", round(G.coef[ordG], 3)), collapse = ", ")))
-      flush.console()
+      }
+      utils::flush.console()
     }
 
     # ---- Convergence ----
@@ -797,8 +501,10 @@
       event.delta <- max(abs(obs.event.vals - obs.event.vals.old))
     }
 
-    cat(sprintf("[iter=%d] cens.delta=%.3e  event.delta=%.3e  sum=%.3e\n",
+    if (isTRUE(verbose)) {
+      message(sprintf("[iter=%d] cens.delta=%.3e  event.delta=%.3e  sum=%.3e",
                 iter, cens.delta, event.delta, cens.delta + event.delta))
+      }
 
     tol <- if (!is.null(control$tol)) control$tol else 1e-5
     if (cens.delta + event.delta < tol) {

@@ -40,3 +40,17 @@ An unsupervised screening algorithm that filters out low-variance features.
 This is particularly useful for high-dimensional genomic or transcriptomic data
 where many features remain relatively constant across all observations.
 }
+\examples{
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:40, ]
+x_cols <- grep("^x", names(dat))[1:6]
+X <- dat[, x_cols, drop = FALSE]
+
+screen.var(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  keep_fraction = 0.5,
+  minscreen = 2
+)
+}
