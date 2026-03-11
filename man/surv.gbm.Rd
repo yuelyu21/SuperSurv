@@ -62,3 +62,30 @@ Estimates a Cox proportional hazards model via gradient boosting.
 Uses the Breslow estimator with a step-function approach for the baseline hazard.
 Includes internal safeguards against C++ crashes and small cross-validation folds.
 }
+\examples{
+if (requireNamespace("gbm", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:30, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.gbm(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    obsWeights = rep(1, nrow(dat)),
+    id = NULL,
+    n.trees = 20,
+    interaction.depth = 1,
+    shrinkage = 0.05,
+    cv.folds = 0,
+    n.minobsinnode = 3
+  )
+
+  dim(fit$pred)
+}
+}

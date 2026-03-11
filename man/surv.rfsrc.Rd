@@ -54,3 +54,25 @@ evaluated at the specified \code{new.times} grid.
 Final Production Wrapper for RFSRC (Tunable & Robust).
 Estimates a survival random forest using \code{\link[randomForestSRC]{rfsrc}}.
 }
+\examples{
+if (requireNamespace("randomForestSRC", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:30, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.rfsrc(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    ntree = 10,
+    nodesize = 3
+  )
+
+  dim(fit$pred)
+}
+}

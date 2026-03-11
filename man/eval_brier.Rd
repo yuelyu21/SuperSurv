@@ -33,3 +33,28 @@ Calculates the Inverse Probability of Censoring Weighted (IPCW) Brier Score
 over a grid of times, and computes the Integrated Brier Score (IBS) using
 trapezoidal integration.
 }
+\examples{
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:40, ]
+x_cols <- grep("^x", names(dat))[1:3]
+X <- dat[, x_cols, drop = FALSE]
+newX <- X[1:10, , drop = FALSE]
+times <- seq(50, 150, by = 50)
+
+fit <- surv.coxph(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  newdata = newX,
+  new.times = times,
+  obsWeights = rep(1, nrow(dat)),
+  id = NULL
+)
+
+eval_brier(
+  time = dat$duration[1:10],
+  event = dat$event[1:10],
+  S_mat = fit$pred,
+  times = times
+)
+}

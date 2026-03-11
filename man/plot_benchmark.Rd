@@ -10,20 +10,12 @@ plot_benchmark(
   time,
   event,
   eval_times,
-  metrics = c("brier", "auc", "cindex")
-)
-
-plot_benchmark(
-  object,
-  newdata,
-  time,
-  event,
-  eval_times,
-  metrics = c("brier", "auc", "cindex")
+  metrics = c("brier", "auc", "cindex"),
+  verbose = FALSE
 )
 }
 \arguments{
-\item{object}{A fitted SuperSurv object OR a fitted standalone base learner wrapper (e.g., surv.rfsrc).}
+\item{object}{A fitted SuperSurv object OR a fitted standalone learner.}
 
 \item{newdata}{A data.frame of test covariates.}
 
@@ -35,16 +27,42 @@ plot_benchmark(
 
 \item{metrics}{Character vector specifying which plots to return.
 Options: "brier", "auc", "cindex". Defaults to all three.}
+
+\item{verbose}{Logical; if TRUE, progress messages are shown. Defaults to FALSE.}
 }
 \value{
-A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
-
 A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
 }
 \description{
 Generates time-dependent performance curves comparing the SuperSurv ensemble
-against its base learners.
-
-Generates time-dependent performance curves comparing the SuperSurv ensemble
 against its base learners, or evaluates a single standalone learner.
+}
+\examples{
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:120, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  eval_times <- seq(20, 120, by = 20)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = eval_times,
+    event.library = c("surv.coxph", "surv.ranger"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  plot_benchmark(
+    object = fit,
+    newdata = X,
+    time = dat$duration,
+    event = dat$event,
+    eval_times = eval_times,
+    metrics = c("brier", "cindex","auc")
+  )
+}
 }

@@ -4,7 +4,15 @@
 \alias{screen.rfsrc}
 \title{Random Survival Forest Screening Algorithm}
 \usage{
-screen.rfsrc(time, event, X, obsWeights, minscreen = 2, ntree = 100, ...)
+screen.rfsrc(
+  time,
+  event,
+  X,
+  obsWeights = NULL,
+  minscreen = 2,
+  ntree = 100,
+  ...
+)
 }
 \arguments{
 \item{time}{Numeric vector of observed follow-up times.}
@@ -30,4 +38,20 @@ indicating which variables passed the screening algorithm (\code{TRUE} to keep,
 This screening algorithm uses the \code{randomForestSRC} package to select covariates
 based on their Variable Importance (VIMP). It grows a fast forest and retains features
 with a VIMP greater than zero.
+}
+\examples{
+if (requireNamespace("randomForestSRC", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:40, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+
+  screen.rfsrc(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    minscreen = 2,
+    ntree = 10
+  )
+}
 }

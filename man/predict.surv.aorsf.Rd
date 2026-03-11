@@ -24,4 +24,28 @@ times in \code{new.times}.
 Obtains predicted survivals from a fitted \code{surv.aorsf} object.
 Uses the native \code{aorsf} prediction engine to calculate survival directly at requested times.
 }
-\keyword{internal}
+\examples{
+if (requireNamespace("aorsf", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:30, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.aorsf(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    obsWeights = rep(1, nrow(dat)),
+    id = NULL,
+    n_tree = 10,
+    leaf_min_events = 2
+  )
+
+  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  dim(pred)
+}
+}

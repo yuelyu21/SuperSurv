@@ -1,18 +1,31 @@
 Package: SuperSurv
 Type: Package
-Title: Unified Machine Learning Ensembles and Interpretability for Survival Data
-Version: 0.1.0
+Title: Unified Machine Learning Ensembles for Survival Data
+Version: 0.1.1
 Authors@R: 
     person("Yue", "Lyu", email = "yuelyu0521@gmail.com", role = c("aut", "cre"))
-Description: Implements a Double Super Learner framework for right-censored survival data. The package fits convex combinations of parametric, semiparametric, and machine-learning base learners by minimizing cross-validated risk with inverse probability of censoring weighting (IPCW). Includes high-dimensional variable screening methods, automated hyperparameter grid search, and prediction performance evaluation (e.g., Brier score, Uno’s C-index, time-dependent AUC). Provides global and local interpretability tools for survival ensembles, including SHAP-based explanations.
+Description: Description: Implements a Super Learner framework for right-censored
+    survival data. The package fits convex combinations of parametric,
+    semiparametric, and machine learning survival learners by minimizing
+    cross-validated risk using inverse probability of censoring weighting
+    (IPCW). It provides tools for automated hyperparameter grid search,
+    high-dimensional variable screening, and evaluation of prediction
+    performance using metrics such as the Brier score, Uno's C-index, and
+    time-dependent area under the curve (AUC). Additional utilities support
+    model interpretation for survival ensembles, including Shapley additive
+    explanations (SHAP), and estimation of covariate-adjusted restricted mean
+    survival time (RMST) contrasts. The methodology is related to treatment-
+    specific survival curve estimation using machine learning described by
+    Westling, Luedtke, Gilbert and Carone (2024) 
+    <doi:10.1080/01621459.2023.2205060>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.0
-Depends: 
+Depends:
     R (>= 4.0.0)
 LazyData: true
-Imports: 
+Imports:
     survival,
     nnls,
     future.apply,
@@ -21,7 +34,7 @@ Imports:
     magrittr
 URL: https://github.com/yuelyu21/SuperSurv, https://yuelyu21.github.io/SuperSurv/
 BugReports: https://github.com/yuelyu21/SuperSurv/issues
-Suggests: 
+Suggests:
     aorsf,
     BART,
     CoxBoost,
@@ -37,7 +50,6 @@ Suggests:
     survex,
     ggplot2,
     tidyr,
-    timeROC,
     ggforce,
     patchwork,
     knitr,

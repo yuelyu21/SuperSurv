@@ -17,7 +17,7 @@ SuperSurv(
   control = list(),
   cvControl = list(),
   obsWeights = NULL,
-  metalearner = "least_squares",
+  metalearner = "brier",
   selection = "ensemble",
   nFolds = 10,
   parallel = FALSE
@@ -76,4 +76,26 @@ A list of class \code{SuperSurv} containing:
 \description{
 Orchestrates the cross-validation, metalearner optimization, and prediction
 for an ensemble of survival base learners.
+}
+\examples{
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:80, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  new.times <- seq(20, 120, by = 20)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = new.times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  fit$event.library.predict
+}
 }

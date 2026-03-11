@@ -18,6 +18,30 @@
 #'   \item \code{ibs}: The Integrated Brier Score over the range `\code{tmin}, \code{tmax}`.
 #'   \item \code{times}: The time grid used.
 #' }
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:40, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:10, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.coxph(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' eval_brier(
+#'   time = dat$duration[1:10],
+#'   event = dat$event[1:10],
+#'   S_mat = fit$pred,
+#'   times = times
+#' )
 #' @export
 eval_brier <- function(time, event, S_mat, times, tmin = min(times), tmax = max(times)) {
 
@@ -96,6 +120,32 @@ eval_brier <- function(time, event, S_mat, times, tmin = min(times), tmax = max(
 #' @param method Character. Either "harrell" or "uno". Defaults to "uno".
 #'
 #' @return A numeric value representing the chosen C-index.
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:40, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#' X <- dat[, x_cols, drop = FALSE]
+#' newX <- X[1:10, , drop = FALSE]
+#' times <- seq(50, 150, by = 50)
+#'
+#' fit <- surv.coxph(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = X,
+#'   newdata = newX,
+#'   new.times = times,
+#'   obsWeights = rep(1, nrow(dat)),
+#'   id = NULL
+#' )
+#'
+#' eval_cindex(
+#'   time = dat$duration[1:10],
+#'   event = dat$event[1:10],
+#'   S_mat = fit$pred,
+#'   times = times,
+#'   eval_time = 100,
+#'   method = "uno"
+#' )
 #' @export
 eval_cindex <- function(time, event, S_mat, times, eval_time, method = "uno") {
 
@@ -123,49 +173,128 @@ eval_cindex <- function(time, event, S_mat, times, eval_time, method = "uno") {
 
 
 
+
 #' Time-Dependent AUC and Integrated AUC
 #'
-#' Evaluates the cumulative/dynamic Time-Dependent AUC and Integrated AUC (iAUC)
-#' using the \code{timeROC} package with IPCW adjustment.
+#' Evaluates the cumulative/dynamic time-dependent AUC and integrated AUC (iAUC)
+#' using inverse probability of censoring weighting (IPCW).
 #'
 #' @param time Numeric vector of observed follow-up times.
 #' @param event Numeric vector of event indicators (1 = event, 0 = censored).
 #' @param S_mat A numeric matrix of predicted survival probabilities.
 #' @param times Numeric vector of evaluation times matching the columns of \code{S_mat}.
 #'
-#' @return A list containing the \code{AUC} at each time point and the \code{iAUC}.
+#' @return A list containing the \code{AUC_curve} at each time point, the
+#'   \code{times}, and the integrated AUC \code{iAUC}.
+#' @examples
+#'  data("metabric", package = "SuperSurv")
+#'  dat <- metabric[1:40, ]
+#'  x_cols <- grep("^x", names(dat))[1:3]
+#'  X <- dat[, x_cols, drop = FALSE]
+#'  newX <- X[1:10, , drop = FALSE]
+#'  times <- seq(50, 150, by = 50)
+#'
+#'  fit <- surv.coxph(
+#'    time = dat$duration,
+#'    event = dat$event,
+#'    X = X,
+#'    newdata = newX,
+#'    new.times = times,
+#'    obsWeights = rep(1, nrow(dat)),
+#'    id = NULL
+#'  )
+#'
+#'  eval_timeROC(
+#'    time = dat$duration[1:10],
+#'    event = dat$event[1:10],
+#'    S_mat = fit$pred,
+#'    times = times
+#'  )
 #' @export
 eval_timeROC <- function(time, event, S_mat, times) {
 
-  requireNamespace("timeROC", quietly = TRUE)
+  time <- as.numeric(time)
+  event <- as.numeric(event)
+  S_mat <- as.matrix(S_mat)
+  times <- as.numeric(times)
 
-  # For cumulative/dynamic AUC, the risk score is evaluated at baseline
-  # or tracking over time. We can use the mean predicted risk across the time grid,
-  # or the risk at the maximum time. A standard approach for matrix outputs
-  # is using the risk score at the final prediction time.
+  n <- length(time)
+  if (nrow(S_mat) != n) {
+    stop("Number of rows in S_mat must equal length(time).")
+  }
+  if (ncol(S_mat) != length(times)) {
+    stop("Number of columns in S_mat must equal length(times).")
+  }
 
-  risk_score <- 1 - S_mat[, ncol(S_mat)]
+  # Clamp probabilities
+  eps_prob <- 1e-6
+  S_mat[S_mat < eps_prob] <- eps_prob
+  S_mat[S_mat > 1 - eps_prob] <- 1 - eps_prob
 
-  # Calculate Time-Dependent ROC using IPCW (marginal Kaplan-Meier for censoring)
-  roc_fit <- timeROC::timeROC(
-    T = time,
-    delta = event,
-    marker = risk_score,
-    cause = 1,
-    weighting = "marginal",
-    times = times,
-    iid = FALSE # Set to TRUE if you want confidence intervals later
-  )
+  # Estimate censoring survival G(t) using KM for censoring
+  cens <- 1 - event
+  fit_G <- survival::survfit(survival::Surv(time, cens) ~ 1)
+  t_fit <- fit_G$time
+  s_fit <- fit_G$surv
+  eps_G <- 1e-6
 
-  # Integrated AUC (using the timeROC built-in summary)
-  # timeROC doesn't explicitly return iAUC in the object, but we can compute it
-  # via the trapezoidal rule over the returned AUCs just like IBS!
+  Gfun <- function(t) {
+    idx <- findInterval(t, t_fit, rightmost.closed = TRUE)
+    out <- ifelse(idx == 0, 1, s_fit[idx])
+    pmax(out, eps_G)
+  }
 
-  auc_vals <- roc_fit$AUC
+  auc_vals <- rep(NA_real_, length(times))
+
+  for (j in seq_along(times)) {
+    t0 <- times[j]
+
+    # Use risk at the same evaluation time
+    risk_score <- 1 - S_mat[, j]
+
+    # Cumulative/dynamic definition
+    is_case <- (time <= t0 & event == 1)
+    is_ctrl <- (time > t0)
+
+    if (sum(is_case) == 0 || sum(is_ctrl) == 0) {
+      auc_vals[j] <- NA_real_
+      next
+    }
+
+    # IPCW weights
+    w_case <- rep(0, n)
+    w_ctrl <- rep(0, n)
+
+    w_case[is_case] <- 1 / Gfun(time[is_case])
+    w_ctrl[is_ctrl] <- 1 / Gfun(t0)
+
+    case_idx <- which(is_case)
+    ctrl_idx <- which(is_ctrl)
+
+    # Weighted pairwise AUC:
+    # P(score_case > score_ctrl) + 0.5 P(tie)
+    num <- 0
+    den <- 0
+
+    for (ii in case_idx) {
+      for (jj in ctrl_idx) {
+        wij <- w_case[ii] * w_ctrl[jj]
+        den <- den + wij
+
+        if (risk_score[ii] > risk_score[jj]) {
+          num <- num + wij
+        } else if (risk_score[ii] == risk_score[jj]) {
+          num <- num + 0.5 * wij
+        }
+      }
+    }
+
+    auc_vals[j] <- if (den > 0) num / den else NA_real_
+  }
+
   valid_idx <- which(!is.na(auc_vals))
-
   if (length(valid_idx) < 2) {
-    iauc <- NA
+    iauc <- NA_real_
   } else {
     t_sub <- times[valid_idx]
     a_sub <- auc_vals[valid_idx]
@@ -174,40 +303,77 @@ eval_timeROC <- function(time, event, S_mat, times) {
     iauc <- sum(diffs * heights) / (max(t_sub) - min(t_sub))
   }
 
-  return(list(
-    AUC_curve = roc_fit$AUC,
-    times = roc_fit$times,
+  list(
+    AUC_curve = auc_vals,
+    times = times,
     iAUC = iauc
-  ))
+  )
 }
 
 
 
 
-#' Evaluate SuperSurv Predictions on Test Data
+
+#' Evaluate SuperSurv predictions on test data
 #'
-#' Computes the Integrated Brier Score (IBS), Uno's C-index, and Integrated AUC (iAUC)
-#' for the SuperSurv ensemble and all individual base learners.
+#' Computes the integrated Brier score (IBS), Uno C-index, and integrated area
+#' under the curve (iAUC) for the SuperSurv ensemble and all individual base
+#' learners.
 #'
 #' @param object A fitted \code{SuperSurv} object.
 #' @param newdata A data.frame of test covariates.
 #' @param time Numeric vector of observed follow-up times for the test set.
 #' @param event Numeric vector of event indicators for the test set.
-#' @param eval_times Numeric vector of times at which to evaluate survival predictions.
-#' @param risk_time Numeric. The specific time horizon to use when extracting risk
-#'   scores for Uno's C-index. Defaults to the median of \code{eval_times}.
+#' @param eval_times Numeric vector of times at which to evaluate survival
+#'   predictions.
+#' @param risk_time Numeric. The specific time horizon used when extracting risk
+#'   scores for Uno C-index. Defaults to the median of \code{eval_times}.
+#' @param verbose Logical; if \code{TRUE}, progress messages are shown.
 #'
-#' @return A data.frame containing the benchmark metrics for all models.
+#' @return An object of class \code{"SuperSurv_eval"} containing benchmark
+#'   metrics for the ensemble and base learners.
+#'
+#' @examples
+#' data("metabric", package = "SuperSurv")
+#' dat <- metabric[1:80, ]
+#' x_cols <- grep("^x", names(dat))[1:3]
+#'
+#' fit <- SuperSurv(
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   X = dat[, x_cols, drop = FALSE],
+#'   new.times = seq(50, 200, by = 50),
+#'   event.library = c("surv.coxph", "surv.km"),
+#'   cens.library = c("surv.coxph", "surv.km")
+#' )
+#'
+#' res <- eval_summary(
+#'   object = fit,
+#'   newdata = dat[, x_cols, drop = FALSE],
+#'   time = dat$duration,
+#'   event = dat$event,
+#'   eval_times = seq(50, 200, by = 50)
+#' )
+#'
+#' res
+#'
 #' @export
-eval_summary <- function(object, newdata, time, event, eval_times, risk_time = median(eval_times)) {
+eval_summary <- function(object, newdata, time, event, eval_times,
+                         risk_time = stats::median(eval_times),
+                         verbose = FALSE) {
 
-  # 1. Generate Predictions for the Ensemble and Base Learners
-  cat("\nGenerating predictions on test data...\n")
+  if (isTRUE(verbose)) {
+    message("Generating predictions on test data...")
+  }
   preds <- predict(object, newdata = newdata, new.times = eval_times)
 
-  # 2. Setup Storage
   k_models <- dim(preds$event.library.predict)[3]
   model_names <- dimnames(preds$event.library.predict)[[3]]
+
+  if (is.null(model_names)) {
+    model_names <- paste0("Base_Learner_", seq_len(k_models))
+  }
+
   all_names <- c("SuperSurv_Ensemble", model_names)
 
   results <- data.frame(
@@ -218,43 +384,55 @@ eval_summary <- function(object, newdata, time, event, eval_times, risk_time = m
     stringsAsFactors = FALSE
   )
 
-  # 3. Internal Helper to compute all metrics for a single matrix
   process_matrix <- function(S_mat) {
-    # IBS
     ibs_res <- eval_brier(time, event, S_mat, eval_times)$ibs
 
-    # Uno's C-index
-    c_res <- eval_cindex(time, event, S_mat, eval_times, eval_time = risk_time, method = "uno")
+    c_res <- eval_cindex(
+      time,
+      event,
+      S_mat,
+      eval_times,
+      eval_time = risk_time,
+      method = "uno"
+    )
 
-    # iAUC (Suppressing timeROC text output for a clean console)
-    iauc_res <- suppressMessages(eval_timeROC(time, event, S_mat, eval_times)$iAUC)
+    iauc_res <- suppressMessages(
+      eval_timeROC(time, event, S_mat, eval_times)$iAUC
+    )
 
-    return(c(ibs_res, c_res, iauc_res))
+    c(ibs_res, c_res, iauc_res)
   }
 
-  # 4. Evaluate Ensemble
-  cat("Evaluating SuperSurv Ensemble...\n")
+  if (isTRUE(verbose)) {
+    message("Evaluating SuperSurv ensemble...")
+  }
   results[1, 2:4] <- process_matrix(preds$event.predict)
 
-  # 5. Evaluate Base Learners
   for (i in seq_len(k_models)) {
-    cat(sprintf("Evaluating Base Learner %d/%d: %s...\n", i, k_models, model_names[i]))
-    results[i+1, 2:4] <- process_matrix(preds$event.library.predict[,,i])
+    if (isTRUE(verbose)) {
+      message(sprintf(
+        "Evaluating base learner %d/%d: %s",
+        i, k_models, model_names[i]
+      ))
+    }
+    results[i + 1, 2:4] <- process_matrix(preds$event.library.predict[, , i])
   }
 
-  # 6. Format and Print the Benchmark Table
   results$IBS <- round(results$IBS, 4)
   results$Uno_C <- round(results$Uno_C, 4)
   results$iAUC <- round(results$iAUC, 4)
 
-  cat("\n========================================================\n")
-  cat("             SuperSurv Evaluation Benchmark             \n")
-  cat("========================================================\n")
-  print(results, row.names = FALSE)
-  cat("========================================================\n")
-  cat(sprintf("* IBS & iAUC integrated over: [%.2f, %.2f]\n", min(eval_times), max(eval_times)))
-  cat(sprintf("* Uno's C-index evaluated using risk at time: %.2f\n", risk_time))
-  cat("Note: Lower IBS is better. Higher Uno_C and iAUC are better.\n")
+  attr(results, "eval_times") <- eval_times
+  attr(results, "risk_time") <- risk_time
+  class(results) <- c("SuperSurv_eval", class(results))
 
-  invisible(results)
+  results
 }
+
+
+
+
+
+
+
+

@@ -5,8 +5,6 @@
 \title{Plot Survival Calibration Curve}
 \usage{
 plot_calibration(object, newdata, time, event, eval_time, bins = 5)
-
-plot_calibration(object, newdata, time, event, eval_time, bins = 5)
 }
 \arguments{
 \item{object}{A fitted SuperSurv object OR a standalone base learner.}
@@ -19,17 +17,40 @@ plot_calibration(object, newdata, time, event, eval_time, bins = 5)
 
 \item{eval_time}{Numeric. A single time point at which to assess calibration.}
 
-\item{bins}{Integer. The number of quantiles to group predictions into. Defaults to 5.}
+\item{bins}{Integer. Defaults to 5.}
 }
 \value{
-A ggplot object showing the calibration curve.
-
-A ggplot object showing the calibration curve.
+A ggplot object.
 }
 \description{
-Evaluates the calibration of the SuperSurv ensemble at a specific time point
-by comparing predicted survival probabilities against observed Kaplan-Meier estimates.
+Plot Survival Calibration Curve
+}
+\examples{
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:120, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  eval_times <- seq(20, 120, by = 20)
 
-Evaluates the calibration of a model at a specific time point
-by comparing predicted survival probabilities against observed Kaplan-Meier estimates.
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = eval_times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  plot_calibration(
+    object = fit,
+    newdata = X,
+    time = dat$duration,
+    event = dat$event,
+    eval_time = 100,
+    bins = 4
+  )
+}
 }

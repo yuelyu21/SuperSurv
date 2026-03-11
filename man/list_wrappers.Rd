@@ -18,3 +18,6 @@ An invisible character vector containing the requested function names.
 This function prints all built-in prediction algorithms and feature screening
 algorithms available in the \code{SuperSurv} package.
 }
+\examples{
+list_wrappers()
+}

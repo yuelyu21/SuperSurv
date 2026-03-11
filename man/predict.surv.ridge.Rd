@@ -23,3 +23,25 @@ times in \code{new.times}.
 \description{
 Obtains predicted survivals from a fitted \code{surv.ridge} object.
 }
+\examples{
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:30, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.ridge(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    nfolds = 3
+  )
+
+  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  dim(pred)
+}
+}

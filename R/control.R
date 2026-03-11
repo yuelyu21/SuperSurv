@@ -8,7 +8,7 @@
 #' @param initWeight Whether to start by fitting "censoring" or "event" weights.
 #' @param ... Additional ignored arguments.
 #' @return A list of control parameters.
-#' @export
+#' @keywords internal
 SuperSurv.control <- function(max.SL.iter = 20,
                               event.t.grid = NULL,
                               cens.t.grid = NULL,
@@ -45,7 +45,7 @@ SuperSurv.control <- function(max.SL.iter = 20,
 #' @param validRows Optional custom list of indices for folds.
 #'
 #' @return A list of CV parameters.
-#' @export
+#' @keywords internal
 SuperSurv.CV.control <- function(V = 10L,
                                  stratifyCV = TRUE,
                                  shuffle = TRUE,

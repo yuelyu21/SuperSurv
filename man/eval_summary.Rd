@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluation.R
 \name{eval_summary}
 \alias{eval_summary}
-\title{Evaluate SuperSurv Predictions on Test Data}
+\title{Evaluate SuperSurv predictions on test data}
 \usage{
 eval_summary(
   object,
@@ -10,7 +10,8 @@ eval_summary(
   time,
   event,
   eval_times,
-  risk_time = median(eval_times)
+  risk_time = stats::median(eval_times),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -22,15 +23,45 @@ eval_summary(
 
 \item{event}{Numeric vector of event indicators for the test set.}
 
-\item{eval_times}{Numeric vector of times at which to evaluate survival predictions.}
+\item{eval_times}{Numeric vector of times at which to evaluate survival
+predictions.}
 
-\item{risk_time}{Numeric. The specific time horizon to use when extracting risk
-scores for Uno's C-index. Defaults to the median of \code{eval_times}.}
+\item{risk_time}{Numeric. The specific time horizon used when extracting risk
+scores for Uno C-index. Defaults to the median of \code{eval_times}.}
+
+\item{verbose}{Logical; if \code{TRUE}, progress messages are shown.}
 }
 \value{
-A data.frame containing the benchmark metrics for all models.
+An object of class \code{"SuperSurv_eval"} containing benchmark
+metrics for the ensemble and base learners.
 }
 \description{
-Computes the Integrated Brier Score (IBS), Uno's C-index, and Integrated AUC (iAUC)
-for the SuperSurv ensemble and all individual base learners.
+Computes the integrated Brier score (IBS), Uno C-index, and integrated area
+under the curve (iAUC) for the SuperSurv ensemble and all individual base
+learners.
+}
+\examples{
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:80, ]
+x_cols <- grep("^x", names(dat))[1:3]
+
+fit <- SuperSurv(
+  time = dat$duration,
+  event = dat$event,
+  X = dat[, x_cols, drop = FALSE],
+  new.times = seq(50, 200, by = 50),
+  event.library = c("surv.coxph", "surv.km"),
+  cens.library = c("surv.coxph", "surv.km")
+)
+
+res <- eval_summary(
+  object = fit,
+  newdata = dat[, x_cols, drop = FALSE],
+  time = dat$duration,
+  event = dat$event,
+  eval_times = seq(50, 200, by = 50)
+)
+
+res
+
 }

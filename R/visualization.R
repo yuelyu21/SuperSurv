@@ -19,16 +19,46 @@ utils::globalVariables(c(
 #' @param eval_times Numeric vector of times at which to evaluate predictions.
 #' @param metrics Character vector specifying which plots to return.
 #'   Options: "brier", "auc", "cindex". Defaults to all three.
-#'
+#' @param verbose Logical; if TRUE, progress messages are shown. Defaults to FALSE.
 #' @return A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:120, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   eval_times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = eval_times,
+#'     event.library = c("surv.coxph", "surv.ranger"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   plot_benchmark(
+#'     object = fit,
+#'     newdata = X,
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     eval_times = eval_times,
+#'     metrics = c("brier", "cindex","auc")
+#'   )
+#' }
 #' @export
 plot_benchmark <- function(object, newdata, time, event, eval_times,
-                           metrics = c("brier", "auc", "cindex")) {
+                           metrics = c("brier", "auc", "cindex"),
+                           verbose = FALSE) {
 
   requireNamespace("ggplot2", quietly = TRUE)
   requireNamespace("patchwork", quietly = TRUE)
 
-  message("Generating predictions for benchmark plots...")
+  if (isTRUE(verbose)) {message("Generating predictions for benchmark plots...") }
+
   preds <- predict(object, newdata = newdata, new.times = eval_times)
 
   get_metrics_df <- function(model_name, S_mat) {
@@ -49,7 +79,7 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
     )
   }
 
-  message("Calculating time-dependent metrics...")
+  if (isTRUE(verbose)) {message("Calculating time-dependent metrics...") }
 
   res_list <- list()
 
@@ -128,68 +158,12 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
   if (length(plots) == 0) stop("No valid metrics selected.")
   if (length(plots) == 1) return(plots[[1]])
 
-  patchwork::wrap_plots(plots, ncol = 1) +
+  patchwork::wrap_plots(plots, nrow = 1) +
     patchwork::plot_layout(guides = "collect") &
-    ggplot2::theme(legend.position = "bottom",
-                   legend.direction = "vertical") &
-    ggplot2::guides(fill = ggplot2::guide_legend(nrow = 2, byrow = TRUE),
-                    color = ggplot2::guide_legend(nrow = 2, byrow = TRUE))
+    ggplot2::theme(legend.position = "right",
+                   legend.direction = "vertical")
 }
 
-
-#' Plot Predicted Survival Curves
-#'
-#' Generates a ggplot2 step-function plot of the predicted survival probabilities
-#' over time for one or more specific patients.
-#'
-#' @param preds A list containing predictions, specifically the object returned
-#'   by the \code{predict.SuperSurv} function.
-#' @param eval_times Numeric vector of times at which predictions were evaluated.
-#' @param patient_idx Integer vector. The row indices of the patients in the test
-#'   dataset whose survival curves you want to plot. Defaults to 1.
-#'
-#' @return A \code{ggplot} object showing the survival curves.
-#' @export
-plot_predict <- function(preds, eval_times, patient_idx = 1) {
-
-  requireNamespace("ggplot2", quietly = TRUE)
-  requireNamespace("patchwork", quietly = TRUE) # Add this!
-
-  # Extract the prediction matrix
-  S_mat <- preds$event.predict
-
-  # Initialize an empty data frame to store all patients' data
-  plot_df <- data.frame(Time = numeric(), Survival_Prob = numeric(), Patient = character(),
-                        stringsAsFactors = FALSE)
-
-  # Loop through the requested patients and format the data
-  for (i in patient_idx) {
-    temp_df <- data.frame(
-      Time = eval_times,
-      Survival_Prob = S_mat[i, ],
-      Patient = paste("Patient", i)
-    )
-    plot_df <- rbind(plot_df, temp_df)
-  }
-
-  # Convert Patient to a factor so the legend stays in numeric order
-  plot_df$Patient <- factor(plot_df$Patient, levels = paste("Patient", patient_idx))
-
-  # Generate the ggplot using geom_step (the ggplot equivalent of type = "s")
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = Time, y = Survival_Prob, color = Patient)) +
-    ggplot2::geom_step(linewidth = 1.2) +
-    ggplot2::scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
-    ggplot2::theme_minimal() +
-    ggplot2::labs(
-      title = "Predicted Patient Survival Curves",
-      x = "Follow-up Time",
-      y = "Predicted Survival Probability"
-    ) +
-    ggplot2::theme(legend.position = "bottom",
-                   plot.title = ggplot2::element_text(face = "bold"))
-
-  return(p)
-}
 
 
 
@@ -203,6 +177,34 @@ plot_predict <- function(preds, eval_times, patient_idx = 1) {
 #' @param eval_time Numeric. A single time point at which to assess calibration.
 #' @param bins Integer. Defaults to 5.
 #' @return A ggplot object.
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:120, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   eval_times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = eval_times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   plot_calibration(
+#'     object = fit,
+#'     newdata = X,
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     eval_time = 100,
+#'     bins = 4
+#'   )
+#' }
 #' @export
 plot_calibration <- function(object, newdata, time, event, eval_time, bins = 5) {
   requireNamespace("ggplot2", quietly = TRUE)
@@ -271,6 +273,33 @@ plot_calibration <- function(object, newdata, time, event, eval_time, bins = 5) 
 #' @param eval_times Numeric vector of times at which predictions were evaluated.
 #' @param patient_idx Integer vector. Defaults to 1.
 #' @return A ggplot object.
+#' @examples
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   data("metabric", package = "SuperSurv")
+#'   dat <- metabric[1:120, ]
+#'   x_cols <- grep("^x", names(dat))[1:5]
+#'   X <- dat[, x_cols, drop = FALSE]
+#'   eval_times <- seq(20, 120, by = 20)
+#'
+#'   fit <- SuperSurv(
+#'     time = dat$duration,
+#'     event = dat$event,
+#'     X = X,
+#'     newdata = X,
+#'     new.times = eval_times,
+#'     event.library = c("surv.coxph", "surv.ridge"),
+#'     cens.library = c("surv.coxph"),
+#'     control = list(saveFitLibrary = TRUE)
+#'   )
+#'
+#'   preds <- predict(fit, newdata = X, new.times = eval_times)
+#'
+#'   plot_predict(
+#'     preds = preds,
+#'     eval_times = eval_times,
+#'     patient_idx = c(1, 2)
+#'   )
+#' }
 #' @export
 plot_predict <- function(preds, eval_times, patient_idx = 1) {
   requireNamespace("ggplot2", quietly = TRUE)

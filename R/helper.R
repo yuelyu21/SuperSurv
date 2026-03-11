@@ -72,10 +72,9 @@ create_grid <- function(base_learner, grid_params) {
 #' @param risk_score Numeric vector of risk scores.
 #' @param new.times Numeric vector of times at which to evaluate the baseline hazard.
 #'
-#' @return A numeric vector of cumulative baseline hazard \hat H_0(t).
-#' @export
+#' @return A numeric vector of cumulative baseline hazard #' computes \deqn{\hat{S}(t)}.
 #' @keywords internal
-
+#' @noRd
 safe_breslow_step <- function(time, event, risk_score, new.times) {
 
   # 1. Sort data by time
@@ -138,8 +137,8 @@ safe_breslow_step <- function(time, event, risk_score, new.times) {
 #' @return A numeric vector of risk scores of the same length as the number
 #'   of rows in \code{newdata}, where higher values consistently indicate a higher
 #'   risk of the event.
-#' @export
 #' @keywords internal
+#' @noRd
 get_risk_universal <- function(object, newdata) {
 
   # --- 1. The Cox Family (High = Bad) ---

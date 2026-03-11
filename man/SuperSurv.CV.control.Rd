@@ -26,3 +26,4 @@ A list of CV parameters.
 \description{
 Control parameters for Cross-Validation in SuperSurv
 }
+\keyword{internal}
