@@ -25,7 +25,8 @@ Obtains predicted survivals from a fitted \code{surv.svm} object.
 Applies the learned Cox calibration to the new raw utility scores.
 }
 \examples{
-if (requireNamespace("survivalsvm", quietly = TRUE)) {
+if (requireNamespace("survivalsvm", quietly = TRUE) &&
+  requireNamespace("quadprog", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:25, ]
   x_cols <- grep("^x", names(dat))[1:3]

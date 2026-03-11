@@ -25,7 +25,8 @@ Obtains predicted survivals from a fitted \code{surv.bart} object.
 Manually expands the time grid to bypass the 10-column expectation.
 }
 \examples{
-if (requireNamespace("BART", quietly = TRUE)) {
+if (.Platform$OS.type != "windows" &&
+  requireNamespace("BART", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:20, ]
   x_cols <- grep("^x", names(dat))[1:3]

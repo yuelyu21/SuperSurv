@@ -62,7 +62,7 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
     time = dat$duration,
     event = dat$event,
     eval_times = eval_times,
-    metrics = c("brier", "cindex","auc")
+    metrics = c("brier")
   )
 }
 }

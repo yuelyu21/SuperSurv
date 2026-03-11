@@ -50,6 +50,7 @@ Suggests:
     survex,
     ggplot2,
     tidyr,
+    quadprog,
     ggforce,
     patchwork,
     knitr,

@@ -57,7 +57,8 @@ Automatically reshapes the flat output vector into a survival matrix
 and interpolates the predictions to the requested new.times.
 }
 \examples{
-if (requireNamespace("BART", quietly = TRUE)) {
+if (.Platform$OS.type != "windows" &&
+  requireNamespace("BART", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:20, ]
   x_cols <- grep("^x", names(dat))[1:3]

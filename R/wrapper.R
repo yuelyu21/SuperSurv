@@ -441,7 +441,8 @@ predict.surv.xgboost <- function(object, newdata, new.times, ...) {
 #'     evaluated at the specified \code{new.times} grid.
 #' }
 #' @examples
-#' if (requireNamespace("survivalsvm", quietly = TRUE)) {
+#' if (requireNamespace("survivalsvm", quietly = TRUE) &&
+#'  requireNamespace("quadprog", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:25, ]
 #'   x_cols <- grep("^x", names(dat))[1:3]
@@ -550,7 +551,8 @@ surv.svm <- function(time, event, X, newdata, new.times, obsWeights, id,
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
 #' @examples
-#' if (requireNamespace("survivalsvm", quietly = TRUE)) {
+#' if (requireNamespace("survivalsvm", quietly = TRUE) &&
+#'   requireNamespace("quadprog", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:25, ]
 #'   x_cols <- grep("^x", names(dat))[1:3]
@@ -2624,7 +2626,8 @@ predict.surv.coxboost <- function(object, newdata, new.times, ...) {
 #'     evaluated at the specified \code{new.times} grid.
 #' }
 #' @examples
-#' if (requireNamespace("BART", quietly = TRUE)) {
+#' if (.Platform$OS.type != "windows" &&
+#'   requireNamespace("BART", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:20, ]
 #'   x_cols <- grep("^x", names(dat))[1:3]
@@ -2648,6 +2651,13 @@ predict.surv.coxboost <- function(object, newdata, new.times, ...) {
 #' @export
 surv.bart <- function(time, event, X, newdata = NULL, new.times, obsWeights = NULL, id = NULL,
                       ntree = 10, ndpost = 30, nskip = 10, ...) {
+
+  if (.Platform$OS.type == "windows") {
+    stop(
+      "surv.bart() is not supported on Windows because ",
+      "BART::mc.surv.bart() requires multicore forking."
+    )
+  }
 
   requireNamespace("BART", quietly = TRUE)
 
@@ -2742,7 +2752,8 @@ surv.bart <- function(time, event, X, newdata = NULL, new.times, obsWeights = NU
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
 #' @examples
-#' if (requireNamespace("BART", quietly = TRUE)) {
+#' if (.Platform$OS.type != "windows" &&
+#'   requireNamespace("BART", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:20, ]
 #'   x_cols <- grep("^x", names(dat))[1:3]

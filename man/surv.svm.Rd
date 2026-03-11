@@ -59,7 +59,8 @@ Estimates a survival SVM and calibrates the raw utility scores into
 survival probabilities using a univariate Cox proportional hazards model.
 }
 \examples{
-if (requireNamespace("survivalsvm", quietly = TRUE)) {
+if (requireNamespace("survivalsvm", quietly = TRUE) &&
+ requireNamespace("quadprog", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:25, ]
   x_cols <- grep("^x", names(dat))[1:3]
