@@ -1,6 +1,6 @@
 Package: SuperSurv
 Type: Package
-Title: Unified Machine Learning Ensembles for Survival Data
+Title: A Unified Framework for Machine Learning Ensembles in Survival Analysis
 Version: 0.1.1
 Authors@R: 
     person("Yue", "Lyu", email = "yuelyu0521@gmail.com", role = c("aut", "cre"))
