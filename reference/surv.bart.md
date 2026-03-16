@@ -12,13 +12,13 @@ surv.bart(
   time,
   event,
   X,
-  newdata,
+  newdata = NULL,
   new.times,
-  obsWeights,
-  id,
-  ntree = 30,
-  ndpost = 200,
-  nskip = 100,
+  obsWeights = NULL,
+  id = NULL,
+  ntree = 10,
+  ndpost = 30,
+  nskip = 10,
   ...
 )
 ```
@@ -80,3 +80,30 @@ A list containing:
 
 - `pred`: A numeric matrix of cross-validated survival predictions
   evaluated at the specified `new.times` grid.
+
+## Examples
+
+``` r
+if (.Platform$OS.type != "windows" &&
+  requireNamespace("BART", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:20, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.bart(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    ntree = 3,
+    ndpost = 5,
+    nskip = 5
+  )
+
+  dim(fit$pred)
+}
+```

@@ -74,11 +74,21 @@ plot_benchmark(
   event = test$event,
   eval_times = new.times
 )
-#> Generating predictions for benchmark plots...
-#> Calculating time-dependent metrics...
 ```
 
 ![](base-learner-rfsrc_files/figure-html/eval-standalone-1.png)
+
+``` r
+
+# plot_calibration(
+#   object   = rf_fit,
+#   newdata  = X_te,
+#   time     = test$duration,
+#   event    = test$event,
+#   eval_time = 150,
+#   bins     = 2
+# )
+```
 
 ## 4. Train the Benchmark Ensemble
 
@@ -117,8 +127,6 @@ plot_benchmark(
   event = test$event,
   eval_times = new.times
 )
-#> Generating predictions for benchmark plots...
-#> Calculating time-dependent metrics...
 ```
 
 ![](base-learner-rfsrc_files/figure-html/plot-ensemble-benchmark-1.png)

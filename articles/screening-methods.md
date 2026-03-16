@@ -133,27 +133,6 @@ screened_performance <- eval_summary(
   event = test$event,
   eval_times = new.times
 )
-#> 
-#> Generating predictions on test data...
-#> Evaluating SuperSurv Ensemble...
-#> Evaluating Base Learner 1/4: surv.coxph_screen.all...
-#> Evaluating Base Learner 2/4: surv.coxph_screen.marg...
-#> Evaluating Base Learner 3/4: surv.weibull_screen.elasticnet...
-#> Evaluating Base Learner 4/4: surv.rpart_screen.var...
-#> 
-#> ========================================================
-#>              SuperSurv Evaluation Benchmark             
-#> ========================================================
-#>                           Model    IBS  Uno_C   iAUC
-#>              SuperSurv_Ensemble 0.2014 0.6373 0.6779
-#>           surv.coxph_screen.all 0.2009 0.6350 0.6794
-#>          surv.coxph_screen.marg 0.2004 0.6270 0.6775
-#>  surv.weibull_screen.elasticnet 0.2005 0.6324 0.6798
-#>           surv.rpart_screen.var 0.2106 0.6104 0.6349
-#> ========================================================
-#> * IBS & iAUC integrated over: [50.00, 200.00]
-#> * Uno's C-index evaluated using risk at time: 125.00
-#> Note: Lower IBS is better. Higher Uno_C and iAUC are better.
 
 # Plot the benchmark
 # plot_benchmark(fit_highdim, newdata = X_te, time = test$duration, event = test$event, eval_times = new.times)

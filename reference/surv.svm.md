@@ -84,3 +84,28 @@ A list containing:
 
 - `pred`: A numeric matrix of cross-validated survival predictions
   evaluated at the specified `new.times` grid.
+
+## Examples
+
+``` r
+if (requireNamespace("survivalsvm", quietly = TRUE) &&
+ requireNamespace("quadprog", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:25, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.svm(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times
+  )
+
+  dim(fit$pred)
+}
+#> [1] 5 3
+```

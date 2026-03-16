@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>1. SuperSurv with Ensemble</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/supersurv-ensemble.Rmd" class="external-link"><code>vignettes/supersurv-ensemble.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/vignettes/supersurv-ensemble.Rmd" class="external-link"><code>vignettes/supersurv-ensemble.Rmd</code></a></small>
       <div class="d-none name"><code>supersurv-ensemble.Rmd</code></div>
     </div>
 
@@ -215,7 +215,7 @@ meta-learner choice affects the final ensemble weights.</p>
 <span>  new.times <span class="op">=</span> <span class="va">new.times</span>,       <span class="co"># Our evaluation time grid</span></span>
 <span>  event.library <span class="op">=</span> <span class="va">my_library</span>,</span>
 <span>  cens.library <span class="op">=</span> <span class="va">my_library</span>,</span>
-<span>  metalearner <span class="op">=</span> <span class="st">"least_squares"</span>, </span>
+<span>  metalearner <span class="op">=</span> <span class="st">"brier"</span>, </span>
 <span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
 <span>  verbose <span class="op">=</span> <span class="cn">T</span>,             <span class="co"># Turn to TRUE in practice to see progress!</span></span>
 <span>  selection <span class="op">=</span> <span class="st">"ensemble"</span>,</span>
@@ -231,7 +231,7 @@ meta-learner choice affects the final ensemble weights.</p>
 <span>  new.times <span class="op">=</span> <span class="va">new.times</span>,</span>
 <span>  event.library <span class="op">=</span> <span class="va">my_library</span>,</span>
 <span>  cens.library <span class="op">=</span> <span class="va">my_library</span>,</span>
-<span>  metalearner <span class="op">=</span> <span class="st">"nloglik"</span>,       <span class="co"># Swap to nloglik</span></span>
+<span>  metalearner <span class="op">=</span> <span class="st">"logloss"</span>,       <span class="co"># Swap to nloglik</span></span>
 <span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  selection <span class="op">=</span> <span class="st">"ensemble"</span>,</span>
@@ -266,12 +266,12 @@ meta-learners.</p>
 <span><span class="co">#&gt; --- NLOGLIK METALEARNER ---</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">fit_nll</span><span class="op">$</span><span class="va">event.coef</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all </span></span>
-<span><span class="co">#&gt;                   0.000                   0.684                   0.316</span></span>
+<span><span class="co">#&gt;                  0.9929                  0.0042                  0.0029</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"CV Risks (Lower is Better):\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; CV Risks (Lower is Better):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">fit_nll</span><span class="op">$</span><span class="va">event.cvRisks</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all </span></span>
-<span><span class="co">#&gt;                  0.6554                  0.6245                  0.6521</span></span></code></pre></div>
+<span><span class="co">#&gt;                  0.4520                  0.4583                  0.4800</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="how-to-interpret-this">How to Interpret This:<a class="anchor" aria-label="anchor" href="#how-to-interpret-this"></a>
 </h3>

@@ -20,14 +20,13 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.control.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/create_grid.html</loc></url>
-<url><loc>https://yuelyu21.github.io/SuperSurv/reference/estimate_causal_rmst.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_brier.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_summary.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/explain_kernel.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/explain_survex.html</loc></url>
-<url><loc>https://yuelyu21.github.io/SuperSurv/reference/get_risk_universal.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/get_rmst.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/index.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/list_wrappers.html</loc></url>
@@ -35,9 +34,9 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_beeswarm.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_benchmark.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_calibration.html</loc></url>
-<url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_causal_rmst_curve.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_dependence.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_global_importance.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_marginal_rmst_curve.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_patient_waterfall.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_predict.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_rmst_vs_obs.html</loc></url>
@@ -58,7 +57,6 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/predict.surv.rpart.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/predict.surv.svm.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/predict.surv.xgboost.html</loc></url>
-<url><loc>https://yuelyu21.github.io/SuperSurv/reference/safe_breslow_step.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.all.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.elasticnet.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.glmnet.html</loc></url>

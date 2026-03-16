@@ -37,3 +37,39 @@ An explainer object of class `survex_explainer` created by
 [`explain_survival`](https://modeloriented.github.io/survex/reference/explain_survival.html),
 which can be passed to DALEX and survex functions for further model
 diagnostics and plotting.
+
+## Examples
+
+``` r
+if (requireNamespace("survex", quietly = TRUE) &&
+    requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:80, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  times <- seq(20, 120, by = 20)
+  y <- survival::Surv(dat$duration, dat$event)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  explainer <- explain_survex(
+    model = fit,
+    data = X,
+    y = y,
+    times = times,
+    label = "SuperSurv_demo"
+  )
+
+  class(explainer)
+}
+#> [1] "surv_explainer" "explainer"     
+```

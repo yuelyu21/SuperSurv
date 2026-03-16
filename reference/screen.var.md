@@ -55,3 +55,22 @@ screen.var(
 A logical vector of the same length as the number of columns in `X`,
 indicating which variables passed the screening algorithm (`TRUE` to
 keep, `FALSE` to drop).
+
+## Examples
+
+``` r
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:40, ]
+x_cols <- grep("^x", names(dat))[1:6]
+X <- dat[, x_cols, drop = FALSE]
+
+screen.var(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  keep_fraction = 0.5,
+  minscreen = 2
+)
+#>    x0    x1    x2    x3    x4    x5 
+#>  TRUE  TRUE  TRUE FALSE FALSE FALSE 
+```

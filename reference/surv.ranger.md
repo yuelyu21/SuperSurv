@@ -79,3 +79,31 @@ A list containing:
 
 - `pred`: A numeric matrix of cross-validated survival predictions
   evaluated at the specified `new.times` grid.
+
+## Examples
+
+``` r
+if (requireNamespace("ranger", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:30, ]
+  x_cols <- grep("^x", names(dat))[1:3]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:5, , drop = FALSE]
+  times <- seq(50, 150, by = 50)
+
+  fit <- surv.ranger(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = newX,
+    new.times = times,
+    obsWeights = rep(1, nrow(dat)),
+    id = NULL,
+    num.trees = 10,
+    min.node.size = 3
+  )
+
+  dim(fit$pred)
+}
+#> [1] 5 3
+```

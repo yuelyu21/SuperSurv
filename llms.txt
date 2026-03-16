@@ -99,20 +99,16 @@ devtools::install_github(“yuelyu21/SuperSurv”)
 
 ## All functions
 
-- [`SuperSurv.CV.control()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.CV.control.md)
-  : Control parameters for Cross-Validation in SuperSurv
 - [`SuperSurv()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.md)
   : Super Learner for conditional survival functions
-- [`SuperSurv.control()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.control.md)
-  : Control parameters for the SuperSurv Ensemble
-- [`estimate_causal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_causal_rmst.md)
+- [`estimate_marginal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.md)
   : Estimate Causal Restricted Mean Survival Time (RMST)
 - [`eval_brier()`](https://yuelyu21.github.io/SuperSurv/reference/eval_brier.md)
   : IPCW Brier Score and Integrated Brier Score (IBS)
 - [`eval_cindex()`](https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.md)
   : Calculate Concordance Index (Harrell's or Uno's)
 - [`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)
-  : Evaluate SuperSurv Predictions on Test Data
+  : Evaluate SuperSurv predictions on test data
 - [`eval_timeROC()`](https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.md)
   : Time-Dependent AUC and Integrated AUC
 - [`explain_kernel()`](https://yuelyu21.github.io/SuperSurv/reference/explain_kernel.md)
@@ -129,12 +125,12 @@ devtools::install_github(“yuelyu21/SuperSurv”)
   : Plot Longitudinal Benchmark Metrics
 - [`plot_calibration()`](https://yuelyu21.github.io/SuperSurv/reference/plot_calibration.md)
   : Plot Survival Calibration Curve
-- [`plot_causal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_causal_rmst_curve.md)
-  : Plot Causal RMST Difference Over Time
 - [`plot_dependence()`](https://yuelyu21.github.io/SuperSurv/reference/plot_dependence.md)
   : Plot SHAP Dependence for SuperSurv
 - [`plot_global_importance()`](https://yuelyu21.github.io/SuperSurv/reference/plot_global_importance.md)
   : Plot Global Feature Importance for SuperSurv
+- [`plot_marginal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_marginal_rmst_curve.md)
+  : Plot Causal RMST Difference Over Time
 - [`plot_patient_waterfall()`](https://yuelyu21.github.io/SuperSurv/reference/plot_patient_waterfall.md)
   : Waterfall Plot for an Individual Patient
 - [`plot_predict()`](https://yuelyu21.github.io/SuperSurv/reference/plot_predict.md)
@@ -145,6 +141,8 @@ devtools::install_github(“yuelyu21/SuperSurv”)
   : Survival Probability Heatmap
 - [`predict(`*`<SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.SuperSurv.md)
   : Predict method for SuperSurv fits
+- [`predict(`*`<surv.aorsf>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.aorsf.md)
+  : Prediction function for AORSF
 - [`predict(`*`<surv.bart>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.bart.md)
   : Prediction function for BART
 - [`predict(`*`<surv.coxboost>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.coxboost.md)
@@ -157,6 +155,8 @@ devtools::install_github(“yuelyu21/SuperSurv”)
   : Prediction function for GBM wrapper
 - [`predict(`*`<surv.glmnet>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.glmnet.md)
   : Prediction function for GLMNET wrapper
+- [`predict(`*`<surv.km>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.km.md)
+  : Predict Method for Kaplan-Meier Wrapper
 - [`predict(`*`<surv.parametric>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.parametric.md)
   : Prediction function for Universal Parametric Wrapper
 - [`predict(`*`<surv.ranger>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.ranger.md)

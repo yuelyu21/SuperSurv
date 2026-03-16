@@ -86,25 +86,6 @@ performance_results <- eval_summary(
   event = test$event,
   eval_times = new.times
 )
-#> 
-#> Generating predictions on test data...
-#> Evaluating SuperSurv Ensemble...
-#> Evaluating Base Learner 1/3: surv.coxph_screen.all...
-#> Evaluating Base Learner 2/3: surv.weibull_screen.all...
-#> Evaluating Base Learner 3/3: surv.rpart_screen.all...
-#> 
-#> ========================================================
-#>              SuperSurv Evaluation Benchmark             
-#> ========================================================
-#>                    Model    IBS  Uno_C   iAUC
-#>       SuperSurv_Ensemble 0.2056 0.6317 0.6645
-#>    surv.coxph_screen.all 0.2071 0.6291 0.6619
-#>  surv.weibull_screen.all 0.2068 0.6289 0.6615
-#>    surv.rpart_screen.all 0.2156 0.5931 0.6266
-#> ========================================================
-#> * IBS & iAUC integrated over: [50.00, 200.00]
-#> * Uno's C-index evaluated using risk at time: 125.00
-#> Note: Lower IBS is better. Higher Uno_C and iAUC are better.
 ```
 
 *Note: Look for the model with the lowest IBS (Integrated Brier Score)
@@ -130,8 +111,6 @@ plot_benchmark(
   event = test$event,
   eval_times = new.times
 )
-#> Generating predictions for benchmark plots...
-#> Calculating time-dependent metrics...
 ```
 
 ![](model-performance_files/figure-html/plot-benchmark-1.png)

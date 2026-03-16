@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>2. Model Performance &amp; Benchmarking</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/model-performance.Rmd" class="external-link"><code>vignettes/model-performance.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/vignettes/model-performance.Rmd" class="external-link"><code>vignettes/model-performance.Rmd</code></a></small>
       <div class="d-none name"><code>model-performance.Rmd</code></div>
     </div>
 
@@ -152,26 +152,7 @@ the <em>integrated</em> metrics across your entire time grid.</p>
 <span>  time <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  eval_times <span class="op">=</span> <span class="va">new.times</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Generating predictions on test data...</span></span>
-<span><span class="co">#&gt; Evaluating SuperSurv Ensemble...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 1/3: surv.coxph_screen.all...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 2/3: surv.weibull_screen.all...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 3/3: surv.rpart_screen.all...</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ========================================================</span></span>
-<span><span class="co">#&gt;              SuperSurv Evaluation Benchmark             </span></span>
-<span><span class="co">#&gt; ========================================================</span></span>
-<span><span class="co">#&gt;                    Model    IBS  Uno_C   iAUC</span></span>
-<span><span class="co">#&gt;       SuperSurv_Ensemble 0.2056 0.6317 0.6645</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.2071 0.6291 0.6619</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.2068 0.6289 0.6615</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.2156 0.5931 0.6266</span></span>
-<span><span class="co">#&gt; ========================================================</span></span>
-<span><span class="co">#&gt; * IBS &amp; iAUC integrated over: [50.00, 200.00]</span></span>
-<span><span class="co">#&gt; * Uno's C-index evaluated using risk at time: 125.00</span></span>
-<span><span class="co">#&gt; Note: Lower IBS is better. Higher Uno_C and iAUC are better.</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p><em>Note: Look for the model with the lowest IBS (Integrated Brier
 Score) and the highest iAUC/Uno’s C-index.</em></p>
 </div>
@@ -191,10 +172,8 @@ dashboard to visualize this dynamic performance over time.</p>
 <span>  time <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  eval_times <span class="op">=</span> <span class="va">new.times</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating predictions for benchmark plots...</span></span>
-<span><span class="co">#&gt; Calculating time-dependent metrics...</span></span></code></pre></div>
-<p><img src="model-performance_files/figure-html/plot-benchmark-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="model-performance_files/figure-html/plot-benchmark-1.png" class="r-plt" alt="" width="288" style="display: block; margin: auto;"></p>
 <div class="section level3">
 <h3 id="interpreting-the-curves">Interpreting the Curves:<a class="anchor" aria-label="anchor" href="#interpreting-the-curves"></a>
 </h3>

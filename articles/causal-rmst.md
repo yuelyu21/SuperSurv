@@ -85,15 +85,13 @@ fit <- SuperSurv(
 
 ### 2. Calculate the Counterfactual RMST
 
-We use the
-[`estimate_causal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_causal_rmst.md)
-function. This forces the biomarker `x4` to 1 for all patients, predicts
-their survival curves, and calculates the RMST, then repeats with `x4`
-forced to 0.
+We use the `estimate_causal_rmst()` function. This forces the biomarker
+`x4` to 1 for all patients, predicts their survival curves, and
+calculates the RMST, then repeats with `x4` forced to 0.
 
 ``` r
 # Estimate the adjusted difference up to tau = 100 months
-results <- estimate_causal_rmst(
+results <- estimate_marginal_rmst(
   fit = fit, 
   data = metabric, 
   trt_col = "x4", 
@@ -114,13 +112,12 @@ horizon compared to those without the biomarker.”*
 
 The difference between groups might be near zero early on but
 substantial later. We can visualize how the $\Delta$RMST evolves across
-different time horizons using
-[`plot_causal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_causal_rmst_curve.md).
+different time horizons using `plot_causal_rmst_curve()`.
 
 ``` r
 # Plot the Delta RMST across a sequence of tau values
 tau_grid <- seq(20, 140, by = 20)
-plot_causal_rmst_curve(
+plot_marginal_rmst_curve(
   fit = fit, 
   data = metabric, 
   trt_col = "x4", 

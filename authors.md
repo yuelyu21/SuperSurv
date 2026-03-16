@@ -9,16 +9,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/yuelyu21/SuperSurv/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/yuelyu21/SuperSurv/blob/main/DESCRIPTION)
 
-Lyu Y (2026). *SuperSurv: Unified Machine Learning Ensembles and
-Interpretability for Survival Data*. R package version 0.1.0,
+Lyu Y (2026). *SuperSurv: A Unified Framework for Machine Learning
+Ensembles in Survival Analysis*. R package version 0.1.1,
 <https://github.com/yuelyu21/SuperSurv>.
 
     @Manual{,
-      title = {SuperSurv: Unified Machine Learning Ensembles and Interpretability for Survival Data},
+      title = {SuperSurv: A Unified Framework for Machine Learning Ensembles in Survival Analysis},
       author = {Yue Lyu},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.1},
       url = {https://github.com/yuelyu21/SuperSurv},
     }

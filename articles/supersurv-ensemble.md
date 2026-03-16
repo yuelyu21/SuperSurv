@@ -115,7 +115,7 @@ fit_ls <- SuperSurv(
   new.times = new.times,       # Our evaluation time grid
   event.library = my_library,
   cens.library = my_library,
-  metalearner = "least_squares", 
+  metalearner = "brier", 
   control = list(saveFitLibrary = TRUE), 
   verbose = T,             # Turn to TRUE in practice to see progress!
   selection = "ensemble",
@@ -131,7 +131,7 @@ fit_nll <- SuperSurv(
   new.times = new.times,
   event.library = my_library,
   cens.library = my_library,
-  metalearner = "nloglik",       # Swap to nloglik
+  metalearner = "logloss",       # Swap to nloglik
   control = list(saveFitLibrary = TRUE), 
   verbose = FALSE,
   selection = "ensemble",
@@ -166,12 +166,12 @@ cat("\n--- NLOGLIK METALEARNER ---\n")
 #> --- NLOGLIK METALEARNER ---
 print(round(fit_nll$event.coef, 4))
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                   0.000                   0.684                   0.316
+#>                  0.9929                  0.0042                  0.0029
 cat("CV Risks (Lower is Better):\n")
 #> CV Risks (Lower is Better):
 print(round(fit_nll$event.cvRisks, 4))
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                  0.6554                  0.6245                  0.6521
+#>                  0.4520                  0.4583                  0.4800
 ```
 
 ### How to Interpret This:

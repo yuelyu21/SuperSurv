@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Prediction function for Ridge wrapper</h1>
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/R/wrapper.R" class="external-link"><code>R/wrapper.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/R/wrapper.R" class="external-link"><code>R/wrapper.R</code></a></small>
       <div class="d-none name"><code>predict.surv.ridge.Rd</code></div>
     </div>
 
@@ -81,6 +81,31 @@ to the observations in <code>newdata</code> and columns correspond to the evalua
 times in <code>new.times</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"glmnet"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"metabric"</span>, package <span class="op">=</span> <span class="st">"SuperSurv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">metabric</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">30</span>, <span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">x_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^x"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[</span>, <span class="va">x_cols</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">newX</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">150</span>, by <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="surv.ridge.html">surv.ridge</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    time <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">duration</span>,</span></span>
+<span class="r-in"><span>    event <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">event</span>,</span></span>
+<span class="r-in"><span>    X <span class="op">=</span> <span class="va">X</span>,</span></span>
+<span class="r-in"><span>    newdata <span class="op">=</span> <span class="va">newX</span>,</span></span>
+<span class="r-in"><span>    new.times <span class="op">=</span> <span class="va">times</span>,</span></span>
+<span class="r-in"><span>    nfolds <span class="op">=</span> <span class="fl">3</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">fit</span>, newdata <span class="op">=</span> <span class="va">newX</span>, new.times <span class="op">=</span> <span class="va">times</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5 3</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

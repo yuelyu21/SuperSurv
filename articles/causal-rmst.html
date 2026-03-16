@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,7 +68,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>9. Causal Effects and Adjusted Marginal Contrasts (RMST)</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/causal-rmst.Rmd" class="external-link"><code>vignettes/causal-rmst.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/vignettes/causal-rmst.Rmd" class="external-link"><code>vignettes/causal-rmst.Rmd</code></a></small>
       <div class="d-none name"><code>causal-rmst.Rmd</code></div>
     </div>
 
@@ -173,13 +173,13 @@ saved for the G-computation prediction phase.</p>
 <div class="section level3">
 <h3 id="calculate-the-counterfactual-rmst">2. Calculate the Counterfactual RMST<a class="anchor" aria-label="anchor" href="#calculate-the-counterfactual-rmst"></a>
 </h3>
-<p>We use the <code><a href="../reference/estimate_causal_rmst.html">estimate_causal_rmst()</a></code> function. This forces
+<p>We use the <code>estimate_causal_rmst()</code> function. This forces
 the biomarker <code>x4</code> to 1 for all patients, predicts their
 survival curves, and calculates the RMST, then repeats with
 <code>x4</code> forced to 0.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Estimate the adjusted difference up to tau = 100 months</span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_causal_rmst.html">estimate_causal_rmst</a></span><span class="op">(</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_marginal_rmst.html">estimate_marginal_rmst</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">metabric</span>, </span>
 <span>  trt_col <span class="op">=</span> <span class="st">"x4"</span>, </span>
@@ -203,11 +203,11 @@ biomarker.”</em></p>
 substantial later. We can visualize how the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>RMST
 evolves across different time horizons using
-<code><a href="../reference/plot_causal_rmst_curve.html">plot_causal_rmst_curve()</a></code>.</p>
+<code>plot_causal_rmst_curve()</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the Delta RMST across a sequence of tau values</span></span>
 <span><span class="va">tau_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">140</span>, by <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_causal_rmst_curve.html">plot_causal_rmst_curve</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="../reference/plot_marginal_rmst_curve.html">plot_marginal_rmst_curve</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">metabric</span>, </span>
 <span>  trt_col <span class="op">=</span> <span class="st">"x4"</span>, </span>

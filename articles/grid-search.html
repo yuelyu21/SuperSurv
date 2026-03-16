@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>5. Advanced Hyperparameter Tuning &amp; Grid Search</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/grid-search.Rmd" class="external-link"><code>vignettes/grid-search.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/vignettes/grid-search.Rmd" class="external-link"><code>vignettes/grid-search.Rmd</code></a></small>
       <div class="d-none name"><code>grid-search.Rmd</code></div>
     </div>
 
@@ -135,8 +135,9 @@ return their names!</p>
 <span></span>
 <span><span class="co"># View the dynamically generated function names</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">rf_grid</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "surv.rfsrc_1" "surv.rfsrc_2" "surv.rfsrc_3" "surv.rfsrc_4" "surv.rfsrc_5"</span></span>
-<span><span class="co">#&gt; [6] "surv.rfsrc_6"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "surv.rfsrc_nodesize3_ntree100"  "surv.rfsrc_nodesize15_ntree100"</span></span>
+<span><span class="co">#&gt; [3] "surv.rfsrc_nodesize30_ntree100" "surv.rfsrc_nodesize3_ntree500" </span></span>
+<span><span class="co">#&gt; [5] "surv.rfsrc_nodesize15_ntree500" "surv.rfsrc_nodesize30_ntree500"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fitting-the-tuned-ensemble">4. Fitting the Tuned Ensemble<a class="anchor" aria-label="anchor" href="#fitting-the-tuned-ensemble"></a>

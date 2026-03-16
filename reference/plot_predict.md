@@ -1,16 +1,10 @@
 # Plot Predicted Survival Curves
 
-Generates a ggplot2 step-function plot of the predicted survival
-probabilities over time for one or more specific patients.
-
-Generates a ggplot2 step-function plot of the predicted survival
-probabilities over time for one or more specific patients.
+Plot Predicted Survival Curves
 
 ## Usage
 
 ``` r
-plot_predict(preds, eval_times, patient_idx = 1)
-
 plot_predict(preds, eval_times, patient_idx = 1)
 ```
 
@@ -26,11 +20,39 @@ plot_predict(preds, eval_times, patient_idx = 1)
 
 - patient_idx:
 
-  Integer vector. The row indices of the patients in the test dataset
-  whose survival curves you want to plot. Defaults to 1.
+  Integer vector. Defaults to 1.
 
 ## Value
 
-A `ggplot` object showing the survival curves.
+A ggplot object.
 
-A `ggplot` object showing the survival curves.
+## Examples
+
+``` r
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:120, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  eval_times <- seq(20, 120, by = 20)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = eval_times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  preds <- predict(fit, newdata = X, new.times = eval_times)
+
+  plot_predict(
+    preds = preds,
+    eval_times = eval_times,
+    patient_idx = c(1, 2)
+  )
+}
+```

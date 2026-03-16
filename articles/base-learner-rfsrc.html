@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>6. Machine Learning with Random Survival Forests</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/base-learner-rfsrc.Rmd" class="external-link"><code>vignettes/base-learner-rfsrc.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/vignettes/base-learner-rfsrc.Rmd" class="external-link"><code>vignettes/base-learner-rfsrc.Rmd</code></a></small>
       <div class="d-none name"><code>base-learner-rfsrc.Rmd</code></div>
     </div>
 
@@ -139,10 +139,18 @@ suite to test its performance on new data.</p>
 <span>  time <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  eval_times <span class="op">=</span> <span class="va">new.times</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating predictions for benchmark plots...</span></span>
-<span><span class="co">#&gt; Calculating time-dependent metrics...</span></span></code></pre></div>
-<p><img src="base-learner-rfsrc_files/figure-html/eval-standalone-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="base-learner-rfsrc_files/figure-html/eval-standalone-1.png" class="r-plt" alt="" width="864" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># plot_calibration(</span></span>
+<span><span class="co">#   object   = rf_fit,</span></span>
+<span><span class="co">#   newdata  = X_te,</span></span>
+<span><span class="co">#   time     = test$duration,</span></span>
+<span><span class="co">#   event    = test$event,</span></span>
+<span><span class="co">#   eval_time = 150,</span></span>
+<span><span class="co">#   bins     = 2</span></span>
+<span><span class="co"># )</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="train-the-benchmark-ensemble">4. Train the Benchmark Ensemble<a class="anchor" aria-label="anchor" href="#train-the-benchmark-ensemble"></a>
@@ -150,7 +158,7 @@ suite to test its performance on new data.</p>
 <p>While the standalone RSF is powerful, we can objectively evaluate if
 it outperforms classical models by putting them together in a
 <code>SuperSurv</code> ensemble.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rfsrc"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fit_supersurv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
@@ -172,16 +180,14 @@ it outperforms classical models by putting them together in a
 <p>When we pass the <code>SuperSurv</code> ensemble into the exact same
 benchmark function, it automatically unpacks the library and plots the
 ensemble against all its constituent models.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_benchmark.html">plot_benchmark</a></span><span class="op">(</span></span>
 <span>  object <span class="op">=</span> <span class="va">fit_supersurv</span>,</span>
 <span>  newdata <span class="op">=</span> <span class="va">X_te</span>,</span>
 <span>  time <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  eval_times <span class="op">=</span> <span class="va">new.times</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating predictions for benchmark plots...</span></span>
-<span><span class="co">#&gt; Calculating time-dependent metrics...</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="base-learner-rfsrc_files/figure-html/plot-ensemble-benchmark-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>By incorporating advanced machine learning algorithms into your
 library, <code>SuperSurv</code> mathematically guarantees that your

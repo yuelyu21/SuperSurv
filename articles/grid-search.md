@@ -65,8 +65,9 @@ rf_grid <- create_grid(
 
 # View the dynamically generated function names
 print(rf_grid)
-#> [1] "surv.rfsrc_1" "surv.rfsrc_2" "surv.rfsrc_3" "surv.rfsrc_4" "surv.rfsrc_5"
-#> [6] "surv.rfsrc_6"
+#> [1] "surv.rfsrc_nodesize3_ntree100"  "surv.rfsrc_nodesize15_ntree100"
+#> [3] "surv.rfsrc_nodesize30_ntree100" "surv.rfsrc_nodesize3_ntree500" 
+#> [5] "surv.rfsrc_nodesize15_ntree500" "surv.rfsrc_nodesize30_ntree500"
 ```
 
 ## 4. Fitting the Tuned Ensemble

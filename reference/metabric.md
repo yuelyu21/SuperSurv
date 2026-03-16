@@ -1,7 +1,10 @@
 # METABRIC Breast Cancer Dataset
 
 A subset of the Molecular Taxonomy of Breast Cancer International
-Consortium (METABRIC) dataset to demonstrate the SuperSurv package.
+Consortium (METABRIC) dataset to demonstrate the SuperSurv package. 9
+Covariates: 4 gene indicators (MKI67, EGFR, PGR, and ERBB2) and 5
+clinical features (age at diagnosis, and indicators for hormone
+treatment, radiotherapy, and chemotherapy)
 
 ## Usage
 

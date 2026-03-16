@@ -53,3 +53,36 @@ A list containing:
 
 - `cens.library.predict`: A 3D numeric array of the individual censoring
   predictions.
+
+## Examples
+
+``` r
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:80, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+  newX <- X[1:10, , drop = FALSE]
+  new.times <- seq(20, 120, by = 20)
+
+  fit <- SuperSurv(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    newdata = X,
+    new.times = new.times,
+    event.library = c("surv.coxph", "surv.ridge"),
+    cens.library = c("surv.coxph"),
+    control = list(saveFitLibrary = TRUE)
+  )
+
+  preds <- predict(
+    object = fit,
+    newdata = newX,
+    new.times = new.times
+  )
+
+  dim(preds$event.predict)
+}
+#> [1] 10  6
+```

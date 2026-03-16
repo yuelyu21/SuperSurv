@@ -9,7 +9,7 @@ algorithms available in the SuperSurv package."><meta property="og:image" conten
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@ algorithms available in the SuperSurv package."><meta property="og:image" conten
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>List Available Wrappers and Screeners in SuperSurv</h1>
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/R/list_wrappers.R" class="external-link"><code>R/list_wrappers.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/R/list_wrappers.R" class="external-link"><code>R/list_wrappers.R</code></a></small>
       <div class="d-none name"><code>list_wrappers.Rd</code></div>
     </div>
 
@@ -71,6 +71,21 @@ If <code>"screen"</code>, lists only screening algorithms. Otherwise, lists all 
     <p>An invisible character vector containing the requested function names.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">list_wrappers</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --- Prediction Models (surv.*) ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "surv.aorsf"       "surv.bart"        "surv.coxboost"    "surv.coxph"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "surv.exponential" "surv.gam"         "surv.gbm"         "surv.glmnet"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "surv.km"          "surv.loglogistic" "surv.lognormal"   "surv.parametric" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "surv.ranger"      "surv.rfsrc"       "surv.ridge"       "surv.rpart"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "surv.svm"         "surv.weibull"     "surv.xgboost"    </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> --- Screening Algorithms (screen.*) ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "screen.all"        "screen.elasticnet" "screen.glmnet"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "screen.marg"       "screen.rfsrc"      "screen.var"       </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

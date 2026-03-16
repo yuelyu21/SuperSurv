@@ -21,3 +21,19 @@ list_wrappers(what = "both")
 ## Value
 
 An invisible character vector containing the requested function names.
+
+## Examples
+
+``` r
+list_wrappers()
+#> --- Prediction Models (surv.*) ---
+#>  [1] "surv.aorsf"       "surv.bart"        "surv.coxboost"    "surv.coxph"      
+#>  [5] "surv.exponential" "surv.gam"         "surv.gbm"         "surv.glmnet"     
+#>  [9] "surv.km"          "surv.loglogistic" "surv.lognormal"   "surv.parametric" 
+#> [13] "surv.ranger"      "surv.rfsrc"       "surv.ridge"       "surv.rpart"      
+#> [17] "surv.svm"         "surv.weibull"     "surv.xgboost"    
+#> 
+#> --- Screening Algorithms (screen.*) ---
+#> [1] "screen.all"        "screen.elasticnet" "screen.glmnet"    
+#> [4] "screen.marg"       "screen.rfsrc"      "screen.var"       
+```

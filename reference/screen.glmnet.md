@@ -61,3 +61,26 @@ screen.glmnet(
 A logical vector of the same length as the number of columns in `X`,
 indicating which variables passed the screening algorithm (`TRUE` to
 keep, `FALSE` to drop).
+
+## Examples
+
+``` r
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:40, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+
+  screen.glmnet(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    alpha = 1,
+    minscreen = 2,
+    nfolds = 3,
+    nlambda = 20
+  )
+}
+#>    x0    x1    x2    x3    x4 
+#>  TRUE  TRUE FALSE FALSE FALSE 
+```

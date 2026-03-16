@@ -7,7 +7,15 @@ forest and retains features with a VIMP greater than zero.
 ## Usage
 
 ``` r
-screen.rfsrc(time, event, X, obsWeights, minscreen = 2, ntree = 100, ...)
+screen.rfsrc(
+  time,
+  event,
+  X,
+  obsWeights = NULL,
+  minscreen = 2,
+  ntree = 100,
+  ...
+)
 ```
 
 ## Arguments
@@ -46,3 +54,24 @@ screen.rfsrc(time, event, X, obsWeights, minscreen = 2, ntree = 100, ...)
 A logical vector of the same length as the number of columns in `X`,
 indicating which variables passed the screening algorithm (`TRUE` to
 keep, `FALSE` to drop).
+
+## Examples
+
+``` r
+if (requireNamespace("randomForestSRC", quietly = TRUE)) {
+  data("metabric", package = "SuperSurv")
+  dat <- metabric[1:40, ]
+  x_cols <- grep("^x", names(dat))[1:5]
+  X <- dat[, x_cols, drop = FALSE]
+
+  screen.rfsrc(
+    time = dat$duration,
+    event = dat$event,
+    X = X,
+    minscreen = 2,
+    ntree = 10
+  )
+}
+#>    x0    x1    x2    x3    x4 
+#>  TRUE  TRUE FALSE FALSE FALSE 
+```

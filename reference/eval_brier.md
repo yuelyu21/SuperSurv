@@ -47,3 +47,40 @@ A list containing:
   `\code{tmin}, \code{tmax}`.
 
 - `times`: The time grid used.
+
+## Examples
+
+``` r
+data("metabric", package = "SuperSurv")
+dat <- metabric[1:40, ]
+x_cols <- grep("^x", names(dat))[1:3]
+X <- dat[, x_cols, drop = FALSE]
+newX <- X[1:10, , drop = FALSE]
+times <- seq(50, 150, by = 50)
+
+fit <- surv.coxph(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  newdata = newX,
+  new.times = times,
+  obsWeights = rep(1, nrow(dat)),
+  id = NULL
+)
+
+eval_brier(
+  time = dat$duration[1:10],
+  event = dat$event[1:10],
+  S_mat = fit$pred,
+  times = times
+)
+#> $brier_scores
+#> [1] 0.08094384 0.23312677 0.24225036
+#> 
+#> $ibs
+#> [1] 0.1973619
+#> 
+#> $times
+#> [1]  50 100 150
+#> 
+```

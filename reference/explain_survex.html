@@ -9,7 +9,7 @@ survex package for Time-Dependent SHAP and Model Parts."><meta property="og:imag
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@ survex package for Time-Dependent SHAP and Model Parts."><meta property="og:imag
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Create a Time-Dependent Survex Explainer</h1>
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/R/explainability.R" class="external-link"><code>R/explainability.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/R/explainability.R" class="external-link"><code>R/explainability.R</code></a></small>
       <div class="d-none name"><code>explain_survex.Rd</code></div>
     </div>
 
@@ -86,6 +86,41 @@ survex package for Time-Dependent SHAP and Model Parts."><meta property="og:imag
 <code><a href="https://modeloriented.github.io/survex/reference/explain_survival.html" class="external-link">explain_survival</a></code>, which can be passed to DALEX and survex functions for further model diagnostics and plotting.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"survex"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"glmnet"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"metabric"</span>, package <span class="op">=</span> <span class="st">"SuperSurv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">metabric</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">80</span>, <span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">x_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^x"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[</span>, <span class="va">x_cols</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">120</span>, by <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">duration</span>, <span class="va">dat</span><span class="op">$</span><span class="va">event</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    time <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">duration</span>,</span></span>
+<span class="r-in"><span>    event <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">event</span>,</span></span>
+<span class="r-in"><span>    X <span class="op">=</span> <span class="va">X</span>,</span></span>
+<span class="r-in"><span>    newdata <span class="op">=</span> <span class="va">X</span>,</span></span>
+<span class="r-in"><span>    new.times <span class="op">=</span> <span class="va">times</span>,</span></span>
+<span class="r-in"><span>    event.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.ridge"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    cens.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">explainer</span> <span class="op">&lt;-</span> <span class="fu">explain_survex</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    model <span class="op">=</span> <span class="va">fit</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">X</span>,</span></span>
+<span class="r-in"><span>    y <span class="op">=</span> <span class="va">y</span>,</span></span>
+<span class="r-in"><span>    times <span class="op">=</span> <span class="va">times</span>,</span></span>
+<span class="r-in"><span>    label <span class="op">=</span> <span class="st">"SuperSurv_demo"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">explainer</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "surv_explainer" "explainer"     </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>4. High-Dimensional Data &amp; Variable Screening</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/screening-methods.Rmd" class="external-link"><code>vignettes/screening-methods.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/main/vignettes/screening-methods.Rmd" class="external-link"><code>vignettes/screening-methods.Rmd</code></a></small>
       <div class="d-none name"><code>screening-methods.Rmd</code></div>
     </div>
 
@@ -203,27 +203,6 @@ learners could overfit to them.</p>
 <span>  event <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  eval_times <span class="op">=</span> <span class="va">new.times</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Generating predictions on test data...</span></span>
-<span><span class="co">#&gt; Evaluating SuperSurv Ensemble...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 1/4: surv.coxph_screen.all...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 2/4: surv.coxph_screen.marg...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 3/4: surv.weibull_screen.elasticnet...</span></span>
-<span><span class="co">#&gt; Evaluating Base Learner 4/4: surv.rpart_screen.var...</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ========================================================</span></span>
-<span><span class="co">#&gt;              SuperSurv Evaluation Benchmark             </span></span>
-<span><span class="co">#&gt; ========================================================</span></span>
-<span><span class="co">#&gt;                           Model    IBS  Uno_C   iAUC</span></span>
-<span><span class="co">#&gt;              SuperSurv_Ensemble 0.2014 0.6373 0.6779</span></span>
-<span><span class="co">#&gt;           surv.coxph_screen.all 0.2009 0.6350 0.6794</span></span>
-<span><span class="co">#&gt;          surv.coxph_screen.marg 0.2004 0.6270 0.6775</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.elasticnet 0.2005 0.6324 0.6798</span></span>
-<span><span class="co">#&gt;           surv.rpart_screen.var 0.2106 0.6104 0.6349</span></span>
-<span><span class="co">#&gt; ========================================================</span></span>
-<span><span class="co">#&gt; * IBS &amp; iAUC integrated over: [50.00, 200.00]</span></span>
-<span><span class="co">#&gt; * Uno's C-index evaluated using risk at time: 125.00</span></span>
-<span><span class="co">#&gt; Note: Lower IBS is better. Higher Uno_C and iAUC are better.</span></span>
 <span></span>
 <span><span class="co"># Plot the benchmark</span></span>
 <span><span class="co"># plot_benchmark(fit_highdim, newdata = X_te, time = test$duration, event = test$event, eval_times = new.times)</span></span></code></pre></div>

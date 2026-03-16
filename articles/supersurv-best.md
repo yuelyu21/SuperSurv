@@ -127,50 +127,22 @@ cat("Performance of the ENSEMBLE Super Learner:\n")
 #> Performance of the ENSEMBLE Super Learner:
 eval_summary(fit_ensemble, newdata = X_te, time = test$duration, 
              event = test$event, eval_times = new.times)
-#> 
-#> Generating predictions on test data...
-#> Evaluating SuperSurv Ensemble...
-#> Evaluating Base Learner 1/3: surv.coxph_screen.all...
-#> Evaluating Base Learner 2/3: surv.weibull_screen.all...
-#> Evaluating Base Learner 3/3: surv.rpart_screen.all...
-#> 
-#> ========================================================
-#>              SuperSurv Evaluation Benchmark             
-#> ========================================================
-#>                    Model    IBS  Uno_C   iAUC
-#>       SuperSurv_Ensemble 0.1978 0.6569 0.6778
-#>    surv.coxph_screen.all 0.1989 0.6525 0.6744
-#>  surv.weibull_screen.all 0.1993 0.6532 0.6755
-#>    surv.rpart_screen.all 0.2068 0.6083 0.6541
-#> ========================================================
-#> * IBS & iAUC integrated over: [50.00, 200.00]
-#> * Uno's C-index evaluated using risk at time: 125.00
-#> Note: Lower IBS is better. Higher Uno_C and iAUC are better.
+#>                     Model    IBS  Uno_C   iAUC
+#> 1      SuperSurv_Ensemble 0.1978 0.6569 0.6788
+#> 2   surv.coxph_screen.all 0.1989 0.6525 0.6744
+#> 3 surv.weibull_screen.all 0.1993 0.6532 0.6755
+#> 4   surv.rpart_screen.all 0.2068 0.6083 0.6541
 
 cat("\nPerformance of the BEST MODEL Super Learner:\n")
 #> 
 #> Performance of the BEST MODEL Super Learner:
 eval_summary(fit_best, newdata = X_te, time = test$duration, 
              event = test$event, eval_times = new.times)
-#> 
-#> Generating predictions on test data...
-#> Evaluating SuperSurv Ensemble...
-#> Evaluating Base Learner 1/3: surv.coxph_screen.all...
-#> Evaluating Base Learner 2/3: surv.weibull_screen.all...
-#> Evaluating Base Learner 3/3: surv.rpart_screen.all...
-#> 
-#> ========================================================
-#>              SuperSurv Evaluation Benchmark             
-#> ========================================================
-#>                    Model    IBS  Uno_C   iAUC
-#>       SuperSurv_Ensemble 0.1989 0.6525 0.6744
-#>    surv.coxph_screen.all 0.1989 0.6525 0.6744
-#>  surv.weibull_screen.all 0.1993 0.6532 0.6755
-#>    surv.rpart_screen.all 0.2068 0.6083 0.6541
-#> ========================================================
-#> * IBS & iAUC integrated over: [50.00, 200.00]
-#> * Uno's C-index evaluated using risk at time: 125.00
-#> Note: Lower IBS is better. Higher Uno_C and iAUC are better.
+#>                     Model    IBS  Uno_C   iAUC
+#> 1      SuperSurv_Ensemble 0.1989 0.6525 0.6744
+#> 2   surv.coxph_screen.all 0.1989 0.6525 0.6744
+#> 3 surv.weibull_screen.all 0.1993 0.6532 0.6755
+#> 4   surv.rpart_screen.all 0.2068 0.6083 0.6541
 ```
 
 By comparing the resulting Brier scores and C-indices, you can
