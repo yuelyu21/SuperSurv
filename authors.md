@@ -9,7 +9,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/yuelyu21/SuperSurv/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/yuelyu21/SuperSurv/blob/master/DESCRIPTION)
 
 Lyu Y (2026). *SuperSurv: A Unified Framework for Machine Learning
 Ensembles in Survival Analysis*. R package version 0.1.1,
