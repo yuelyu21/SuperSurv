@@ -75,7 +75,7 @@ fit <- SuperSurv(
 
 We use the `estimate_marginal_rmst()` function to compute an adjusted marginal contrast on the RMST scale. The function sets the binary grouping variable `x4` to 1 for all patients, predicts their survival curves, integrates those predictions up to the restriction horizon `tau`, and then repeats the same procedure with `x4` set to 0. The difference between these two standardized averages yields the adjusted RMST contrast.
 
-```{r causal-effect, eval=FALSE}
+```{r causal-effect}
 # Estimate the adjusted difference up to tau = 100 months
 results <- estimate_marginal_rmst(
   fit = fit, 
@@ -121,7 +121,7 @@ format.pval(rmst_results_inf$p_value, digits = 3, eps = 1e-16)
 ### 3. Visualizing the Effect Over Time
 The difference between groups might be near zero early on but substantial later. We can visualize how the adjusted RMST contrast evolves across different restriction times using `plot_marginal_rmst_curve()`. When `inference = TRUE`, the function also displays perturbation-based confidence intervals as a ribbon.
 
-```{r plot-curve, eval=FALSE}
+```{r plot-curve}
 # Plot the Delta RMST across a sequence of tau values
 tau_grid <- seq(20, 140, by = 30)
 plot_marginal_rmst_curve(
@@ -142,7 +142,7 @@ To evaluate how well our model's restricted expectations align with reality, we 
 
 
 
-```{r plot-obs, eval=FALSE}
+```{r plot-obs}
 plot_rmst_vs_obs(
   fit = fit, 
   data = metabric, 
