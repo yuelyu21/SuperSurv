@@ -2,54 +2,149 @@
 % Please edit documentation in R/rmst.R
 \name{estimate_marginal_rmst}
 \alias{estimate_marginal_rmst}
-\title{Estimate Causal Restricted Mean Survival Time (RMST)}
+\title{Estimate an Adjusted Marginal RMST Contrast}
 \usage{
-estimate_marginal_rmst(fit, data, trt_col, times, tau, verbose = FALSE)
+estimate_marginal_rmst(
+  fit,
+  data,
+  trt_col,
+  times,
+  tau,
+  inference = FALSE,
+  B = 200,
+  seed = NULL,
+  ci_level = 0.95
+)
 }
 \arguments{
-\item{fit}{A fitted \code{SuperSurv} ensemble object.}
+\item{fit}{A fitted object of class \code{"SuperSurv"}.}
 
-\item{data}{A \code{data.frame} containing the patient covariates and the treatment assignment.}
+\item{data}{A \code{data.frame} containing the covariates used for
+standardization, including the binary grouping variable specified by
+\code{trt_col}.}
 
-\item{trt_col}{Character string. The exact name of the binary treatment indicator column in \code{data} (e.g., "treatment").}
+\item{trt_col}{Character string giving the name of the binary grouping
+variable in \code{data}. The variable is set to 1 and 0, respectively, to
+generate the two standardized prediction regimes.}
 
-\item{times}{Numeric vector of time points matching the prediction grid.}
+\item{times}{Numeric vector of prediction time points corresponding to the
+evaluation grid used for survival prediction.}
 
-\item{tau}{Numeric. A single truncation time limit up to which the RMST will be calculated.}
+\item{tau}{Numeric scalar giving the restriction horizon for RMST. Must not
+exceed \code{max(times)}.}
 
-\item{verbose}{Logical; if \code{TRUE}, progress messages are shown.}
+\item{inference}{Logical; if \code{TRUE}, compute perturbation-based standard
+errors, confidence intervals, and a Wald-type p-value. Defaults to
+\code{FALSE}.}
+
+\item{B}{Integer giving the number of perturbation replicates when
+\code{inference = TRUE}. Defaults to \code{200}.}
+
+\item{seed}{Optional integer seed for reproducibility of the perturbation
+procedure.}
+
+\item{ci_level}{Numeric scalar in \code{(0, 1)} specifying the confidence
+level for the Wald-type confidence interval. Defaults to \code{0.95}.}
 }
 \value{
-A numeric value representing the estimated causal RMST difference (Treatment - Control).
+A list containing:
+\itemize{
+\item \code{ATE_RMST}: The estimated adjusted marginal RMST contrast
+\eqn{\widehat{\Delta}_{RMST}(\tau)}.
+\item \code{mean_RMST_Treated}: The average predicted RMST under
+\code{A = 1}.
+\item \code{mean_RMST_Control}: The average predicted RMST under
+\code{A = 0}.
+\item \code{tau}: The restriction horizon used for integration.
+\item \code{patient_rmst_treated}: Vector of individual-level predicted
+RMST values under \code{A = 1}.
+\item \code{patient_rmst_control}: Vector of individual-level predicted
+RMST values under \code{A = 0}.
+\item \code{patient_delta_rmst}: Vector of individual-level predicted RMST
+contrasts.
+\item \code{inference}: Logical indicator for whether perturbation-based
+inference was requested.
+\item \code{B}: Number of perturbation replicates used when
+\code{inference = TRUE}; otherwise \code{NULL}.
+\item \code{SE_RMST}: Perturbation-based standard error of the RMST
+contrast; otherwise \code{NULL}.
+\item \code{CI_RMST}: Wald-type confidence interval for the RMST contrast;
+otherwise \code{NULL}.
+\item \code{z_value}: Wald-type test statistic; otherwise \code{NULL}.
+\item \code{p_value}: Two-sided Wald-type p-value; otherwise \code{NULL}.
+\item \code{perturb_reps}: Vector of perturbation replicate estimates;
+otherwise \code{NULL}.
+}
 }
 \description{
-Calculates the causal treatment effect based on the difference in Restricted Mean
-Survival Time (RMST) between treatment and control groups up to a specific truncation time.
+Computes a covariate-adjusted marginal contrast on the restricted mean
+survival time (RMST) scale using standardization (g-computation) based on a
+fitted \code{SuperSurv} model.
+}
+\details{
+For a binary grouping variable \code{trt_col}, the function predicts
+counterfactual survival curves under \code{A = 1} and \code{A = 0} for every
+individual in the supplied dataset, integrates each curve up to the
+restriction time \code{tau}, and averages the resulting individual-level
+RMST differences. The resulting contrast is generally interpreted as an
+adjusted marginal contrast. When \code{trt_col} corresponds to a manipulable
+intervention and additional identification assumptions hold, the same
+standardized procedure may also support a causal interpretation.
+
+If \code{inference = TRUE}, the function additionally performs a
+perturbation-based inference procedure conditional on the fitted
+\code{SuperSurv} model. In this implementation, the fitted learner library,
+hyperparameters, base learners, and ensemble weights are held fixed, and
+random positive weights are applied to the individual-level RMST contrasts to
+estimate a perturbation-based standard error, Wald-type confidence interval,
+and p-value.
+
+The function uses the empirical distribution of the observed covariates in
+\code{data} as the standardization distribution. RMST is evaluated
+numerically from the predicted survival matrix using a left Riemann sum over
+the supplied grid \code{times}.
+
+The perturbation-based inference implemented here is conditional on the
+fitted \code{SuperSurv} model. It does not re-tune hyperparameters, reselect
+the learner library, or refit the base learners under each perturbation.
+Instead, it perturbs the aggregation of the individual-level predicted RMST
+contrasts. This yields a lightweight uncertainty quantification procedure for
+the standardized RMST contrast given the final fitted ensemble.
 }
 \examples{
+\dontrun{
 data("metabric", package = "SuperSurv")
-dat <- metabric[1:80, ]
-x_cols <- grep("^x", names(dat))[1:5]
-X <- dat[, x_cols, drop = FALSE]
-new.times <- seq(20, 120, by = 20)
+x_cols <- grep("^x", names(metabric), value = TRUE)
+X <- metabric[, x_cols]
+new.times <- seq(10, 150, by = 10)
 
 fit <- SuperSurv(
-  time = dat$duration,
-  event = dat$event,
+  time = metabric$duration,
+  event = metabric$event,
   X = X,
   newdata = X,
   new.times = new.times,
-  event.library = c("surv.coxph", "surv.glmnet"),
+  event.library = c("surv.coxph", "surv.rfsrc"),
   cens.library = c("surv.coxph"),
-  control = list(saveFitLibrary = TRUE)
+  control = list(saveFitLibrary = TRUE),
+  nFolds = 3
 )
 
 rmst_res <- estimate_marginal_rmst(
   fit = fit,
-  data = dat,
+  data = metabric,
   trt_col = "x4",
   times = new.times,
-  tau = 100
+  tau = 100,
+  inference = TRUE,
+  B = 200,
+  seed = 123
 )
+
 rmst_res$ATE_RMST
+rmst_res$SE_RMST
+rmst_res$CI_RMST
+format.pval(rmst_res$p_value, digits = 3, eps = 1e-16)
+}
+
 }
