@@ -134,7 +134,11 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
       ggplot2::geom_point(size = 3) +
       ggplot2::scale_color_manual(values = survex_colors) +
       ggplot2::theme_minimal() +
-      ggplot2::labs(title = "IPCW Brier Score Over Time", y = "Brier Score (Lower is better)")
+      ggplot2::labs(title = "IPCW Brier Score", y = "Brier Score (Lower is better)") +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(size = 20),
+        axis.title.y = ggplot2::element_text(size = 18),
+        axis.title.x = ggplot2::element_text(size = 18))
   }
 
   if ("auc" %in% metrics) {
@@ -143,7 +147,11 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
       ggplot2::geom_point(size = 3) +
       ggplot2::scale_color_manual(values = survex_colors) +
       ggplot2::theme_minimal() +
-      ggplot2::labs(title = "Time-Dependent AUC", y = "AUC (Higher is better)")
+      ggplot2::labs(title = "Time-Dependent AUC", y = "AUC (Higher is better)")+
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(size = 20),
+        axis.title.y = ggplot2::element_text(size = 18),
+        axis.title.x = ggplot2::element_text(size = 18))
   }
 
   if ("cindex" %in% metrics) {
@@ -152,7 +160,11 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
       ggplot2::geom_point(size = 3) +
       ggplot2::scale_color_manual(values = survex_colors) +
       ggplot2::theme_minimal() +
-      ggplot2::labs(title = "Uno's C-index Over Time", y = "C-index (Higher is better)")
+      ggplot2::labs(title = "Uno's C-index", y = "C-index (Higher is better)")+
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(size = 20),
+        axis.title.y = ggplot2::element_text(size = 18),
+        axis.title.x = ggplot2::element_text(size = 18))
   }
 
   if (length(plots) == 0) stop("No valid metrics selected.")
@@ -160,8 +172,16 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
 
   patchwork::wrap_plots(plots, nrow = 1) +
     patchwork::plot_layout(guides = "collect") &
-    ggplot2::theme(legend.position = "right",
-                   legend.direction = "vertical")
+    ggplot2::theme(
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.title = ggplot2::element_text(size = 16),
+      legend.text = ggplot2::element_text(size = 16)
+    ) &
+    ggplot2::guides(
+      fill = ggplot2::guide_legend(nrow = 3, byrow = TRUE),
+      color = ggplot2::guide_legend(nrow = 3, byrow = TRUE)
+    )
 }
 
 
