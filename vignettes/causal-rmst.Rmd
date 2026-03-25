@@ -57,7 +57,7 @@ new.times <- seq(10, 150, by = 10)
 ### 1. Train the Super Learner
 First, train the ensemble. We must set `control = list(saveFitLibrary = TRUE)` so the models are saved for the G-computation prediction phase. 
 
-```{r train-model, eval=FALSE}
+```{r train-model}
 fit <- SuperSurv(
   time = metabric$duration,
   event = metabric$event,
