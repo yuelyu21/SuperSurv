@@ -7,7 +7,7 @@
 
 At its core, it implements an advanced **Ensemble Super Learner** framework. By utilizing Inverse Probability of Censoring Weighting (IPCW), it automatically constructs optimal convex combinations of parametric, semi-parametric, and machine learning base algorithms to minimize cross-validated risk.
 
-Beyond the meta-learner, **SuperSurv** acts as a complete Explainable AI (XAI) pipeline, featuring automated hyperparameter tuning grids, rigorous time-dependent benchmarking, and seamless integration with XAI ecosystems like Kernel SHAP.
+Beyond the super-learner, **SuperSurv** acts as a complete Explainable AI (XAI) pipeline, featuring automated hyperparameter tuning grids, rigorous time-dependent benchmarking, and seamless integration with XAI ecosystems like Kernel SHAP. The SuperSurv framework builds on recent advances in machine learning-based survival analysis, including treatment-specific survival curve estimation (Westling et al., 2024) and unified ensemble modeling framework for survival prediction (Lyu et al., 2026).
 
 ---
 
@@ -73,4 +73,22 @@ You can install the development version of `SuperSurv` directly from GitHub usin
 ```r
 # install.packages("devtools")
 devtools::install_github("yuelyu21/SuperSurv")
+```
 
+---
+
+## 📖 Citation
+
+If you use **SuperSurv** in your research, please cite:
+
+Lyu, Y., Huang, X., Lin, S. H., & Li, Z. (2026).  
+*SuperSurv: A Unified Framework for Machine Learning Ensembles in Survival Analysis*.  
+bioRxiv.  
+https://doi.org/10.64898/2026.03.11.711010  
+
+Related methodological work:
+
+Westling, T., Luedtke, A., Gilbert, P. B., & Carone, M. (2024).  
+*Inference for treatment-specific survival curves using machine learning*.  
+Journal of the American Statistical Association.  
+https://doi.org/10.1080/01621459.2023.2205060  

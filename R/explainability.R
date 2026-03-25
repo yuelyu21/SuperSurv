@@ -376,8 +376,12 @@ plot_beeswarm <- function(shap_values, data, top_n = 10) {
     ggplot2::theme(
       legend.position = "right",
       panel.grid.minor = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_text(face = "bold")
+      axis.text.y = ggplot2::element_text(face = "bold",size = 16),
+      plot.title = ggplot2::element_text(size = 20, face = "bold"),
+      axis.title = ggplot2::element_text(size = 18),
+      axis.text.x = ggplot2::element_text(size = 16)
     )
+
 }
 
 
