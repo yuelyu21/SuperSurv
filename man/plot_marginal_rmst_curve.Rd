@@ -2,32 +2,57 @@
 % Please edit documentation in R/rmst.R
 \name{plot_marginal_rmst_curve}
 \alias{plot_marginal_rmst_curve}
-\title{Plot Causal RMST Difference Over Time}
+\title{Plot Adjusted Marginal RMST Contrast Over Time}
 \usage{
-plot_marginal_rmst_curve(fit, data, trt_col, times, tau_seq)
+plot_marginal_rmst_curve(
+  fit,
+  data,
+  trt_col,
+  times,
+  tau_seq,
+  inference = FALSE,
+  B = 200,
+  seed = NULL,
+  ci_level = 0.95
+)
 }
 \arguments{
 \item{fit}{A fitted \code{SuperSurv} ensemble object.}
 
-\item{data}{A \code{data.frame} containing the patient covariates and the treatment assignment.}
+\item{data}{A \code{data.frame} containing the covariates and the binary grouping variable.}
 
-\item{trt_col}{Character string. The exact name of the binary treatment indicator column in \code{data}.}
+\item{trt_col}{Character string. The exact name of the binary grouping variable in \code{data}.}
 
 \item{times}{Numeric vector of time points matching the prediction grid.}
 
-\item{tau_seq}{Numeric vector. A sequence of truncation times (\code{tau}) to evaluate and plot.}
+\item{tau_seq}{Numeric vector. A sequence of restriction times (\code{tau}) to evaluate and plot.}
+
+\item{inference}{Logical; if \code{TRUE}, compute perturbation-based confidence intervals.
+Defaults to \code{FALSE}.}
+
+\item{B}{Integer. Number of perturbation replicates used when \code{inference = TRUE}.
+Defaults to \code{200}.}
+
+\item{seed}{Optional integer seed for reproducibility.}
+
+\item{ci_level}{Numeric scalar in \code{(0,1)} specifying the confidence level for the
+confidence interval. Defaults to \code{0.95}.}
 }
 \value{
-A \code{ggplot} object visualizing the causal RMST difference curve.
+A \code{ggplot} object visualizing the adjusted marginal RMST contrast curve.
 }
 \description{
-Generates a curve showing how the causal Restricted Mean Survival Time (RMST) difference
-between treatment groups evolves across a sequence of different truncation times.
+Generates a curve showing how the adjusted marginal restricted mean survival
+time (RMST) contrast evolves across a sequence of restriction times.
+}
+\details{
+If \code{inference = TRUE}, the function additionally displays perturbation-based
+Wald confidence intervals at each value of \code{tau}.
 }
 \examples{
 data("metabric", package = "SuperSurv")
 dat <- metabric[1:80, ]
-x_cols <- grep("^x", names(dat))[1:5]
+x_cols <- grep("^x", names(dat), value = TRUE)[1:5]
 X <- dat[, x_cols, drop = FALSE]
 new.times <- seq(20, 120, by = 20)
 
@@ -48,6 +73,10 @@ plot_marginal_rmst_curve(
   data = dat,
   trt_col = "x4",
   times = new.times,
-  tau_seq = tau_grid
+  tau_seq = tau_grid,
+  inference = TRUE,
+  B = 100,
+  seed = 123
 )
+
 }

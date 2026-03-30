@@ -96,7 +96,7 @@ A single integrated number rarely tells the whole story. Different models excel 
 
 The `plot_benchmark()` function generates a stacked dashboard to visualize this dynamic performance over time.
 
-```{r plot-benchmark, fig.align='center', fig.width=3, fig.height=9}
+```{r plot-benchmark, fig.align='center', fig.width=9, fig.height=3}
 plot_benchmark(
   object = fit_supersurv,
   newdata = X_te,
