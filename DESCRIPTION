@@ -4,6 +4,8 @@ Title: A Unified Framework for Machine Learning Ensembles in Survival Analysis
 Version: 0.1.2
 Authors@R: 
     person("Yue", "Lyu", email = "yuelyu0521@gmail.com", role = c("aut", "cre"))
+Author: Yue Lyu [aut, cre]
+Maintainer: Yue Lyu <yuelyu0521@gmail.com>
 Description: Implements a Super Learner framework for right-censored survival data. 
     The package fits convex combinations of parametric, semiparametric, and machine 
     learning survival learners by minimizing cross-validated risk using inverse 

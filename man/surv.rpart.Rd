@@ -77,6 +77,6 @@ if (requireNamespace("rpart", quietly = TRUE)) {
     maxdepth = 3
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

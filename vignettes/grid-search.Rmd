@@ -90,7 +90,7 @@ fit_tuned <- SuperSurv(
 )
 
 # Inspect which hyperparameter combination won!
-round(fit_tuned$event.coef, 3)
+round(event_weights(fit_tuned), 3)
 ```
 
 By leveraging `create_grid()`, you can easily execute a massive hyperparameter search space across XGBoost, SVMs, or Random Forests, mathematically guaranteeing that your final ensemble minimizes the cross-validated risk without any manual trial-and-error!

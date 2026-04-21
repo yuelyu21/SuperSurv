@@ -39,7 +39,7 @@
 #' eval_brier(
 #'   time = dat$duration[1:10],
 #'   event = dat$event[1:10],
-#'   S_mat = fit$pred,
+#'   S_mat = fit[["pred"]],
 #'   times = times
 #' )
 #' @export
@@ -141,7 +141,7 @@ eval_brier <- function(time, event, S_mat, times, tmin = min(times), tmax = max(
 #' eval_cindex(
 #'   time = dat$duration[1:10],
 #'   event = dat$event[1:10],
-#'   S_mat = fit$pred,
+#'   S_mat = fit[["pred"]],
 #'   times = times,
 #'   eval_time = 100,
 #'   method = "uno"
@@ -207,7 +207,7 @@ eval_cindex <- function(time, event, S_mat, times, eval_time, method = "uno") {
 #'  eval_timeROC(
 #'    time = dat$duration[1:10],
 #'    event = dat$event[1:10],
-#'    S_mat = fit$pred,
+#'    S_mat = fit[["pred"]],
 #'    times = times
 #'  )
 #' @export

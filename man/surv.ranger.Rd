@@ -75,6 +75,6 @@ if (requireNamespace("ranger", quietly = TRUE)) {
     min.node.size = 3
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

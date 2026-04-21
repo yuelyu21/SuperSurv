@@ -45,7 +45,7 @@ if (requireNamespace("rpart", quietly = TRUE)) {
     maxdepth = 3
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 }

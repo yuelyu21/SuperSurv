@@ -67,5 +67,5 @@ fit <- surv.parametric(
   dist = "weibull"
 )
 
-dim(fit$pred)
+dim(fit[["pred"]])
 }

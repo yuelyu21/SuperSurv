@@ -38,6 +38,8 @@ navbar:
           href: articles/causal-rmst.html
         - text: "10. Parallel Processing"
           href: articles/scaleup-parallel.html
+        - text: "11. Extending SuperSurv"
+          href: articles/extending-supersurv.html
 
     - text: "Reference"
       href: reference/index.html

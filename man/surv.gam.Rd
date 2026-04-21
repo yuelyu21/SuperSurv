@@ -59,6 +59,6 @@ if (requireNamespace("mgcv", quietly = TRUE)) {
     cts.num = 5
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

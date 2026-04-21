@@ -45,7 +45,7 @@ if (requireNamespace("aorsf", quietly = TRUE)) {
     leaf_min_events = 2
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 }

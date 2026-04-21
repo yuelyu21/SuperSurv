@@ -73,6 +73,6 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
     nfolds = 3
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

@@ -117,29 +117,44 @@ fit_nll <- SuperSurv(
 ```
 
 
-## 4. Inspect the Ensemble Weights and Risks
+## 4. Package Object Interface
+
+`SuperSurv` fits behave like ordinary R model objects. Use the print and summary methods for a quick overview, and use accessors for common fitted-model details.
+
+```{r object-interface}
+fit_ls
+
+summary(fit_ls)
+
+event_weights(fit_ls)
+
+learner_names(fit_ls)
+
+eval_times(fit_ls)
+
+selected_variables(fit_ls, learner = 1)
+```
+
+
+## 5. Inspect the Ensemble Weights and Risks
 
 The defining feature of the Super Learner is that it does not just pick the single "best" model; it finds the optimal weighted combination of all models based on their cross-validated performance.
 
-Let's inspect the weights (`event.coef`) and the cross-validated risks (`event.cvRisks`) for both of our meta-learners.
+Let's inspect the weights and cross-validated risks for both of our meta-learners.
 
 ```{r inspect-weights}
 cat("\n--- LEAST SQUARES METALEARNER ---\n")
-print(round(fit_ls$event.coef, 4))
-cat("CV Risks (Lower is Better):\n")
-print(round(fit_ls$event.cvRisks, 4))
+summary(fit_ls)
 
 cat("\n--- NLOGLIK METALEARNER ---\n")
-print(round(fit_nll$event.coef, 4))
-cat("CV Risks (Lower is Better):\n")
-print(round(fit_nll$event.cvRisks, 4))
+summary(fit_nll)
 ```
 
 ### How to Interpret This:
-* **`event.coef`**: These are the final weights assigned to each base learner. A weight of `0` means the meta-learner completely dropped that model because it did not contribute to overall predictive accuracy. A high weight means that model heavily influences the final ensemble prediction. Notice how the `least_squares` and `nloglik` algorithms might distribute these weights differently based on their optimization goals!
-* **`event.cvRisks`**: This is the cross-validated error for each individual base learner. The meta-learner uses these errors to calculate the optimal weights. Lower risk always indicates better performance.
+* **`event_weights(fit)`**: These are the final weights assigned to each base learner. A weight of `0` means the meta-learner completely dropped that model because it did not contribute to overall predictive accuracy. A high weight means that model heavily influences the final ensemble prediction. Notice how the `least_squares` and `nloglik` algorithms might distribute these weights differently based on their optimization goals!
+* **`summary(fit)`**: This reports the cross-validated risk for each individual base learner. The meta-learner uses these risks to calculate the optimal weights. Lower risk always indicates better performance.
 
-## 5. Generating Predictions on New Data
+## 6. Generating Predictions on New Data
 
 If you passed `newdata` during the training phase, `SuperSurv` already calculated the predictions for your test set. However, in a real-world clinical setting, you will often train the model once and then predict on brand new patients months later. 
 
@@ -170,7 +185,7 @@ The `predict()` function returns a list, but the most important element is `even
 * **Columns ($T$)**: Represent the specific time points we defined in `new.times`.
 * **Values**: The estimated probability that the patient will *survive* past that specific time point. As time increases (moving left to right across a row), the survival probability naturally decreases.
 
-## 6. Visualizing Patient-Specific Predictions
+## 7. Visualizing Patient-Specific Predictions
 
 While raw probability matrices ($N \times T$) are perfect for downstream coding and performance benchmarking, they are difficult to interpret clinically. Doctors and researchers need to see the actual survival trajectories.
 
@@ -186,9 +201,8 @@ plot_predict(
 )
 ```
 
-## 7. Next Steps
+## 8. Next Steps
 
 You now know how to prepare data, define a model library, choose a meta-learner, and generate patient-specific survival curves. 
 
 However, before deploying a model in clinical practice, you must rigorously prove that the ensemble actually outperforms the individual base learners. Head over to **Tutorial 2: Model Performance & Benchmarking** to learn how to generate time-dependent Brier Score, AUC, and Uno's C-index plots!
-

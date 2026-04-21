@@ -45,7 +45,7 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
     max_depth = 1
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 }

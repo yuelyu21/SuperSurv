@@ -57,6 +57,7 @@ Automatically reshapes the flat output vector into a survival matrix
 and interpolates the predictions to the requested new.times.
 }
 \examples{
+\dontrun{
 if (.Platform$OS.type != "windows" &&
   requireNamespace("BART", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
@@ -77,6 +78,7 @@ if (.Platform$OS.type != "windows" &&
     nskip = 5
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
+}
 }
 }

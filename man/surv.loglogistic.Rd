@@ -47,5 +47,5 @@ fit <- surv.loglogistic(
   id = NULL
 )
 
-dim(fit$pred)
+dim(fit[["pred"]])
 }

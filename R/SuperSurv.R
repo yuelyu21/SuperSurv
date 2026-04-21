@@ -3,6 +3,23 @@
 #' Orchestrates the cross-validation, metalearner optimization, and prediction
 #' for an ensemble of survival base learners.
 #'
+#' @details
+#' \strong{Extending the learner library.} Custom base learners can be added by
+#' defining a wrapper function and passing its name in \code{event.library} or
+#' \code{cens.library}. A learner wrapper should accept \code{time},
+#' \code{event}, \code{X}, \code{newdata}, \code{new.times},
+#' \code{obsWeights}, \code{id}, and \code{...}, and should return a list with
+#' \code{pred}, a numeric survival-probability matrix with
+#' \code{nrow(newdata)} rows and \code{length(new.times)} columns, and
+#' \code{fit}, the fitted object used for future prediction. If saved fits are
+#' needed, give \code{fit} a class and provide a corresponding
+#' \code{predict.<class>()} method that returns the same matrix shape.
+#'
+#' Screening methods can also be supplied by name. A screener should accept the
+#' training inputs and return a logical vector aligned with the columns of
+#' \code{X}. See \code{vignette("extending-supersurv", package = "SuperSurv")}
+#' for a practical custom learner and screener example.
+#'
 #' @param time Observed follow-up time.
 #' @param event Observed event indicator.
 #' @param X Training covariate data.frame.
@@ -27,6 +44,7 @@
 #'   \item \code{call}: The matched function call.
 #'   \item \code{event.predict}: Matrix of in-sample cross-validated survival predictions.
 #'   \item \code{cens.predict}: Matrix of in-sample cross-validated censoring predictions.
+#'   \item \code{eval.times}: Numeric vector of prediction evaluation times.
 #'   \item \code{event.coef}: Numeric vector of optimized ensemble weights for the event.
 #'   \item \code{cens.coef}: Numeric vector of optimized ensemble weights for censoring.
 #'   \item \code{event.library.predict}: 3D array of cross-validated predictions from individual event learners.
@@ -53,7 +71,8 @@
 #'     control = list(saveFitLibrary = TRUE)
 #'   )
 #'
-#'   fit$event.library.predict
+#'   fit
+#'   event_weights(fit)
 #' }
 #' @export
 SuperSurv <- function(time, event, X, newdata = NULL, new.times,
@@ -394,6 +413,7 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
     call = match.call(),
     event.predict = event.predict,
     cens.predict = cens.predict,
+    eval.times = new.times,
     event.coef = event.coef,
     cens.coef = cens.coef,
     event.library.predict = event.libraryPred,

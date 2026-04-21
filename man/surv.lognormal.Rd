@@ -47,5 +47,5 @@ fit <- surv.lognormal(
   id = NULL
 )
 
-dim(fit$pred)
+dim(fit[["pred"]])
 }

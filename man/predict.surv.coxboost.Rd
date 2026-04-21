@@ -44,7 +44,7 @@ if (requireNamespace("CoxBoost", quietly = TRUE)) {
     penalty = 50
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 }

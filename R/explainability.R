@@ -46,13 +46,14 @@ explain_kernel <- function(model, X_explain, X_background, nsim = 20,
   # PATH A: The SuperSurv Ensemble
   # ------------------------------------------------------------------
   if (inherits(model, "SuperSurv")) {
+    weights <- event_weights(model)
 
     if (only_best) {
-      active_indices <- which.max(model$event.coef)
+      active_indices <- which.max(weights)
       active_weights <- 1
     } else {
-      active_indices <- which(model$event.coef > 0.001)
-      active_weights <- model$event.coef[active_indices]
+      active_indices <- which(weights > 0.001)
+      active_weights <- weights[active_indices]
       active_weights <- active_weights / sum(active_weights) # Re-normalize
     }
 

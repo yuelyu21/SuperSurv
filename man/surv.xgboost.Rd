@@ -88,6 +88,6 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
     max_depth = 1
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

@@ -74,6 +74,6 @@ if (requireNamespace("aorsf", quietly = TRUE)) {
     leaf_min_events = 2
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

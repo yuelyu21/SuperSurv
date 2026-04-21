@@ -25,6 +25,7 @@ Obtains predicted survivals from a fitted \code{surv.bart} object.
 Manually expands the time grid to bypass the 10-column expectation.
 }
 \examples{
+\dontrun{
 if (.Platform$OS.type != "windows" &&
   requireNamespace("BART", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
@@ -45,7 +46,8 @@ if (.Platform$OS.type != "windows" &&
     nskip = 5
   )
 
-  pred <- fit$pred
+  pred <- fit[["pred"]]
   dim(pred)
+}
 }
 }

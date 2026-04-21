@@ -43,7 +43,7 @@ if (requireNamespace("mgcv", quietly = TRUE)) {
     cts.num = 5
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 }

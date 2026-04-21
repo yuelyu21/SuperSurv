@@ -86,6 +86,6 @@ if (requireNamespace("gbm", quietly = TRUE)) {
     n.minobsinnode = 3
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 }

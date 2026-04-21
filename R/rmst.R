@@ -186,11 +186,8 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
     stop("'ci_level' must be a single number in (0, 1).")
   }
 
-  # Use the exact variables the model was trained on
-  model_vars <- fit$varNames
-  if (is.null(model_vars)) {
-    stop("Could not find 'fit$varNames'. The fitted SuperSurv object must store training variable names.")
-  }
+  # Use the exact variables the model was trained on.
+  model_vars <- training_variables(fit)
 
   missing_vars <- setdiff(model_vars, names(data))
   if (length(missing_vars) > 0) {
@@ -488,7 +485,7 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
 #' @export
 plot_rmst_vs_obs <- function(fit, data, time_col, event_col, times, tau) {
   requireNamespace("ggplot2", quietly = TRUE)
-  model_vars <- fit$varNames
+  model_vars <- training_variables(fit)
   X_obs <- data[, model_vars, drop = FALSE]
 
   # Using the standardized 'newdata' argument

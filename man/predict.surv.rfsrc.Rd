@@ -42,7 +42,7 @@ if (requireNamespace("randomForestSRC", quietly = TRUE)) {
     nodesize = 3
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 }

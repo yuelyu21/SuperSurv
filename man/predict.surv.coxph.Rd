@@ -41,6 +41,6 @@ fit <- surv.coxph(
   id = NULL
 )
 
-pred <- predict(fit$fit, newdata = newX, new.times = times)
+pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
 dim(pred)
 }

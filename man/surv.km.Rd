@@ -53,5 +53,5 @@ fit <- surv.km(
   id = NULL
 )
 
-dim(fit$pred)
+dim(fit[["pred"]])
 }
