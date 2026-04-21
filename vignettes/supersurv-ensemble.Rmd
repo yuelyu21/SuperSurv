@@ -69,13 +69,13 @@ Here is the complete guide to the arguments you need to pass:
 * **`new.times`**: A numeric vector defining the exact time points where you want survival probabilities predicted (e.g., `seq(50, 200, by = 25)`).
 
 ### The Model Libraries
-* **`event.SL.library`**: A character vector of the base algorithms used to predict the actual survival outcome (e.g., `"surv.coxph"`, `"surv.rpart"`).
-* **`cens.SL.library`**: The library used to estimate the *censoring* mechanism over time. `SuperSurv` uses these predictions to calculate Inverse Probability of Censoring Weights (IPCW). You can use the exact same library as your event models, or a simpler one.
+* **`event.library`**: A character vector of the base algorithms used to predict the actual survival outcome (e.g., `"surv.coxph"`, `"surv.rpart"`).
+* **`cens.library`**: The library used to estimate the *censoring* mechanism over time. `SuperSurv` uses these predictions to calculate Inverse Probability of Censoring Weights (IPCW). You can use the exact same library as your event models, or a simpler one.
 
 ### The Meta-Learner & Tuning
 * **`metalearner`**: The optimization algorithm used to calculate the final ensemble weights. `SuperSurv` offers two distinct approaches:
-    * `"least_squares"` (Default): Optimizes weights by minimizing the IPCW Brier score. Excellent for overall prediction accuracy.
-    * `"nloglik"`: Optimizes weights by minimizing the negative log-likelihood. Excellent for improving hazard discrimination.
+    * `"brier"` (Default): Optimizes weights by minimizing the IPCW Brier score. Excellent for overall prediction accuracy.
+    * `"logloss"`: Optimizes weights by minimizing the negative log-likelihood. Excellent for improving hazard discrimination.
 * **`nFolds`**: The number of cross-validation folds used to train the meta-learner. `V = 5` or `V = 10` is standard. This cross-validation is what prevents the ensemble from overfitting to the base learners.
 * **`control = list(saveFitLibrary = TRUE)`**: This tells the engine to save the fitted base learners into the final object. This is **required** if you want to use the `predict()` method on new patients later.
 * **`verbose`**: Set to `TRUE` to print progress messages to the console. Highly recommended for large datasets or complex libraries so you can track the cross-validation progress.
