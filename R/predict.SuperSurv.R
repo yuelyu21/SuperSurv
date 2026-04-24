@@ -5,17 +5,20 @@
 #' @param object A fitted object of class \code{SuperSurv}.
 #' @param newdata A data.frame of new covariate values.
 #' @param new.times A numeric vector of times at which to predict survival.
+#' @param type Character string specifying the prediction output. Use
+#'   \code{"event"} for the event survival matrix, \code{"censoring"} for the
+#'   censoring survival matrix, or \code{"both"} for the full list of outputs.
 #' @param onlySL Logical. If TRUE, only uses models with weights > threshold.
 #' @param threshold Numeric. The weight threshold for onlySL.
 #' @param ... Additional ignored arguments.
-#' @return A list containing:
+#' @return If \code{type = "event"} or \code{type = "censoring"}, a numeric
+#'   matrix with rows corresponding to observations and columns corresponding to
+#'   \code{new.times}. If \code{type = "both"}, a list containing:
 #' \itemize{
-#'   \item \code{event.predict}: A numeric matrix (rows = observations, columns = times)
-#'     of the final predicted survival probabilities from the ensemble.
-#'   \item \code{event.library.predict}: A 3D numeric array (observations x times x models)
-#'     containing the individual survival predictions from each base learner.
-#'   \item \code{cens.predict}: A numeric matrix of the predicted censoring probabilities.
-#'   \item \code{cens.library.predict}: A 3D numeric array of the individual censoring predictions.
+#'   \item \code{event.predict}: A numeric matrix of final event survival predictions.
+#'   \item \code{event.library.predict}: A 3D numeric array of event learner predictions.
+#'   \item \code{cens.predict}: A numeric matrix of final censoring survival predictions.
+#'   \item \code{cens.library.predict}: A 3D numeric array of censoring learner predictions.
 #' }
 #' @examples
 #' if (requireNamespace("glmnet", quietly = TRUE)) {
@@ -37,16 +40,20 @@
 #'     control = list(saveFitLibrary = TRUE)
 #'   )
 #'
-#'   preds <- predict(
+#'   pred_event <- predict(
 #'     object = fit,
 #'     newdata = newX,
-#'     new.times = new.times
+#'     new.times = new.times,
+#'     type = "event"
 #'   )
 #'
-#'   dim(preds$event.predict)
+#'   dim(pred_event)
 #' }
 #' @export
-predict.SuperSurv <- function (object, newdata, new.times, onlySL = FALSE, threshold = 1e-4, ...) {
+predict.SuperSurv <- function (object, newdata, new.times,
+                               type = c("both", "event", "censoring"),
+                               onlySL = FALSE, threshold = 1e-4, ...) {
+  type <- match.arg(type)
 
   # 1. Return training predictions if no new data is provided
   if (missing(newdata)) {
@@ -56,7 +63,7 @@ predict.SuperSurv <- function (object, newdata, new.times, onlySL = FALSE, thres
       event.library.predict = object$event.library.predict,
       cens.library.predict  = object$cens.library.predict
     )
-    return(out)
+    return(.predict_SuperSurv_output(out, type = type))
   }
 
   if (missing(new.times)) stop("new.times must be specified for new predictions.")
@@ -160,5 +167,14 @@ predict.SuperSurv <- function (object, newdata, new.times, onlySL = FALSE, thres
     cens.predict = cens.predict,
     cens.library.predict = cens.pred
   )
-  return(out)
+  return(.predict_SuperSurv_output(out, type = type))
+}
+
+.predict_SuperSurv_output <- function(out, type) {
+  switch(
+    type,
+    both = out,
+    event = out$event.predict,
+    censoring = out$cens.predict
+  )
 }

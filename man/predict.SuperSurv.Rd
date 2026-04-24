@@ -4,7 +4,15 @@
 \alias{predict.SuperSurv}
 \title{Predict method for SuperSurv fits}
 \usage{
-\method{predict}{SuperSurv}(object, newdata, new.times, onlySL = FALSE, threshold = 1e-04, ...)
+\method{predict}{SuperSurv}(
+  object,
+  newdata,
+  new.times,
+  type = c("both", "event", "censoring"),
+  onlySL = FALSE,
+  threshold = 1e-04,
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted object of class \code{SuperSurv}.}
@@ -13,6 +21,10 @@
 
 \item{new.times}{A numeric vector of times at which to predict survival.}
 
+\item{type}{Character string specifying the prediction output. Use
+\code{"event"} for the event survival matrix, \code{"censoring"} for the
+censoring survival matrix, or \code{"both"} for the full list of outputs.}
+
 \item{onlySL}{Logical. If TRUE, only uses models with weights > threshold.}
 
 \item{threshold}{Numeric. The weight threshold for onlySL.}
@@ -20,14 +32,14 @@
 \item{...}{Additional ignored arguments.}
 }
 \value{
-A list containing:
+If \code{type = "event"} or \code{type = "censoring"}, a numeric
+matrix with rows corresponding to observations and columns corresponding to
+\code{new.times}. If \code{type = "both"}, a list containing:
 \itemize{
-\item \code{event.predict}: A numeric matrix (rows = observations, columns = times)
-of the final predicted survival probabilities from the ensemble.
-\item \code{event.library.predict}: A 3D numeric array (observations x times x models)
-containing the individual survival predictions from each base learner.
-\item \code{cens.predict}: A numeric matrix of the predicted censoring probabilities.
-\item \code{cens.library.predict}: A 3D numeric array of the individual censoring predictions.
+\item \code{event.predict}: A numeric matrix of final event survival predictions.
+\item \code{event.library.predict}: A 3D numeric array of event learner predictions.
+\item \code{cens.predict}: A numeric matrix of final censoring survival predictions.
+\item \code{cens.library.predict}: A 3D numeric array of censoring learner predictions.
 }
 }
 \description{
@@ -53,12 +65,13 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
     control = list(saveFitLibrary = TRUE)
   )
 
-  preds <- predict(
+  pred_event <- predict(
     object = fit,
     newdata = newX,
-    new.times = new.times
+    new.times = new.times,
+    type = "event"
   )
 
-  dim(preds$event.predict)
+  dim(pred_event)
 }
 }

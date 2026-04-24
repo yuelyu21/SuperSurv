@@ -168,11 +168,12 @@ new_patients <- X_te[1:6, ]
 ensemble_preds <- predict(
   object = fit_ls, 
   newdata = new_patients, 
-  new.times = new.times
+  new.times = new.times,
+  type = "event"
 )
 
 cat("\n--- PREDICTED SURVIVAL PROBABILITIES ---\n")
-final_matrix <- ensemble_preds$event.predict
+final_matrix <- ensemble_preds
 colnames(final_matrix) <- paste0("Time_", new.times)
 rownames(final_matrix) <- paste0("Patient_", 1:6)
 

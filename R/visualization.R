@@ -312,7 +312,7 @@ plot_calibration <- function(object, newdata, time, event, eval_time, bins = 5) 
 #'     control = list(saveFitLibrary = TRUE)
 #'   )
 #'
-#'   preds <- predict(fit, newdata = X, new.times = eval_times)
+#'   preds <- predict(fit, newdata = X, new.times = eval_times, type = "event")
 #'
 #'   plot_predict(
 #'     preds = preds,
@@ -360,5 +360,4 @@ plot_predict <- function(preds, eval_times, patient_idx = 1) {
       plot.title = ggplot2::element_text(face = "bold")
     )
 }
-
 

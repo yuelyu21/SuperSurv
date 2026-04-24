@@ -26,6 +26,9 @@ times <- eval_times(fit)
 model_vars <- training_variables(fit)
 selected_vars <- selected_variables(fit, learner = 1)
 fit_summary <- summary(fit)
+pred_both <- predict(fit)
+pred_event <- predict(fit, type = "event")
+pred_censor <- predict(fit, type = "censoring")
 
 stopifnot(
   inherits(fit, "SuperSurv"),
@@ -40,6 +43,11 @@ stopifnot(
   identical(times, seq(20, 100, by = 20)),
   identical(model_vars, colnames(X)),
   identical(selected_vars, colnames(X)),
+  is.list(pred_both),
+  is.matrix(pred_event),
+  is.matrix(pred_censor),
+  identical(pred_event, pred_both$event.predict),
+  identical(pred_censor, pred_both$cens.predict),
   inherits(fit_summary, "summary.SuperSurv"),
   nrow(fit_summary$event) == 1L,
   nrow(fit_summary$censoring) == 1L
