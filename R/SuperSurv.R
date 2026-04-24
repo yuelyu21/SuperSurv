@@ -32,7 +32,7 @@
 #' @param control List of control parameters for the Super Learner.
 #' @param cvControl List of control parameters for cross-validation.
 #' @param obsWeights Observation weights.
-#' @param metalearner Character string specifying the optimizer (e.g., "least_squares").
+#' @param metalearner Character string specifying the optimizer (e.g., "brier" or "logloss").
 #' @param parallel Logical. If TRUE, uses future.apply for parallel execution.
 #' @param selection Character. Specifies how the meta-learner combines the base models.
 #'   Use \code{"ensemble"} (default) to calculate a weighted average (convex combination)
