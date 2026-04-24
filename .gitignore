@@ -6,3 +6,6 @@
 .quarto
 inst/doc
 docs
+SuperSurv.Rcheck/
+AGENTS.md
+*.tar.gz
