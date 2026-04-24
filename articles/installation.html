@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
     <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -75,9 +76,14 @@
 <h2 id="welcome-to-supersurv">Welcome to SuperSurv!<a class="anchor" aria-label="anchor" href="#welcome-to-supersurv"></a>
 </h2>
 <p><code>SuperSurv</code> is designed to be a unified ecosystem for
-machine learning and survival analysis. However, installing 19 different
-machine learning engines at once can take a long time and cause
-dependency conflicts on some operating systems.</p>
+machine learning and survival analysis. The framework integrates modern
+ensemble learning techniques for right-censored data and is motivated by
+recent advances in machine learning-based survival curve estimation
+(Westling et al., 2024) and unified ensemble modeling for survival
+analysis (Lyu et al., 2026).</p>
+<p>However, installing 19 different machine learning engines at once can
+take a long time and cause dependency conflicts on some operating
+systems.</p>
 <p>To make your experience as smooth as possible, <code>SuperSurv</code>
 uses a <strong>Modular Dependency Philosophy</strong>.</p>
 <p>The core package is incredibly lightweight and installs in seconds.
@@ -155,6 +161,17 @@ for niche use cases: * <code>surv.svm</code>: Requires
 your first optimal survival ensemble!</p>
 <p>👉 <strong><a href="supersurv-ensemble.html">Click here to proceed to
 Tutorial 1: The SuperSurv Ensemble</a></strong></p>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Westling, T., Luedtke, A., Gilbert, P. B., &amp; Carone, M.
+(2024).<br><em>Inference for treatment-specific survival curves using machine
+learning</em>.<br>
+Journal of the American Statistical Association.<br><a href="doi:10.1080/01621459.2023.2205060" class="uri">doi:10.1080/01621459.2023.2205060</a></p>
+<p>Lyu, Y., Huang, X., Lin, S. H., &amp; Li, Z. (2026).<br><em>SuperSurv: A Unified Framework for Machine Learning Ensembles in
+Survival Analysis</em>.<br>
+bioRxiv.<br><a href="doi:10.64898/2026.03.11.711010" class="uri">doi:10.64898/2026.03.11.711010</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

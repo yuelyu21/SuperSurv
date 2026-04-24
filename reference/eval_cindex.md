@@ -61,7 +61,7 @@ fit <- surv.coxph(
 eval_cindex(
   time = dat$duration[1:10],
   event = dat$event[1:10],
-  S_mat = fit$pred,
+  S_mat = fit[["pred"]],
   times = times,
   eval_time = 100,
   method = "uno"

@@ -105,7 +105,7 @@ if (requireNamespace("survivalsvm", quietly = TRUE) &&
     new.times = times
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 #> [1] 5 3
 ```

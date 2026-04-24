@@ -120,7 +120,7 @@ if (requireNamespace("gbm", quietly = TRUE)) {
     n.minobsinnode = 3
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 #> OOB generally underestimates the optimal number of iterations although predictive performance is reasonably competitive. Using cv_folds>1 when calling gbm usually results in improved predictive performance.
 #> [1] 5 3

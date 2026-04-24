@@ -66,6 +66,6 @@ fit <- surv.exponential(
   id = NULL
 )
 
-dim(fit$pred)
+dim(fit[["pred"]])
 #> [1] 5 3
 ```

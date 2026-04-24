@@ -4,6 +4,7 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/LICENSE.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/base-learner-rfsrc.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/causal-rmst.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/articles/extending-supersurv.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/grid-search.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/index.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/installation.html</loc></url>
@@ -19,16 +20,20 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.CV.control.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.control.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/coef.SuperSurv.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/create_grid.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_brier.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_summary.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/eval_times.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/event_weights.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/explain_kernel.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/explain_survex.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/get_rmst.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/index.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/learner_names.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/list_wrappers.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/metabric.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/plot_beeswarm.html</loc></url>
@@ -57,12 +62,15 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/predict.surv.rpart.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/predict.surv.svm.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/predict.surv.xgboost.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/print.SuperSurv.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.all.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.elasticnet.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.glmnet.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.marg.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.rfsrc.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/screen.var.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/selected_variables.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/summary.SuperSurv.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/surv.aorsf.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/surv.bart.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/surv.coxboost.html</loc></url>
@@ -82,5 +90,6 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/surv.svm.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/surv.weibull.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/surv.xgboost.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/reference/training_variables.html</loc></url>
 </urlset>
 

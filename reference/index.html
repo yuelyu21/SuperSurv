@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
     <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/yuelyu21/SuperSurv" aria-label="GitHub"><span class="fa fa-github"></span></a></li>
@@ -61,10 +62,17 @@
 
         <dt>
 
+          <code><a href="coef.SuperSurv.html">coef(<i>&lt;SuperSurv&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Extract SuperSurv ensemble coefficients</dd>
+
+        <dt>
+
           <code><a href="estimate_marginal_rmst.html">estimate_marginal_rmst()</a></code>
 
         </dt>
-        <dd>Estimate Causal Restricted Mean Survival Time (RMST)</dd>
+        <dd>Estimate an Adjusted Marginal RMST Contrast</dd>
 
         <dt>
 
@@ -96,6 +104,20 @@
 
         <dt>
 
+          <code><a href="eval_times.html">eval_times()</a></code>
+
+        </dt>
+        <dd>Access SuperSurv prediction evaluation times</dd>
+
+        <dt>
+
+          <code><a href="event_weights.html">event_weights()</a></code> <code><a href="event_weights.html">censor_weights()</a></code>
+
+        </dt>
+        <dd>Access SuperSurv ensemble weights</dd>
+
+        <dt>
+
           <code><a href="explain_kernel.html">explain_kernel()</a></code>
 
         </dt>
@@ -107,6 +129,13 @@
 
         </dt>
         <dd>Create a Time-Dependent Survex Explainer</dd>
+
+        <dt>
+
+          <code><a href="learner_names.html">learner_names()</a></code>
+
+        </dt>
+        <dd>Access SuperSurv learner names</dd>
 
         <dt>
 
@@ -162,7 +191,7 @@
           <code><a href="plot_marginal_rmst_curve.html">plot_marginal_rmst_curve()</a></code>
 
         </dt>
-        <dd>Plot Causal RMST Difference Over Time</dd>
+        <dd>Plot Adjusted Marginal RMST Contrast Over Time</dd>
 
         <dt>
 
@@ -306,6 +335,13 @@
 
         <dt>
 
+          <code><a href="print.SuperSurv.html">print(<i>&lt;SuperSurv&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a SuperSurv fit</dd>
+
+        <dt>
+
           <code><a href="screen.all.html">screen.all()</a></code>
 
         </dt>
@@ -345,6 +381,20 @@
 
         </dt>
         <dd>High Variance Screening Algorithm (Unsupervised)</dd>
+
+        <dt>
+
+          <code><a href="selected_variables.html">selected_variables()</a></code>
+
+        </dt>
+        <dd>Access variables selected by SuperSurv screeners</dd>
+
+        <dt>
+
+          <code><a href="summary.SuperSurv.html">summary(<i>&lt;SuperSurv&gt;</i>)</a></code> <code><a href="summary.SuperSurv.html">print(<i>&lt;summary.SuperSurv&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarize a SuperSurv fit</dd>
 
         <dt>
 
@@ -478,6 +528,13 @@
 
         </dt>
         <dd>Wrapper for XGBoost (Robust CV-Tuned + Safe Prediction)</dd>
+
+        <dt>
+
+          <code><a href="training_variables.html">training_variables()</a></code>
+
+        </dt>
+        <dd>Access SuperSurv training variable names</dd>
       </dl></div>
   </main></div>
 

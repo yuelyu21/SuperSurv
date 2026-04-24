@@ -98,7 +98,7 @@ if (requireNamespace("CoxBoost", quietly = TRUE)) {
     penalty = 50
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 #> [1] 5 3
 ```

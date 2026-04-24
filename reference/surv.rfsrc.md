@@ -102,7 +102,7 @@ if (requireNamespace("randomForestSRC", quietly = TRUE)) {
     nodesize = 3
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 #> [1] 5 3
 ```

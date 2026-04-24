@@ -83,11 +83,16 @@ fit <- SuperSurv(
 )
 ```
 
-### 2. Calculate the Counterfactual RMST
+### 2. Estimate the Adjusted Marginal RMST Contrast
 
-We use the `estimate_causal_rmst()` function. This forces the biomarker
-`x4` to 1 for all patients, predicts their survival curves, and
-calculates the RMST, then repeats with `x4` forced to 0.
+We use the
+[`estimate_marginal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.md)
+function to compute an adjusted marginal contrast on the RMST scale. The
+function sets the binary grouping variable `x4` to 1 for all patients,
+predicts their survival curves, integrates those predictions up to the
+restriction horizon `tau`, and then repeats the same procedure with `x4`
+set to 0. The difference between these two standardized averages yields
+the adjusted RMST contrast.
 
 ``` r
 # Estimate the adjusted difference up to tau = 100 months
@@ -98,33 +103,88 @@ results <- estimate_marginal_rmst(
   times = new.times, 
   tau = 100
 )
+#> Adjusted Delta RMST at tau = 100: -1.27 time units
+
+
 
 print(results$ATE_RMST)
+#> [1] -1.269855
 ```
 
-**Interpretation:** If the resulting $\Delta$RMST value is `4.2`, we
-interpret this marginal contrast as: *“After adjusting for complex
-baseline covariates via the Super Learner ensemble, patients with
-biomarker x4 live an average of 4.2 months longer over a 100-month
-horizon compared to those without the biomarker.”*
+**Interpretation:** If the resulting $\Delta$RMST value is `-1.24`, this
+indicates that, after standardizing over the observed covariate
+distribution using the fitted Super Learner ensemble, the group with
+`x4 = 1` is predicted to have approximately 1.24 fewer months of
+restricted mean survival than the group with `x4 = 0` over a 100-month
+horizon.
+
+**Uncertainty:** To quantify uncertainty,
+[`estimate_marginal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.md)
+can optionally apply a perturbation-based inference procedure
+conditional on the fitted ensemble. This returns a perturbation-based
+standard error, confidence interval, and Wald-type p-value.
+
+``` r
+rmst_results_inf <- estimate_marginal_rmst(
+  fit = fit,
+  data = metabric,
+  trt_col = "x4",
+  times = new.times,
+  tau = 100,
+  inference = TRUE,
+  B = 100,
+  seed = 123
+)
+#> Adjusted Delta RMST at tau = 100: -1.27 time units | SE = 0.026 | 95% CI = [-1.32, -1.219]
+
+rmst_results_inf$ATE_RMST
+#> [1] -1.269855
+rmst_results_inf$SE_RMST
+#> [1] 0.02571039
+rmst_results_inf$CI_RMST
+#>     lower     upper 
+#> -1.320246 -1.219464
+format.pval(rmst_results_inf$p_value, digits = 3, eps = 1e-16)
+#> [1] "<1e-16"
+```
+
+*Note:* Because this perturbation procedure conditions on the final
+fitted SuperSurv model and does not refit the learner library or
+ensemble weights, the resulting confidence interval reflects conditional
+uncertainty for the standardized RMST contrast and may be relatively
+narrow.
 
 ### 3. Visualizing the Effect Over Time
 
 The difference between groups might be near zero early on but
-substantial later. We can visualize how the $\Delta$RMST evolves across
-different time horizons using `plot_causal_rmst_curve()`.
+substantial later. We can visualize how the adjusted RMST contrast
+evolves across different restriction times using
+[`plot_marginal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_marginal_rmst_curve.md).
+When `inference = TRUE`, the function also displays perturbation-based
+confidence intervals as a ribbon.
 
 ``` r
 # Plot the Delta RMST across a sequence of tau values
-tau_grid <- seq(20, 140, by = 20)
+tau_grid <- seq(20, 140, by = 30)
 plot_marginal_rmst_curve(
   fit = fit, 
   data = metabric, 
   trt_col = "x4", 
   times = new.times, 
-  tau_seq = tau_grid
+  tau_seq = tau_grid,
+  inference = TRUE, 
+  B = 100, 
+  seed = 123, 
+  ci_level = 0.95
 )
+#> Adjusted Delta RMST at tau = 20: -0.01 time units | SE = 0 | 95% CI = [-0.01, -0.009]
+#> Adjusted Delta RMST at tau = 50: -0.204 time units | SE = 0.005 | 95% CI = [-0.214, -0.194]
+#> Adjusted Delta RMST at tau = 80: -0.781 time units | SE = 0.014 | 95% CI = [-0.807, -0.754]
+#> Adjusted Delta RMST at tau = 110: -1.567 time units | SE = 0.027 | 95% CI = [-1.619, -1.514]
+#> Adjusted Delta RMST at tau = 140: -2.649 time units | SE = 0.045 | 95% CI = [-2.737, -2.56]
 ```
+
+![](causal-rmst_files/figure-html/plot-curve-1.png)
 
 ### 4. Diagnostic: Predicted RMST vs. Observed Time
 
@@ -143,3 +203,5 @@ plot_rmst_vs_obs(
   tau = 350
 )
 ```
+
+![](causal-rmst_files/figure-html/plot-obs-1.png)

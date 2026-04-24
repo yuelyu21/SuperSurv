@@ -74,10 +74,10 @@ Here is the complete guide to the arguments you need to pass:
 
 ### The Model Libraries
 
-- **`event.SL.library`**: A character vector of the base algorithms used
-  to predict the actual survival outcome (e.g., `"surv.coxph"`,
+- **`event.library`**: A character vector of the base algorithms used to
+  predict the actual survival outcome (e.g., `"surv.coxph"`,
   `"surv.rpart"`).
-- **`cens.SL.library`**: The library used to estimate the *censoring*
+- **`cens.library`**: The library used to estimate the *censoring*
   mechanism over time. `SuperSurv` uses these predictions to calculate
   Inverse Probability of Censoring Weights (IPCW). You can use the exact
   same library as your event models, or a simpler one.
@@ -86,9 +86,9 @@ Here is the complete guide to the arguments you need to pass:
 
 - **`metalearner`**: The optimization algorithm used to calculate the
   final ensemble weights. `SuperSurv` offers two distinct approaches:
-  - `"least_squares"` (Default): Optimizes weights by minimizing the
-    IPCW Brier score. Excellent for overall prediction accuracy.
-  - `"nloglik"`: Optimizes weights by minimizing the negative
+  - `"brier"` (Default): Optimizes weights by minimizing the IPCW Brier
+    score. Excellent for overall prediction accuracy.
+  - `"logloss"`: Optimizes weights by minimizing the negative
     log-likelihood. Excellent for improving hazard discrimination.
 - **`nFolds`**: The number of cross-validation folds used to train the
   meta-learner. `V = 5` or `V = 10` is standard. This cross-validation
@@ -139,56 +139,155 @@ fit_nll <- SuperSurv(
 )
 ```
 
-## 4. Inspect the Ensemble Weights and Risks
+## 4. Package Object Interface
+
+`SuperSurv` fits behave like ordinary R model objects. Use the print and
+summary methods for a quick overview, and use accessors for common
+fitted-model details.
+
+``` r
+fit_ls
+#> SuperSurv fit
+#>   Selection: ensemble 
+#>   Event learners: 3 
+#>   Censoring learners: 3 
+#>   Predictions: 381 observations x 4 times
+#>   Evaluation times: 4 values from 50 to 200 
+#>   Nonzero event weights:
+#> surv.weibull_screen.all   surv.coxph_screen.all   surv.rpart_screen.all 
+#>                  0.5906                  0.2344                  0.1750
+
+summary(fit_ls)
+#> Summary of SuperSurv fit
+#>   Selection: ensemble 
+#> 
+#> Call:
+#> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
+#>     newdata = X_te, new.times = new.times, event.library = my_library, 
+#>     cens.library = my_library, verbose = T, control = list(saveFitLibrary = TRUE), 
+#>     metalearner = "brier", selection = "ensemble", nFolds = 5)
+#> 
+#> Event ensemble:
+#>                  learner weight   risk status
+#>  surv.weibull_screen.all 0.5906 0.4854     ok
+#>    surv.coxph_screen.all 0.2344 0.4856     ok
+#>    surv.rpart_screen.all 0.1750 0.4958     ok
+#> 
+#> Censoring ensemble:
+#>                  learner weight   risk status
+#>    surv.coxph_screen.all 0.0689 1.0627     ok
+#>  surv.weibull_screen.all 0.5611 1.0720     ok
+#>    surv.rpart_screen.all 0.3700 1.0754     ok
+#> 
+#> Predictions: 381 observations x 4 times
+#> Evaluation times: 4 values from 50 to 200 
+#> Elapsed time (seconds):
+#> everything      train    predict 
+#>      3.948      3.695      0.249
+
+event_weights(fit_ls)
+#>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
+#>               0.2344382               0.5906097               0.1749521
+
+learner_names(fit_ls)
+#> [1] "surv.coxph_screen.all"   "surv.weibull_screen.all"
+#> [3] "surv.rpart_screen.all"
+
+eval_times(fit_ls)
+#> [1]  50 100 150 200
+
+selected_variables(fit_ls, learner = 1)
+#> [1] "x0" "x1" "x2" "x3" "x4" "x5" "x6" "x7" "x8"
+```
+
+## 5. Inspect the Ensemble Weights and Risks
 
 The defining feature of the Super Learner is that it does not just pick
 the single “best” model; it finds the optimal weighted combination of
 all models based on their cross-validated performance.
 
-Let’s inspect the weights (`event.coef`) and the cross-validated risks
-(`event.cvRisks`) for both of our meta-learners.
+Let’s inspect the weights and cross-validated risks for both of our
+meta-learners.
 
 ``` r
 cat("\n--- LEAST SQUARES METALEARNER ---\n")
 #> 
 #> --- LEAST SQUARES METALEARNER ---
-print(round(fit_ls$event.coef, 4))
-#>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                  0.2344                  0.5906                  0.1750
-cat("CV Risks (Lower is Better):\n")
-#> CV Risks (Lower is Better):
-print(round(fit_ls$event.cvRisks, 4))
-#>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                  0.4856                  0.4854                  0.4958
+summary(fit_ls)
+#> Summary of SuperSurv fit
+#>   Selection: ensemble 
+#> 
+#> Call:
+#> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
+#>     newdata = X_te, new.times = new.times, event.library = my_library, 
+#>     cens.library = my_library, verbose = T, control = list(saveFitLibrary = TRUE), 
+#>     metalearner = "brier", selection = "ensemble", nFolds = 5)
+#> 
+#> Event ensemble:
+#>                  learner weight   risk status
+#>  surv.weibull_screen.all 0.5906 0.4854     ok
+#>    surv.coxph_screen.all 0.2344 0.4856     ok
+#>    surv.rpart_screen.all 0.1750 0.4958     ok
+#> 
+#> Censoring ensemble:
+#>                  learner weight   risk status
+#>    surv.coxph_screen.all 0.0689 1.0627     ok
+#>  surv.weibull_screen.all 0.5611 1.0720     ok
+#>    surv.rpart_screen.all 0.3700 1.0754     ok
+#> 
+#> Predictions: 381 observations x 4 times
+#> Evaluation times: 4 values from 50 to 200 
+#> Elapsed time (seconds):
+#> everything      train    predict 
+#>      3.948      3.695      0.249
 
 cat("\n--- NLOGLIK METALEARNER ---\n")
 #> 
 #> --- NLOGLIK METALEARNER ---
-print(round(fit_nll$event.coef, 4))
-#>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                  0.9929                  0.0042                  0.0029
-cat("CV Risks (Lower is Better):\n")
-#> CV Risks (Lower is Better):
-print(round(fit_nll$event.cvRisks, 4))
-#>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                  0.4520                  0.4583                  0.4800
+summary(fit_nll)
+#> Summary of SuperSurv fit
+#>   Selection: ensemble 
+#> 
+#> Call:
+#> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
+#>     newdata = X_te, new.times = new.times, event.library = my_library, 
+#>     cens.library = my_library, verbose = FALSE, control = list(saveFitLibrary = TRUE), 
+#>     metalearner = "logloss", selection = "ensemble", nFolds = 5)
+#> 
+#> Event ensemble:
+#>                  learner weight   risk status
+#>    surv.coxph_screen.all 0.9929 0.4520     ok
+#>  surv.weibull_screen.all 0.0042 0.4583     ok
+#>    surv.rpart_screen.all 0.0029 0.4800     ok
+#> 
+#> Censoring ensemble:
+#>                  learner weight   risk status
+#>    surv.coxph_screen.all 0.0563 1.0840     ok
+#>    surv.rpart_screen.all 0.4646 1.0848     ok
+#>  surv.weibull_screen.all 0.4790 1.0932     ok
+#> 
+#> Predictions: 381 observations x 4 times
+#> Evaluation times: 4 values from 50 to 200 
+#> Elapsed time (seconds):
+#> everything      train    predict 
+#>     14.412     14.163      0.241
 ```
 
 ### How to Interpret This:
 
-- **`event.coef`**: These are the final weights assigned to each base
-  learner. A weight of `0` means the meta-learner completely dropped
-  that model because it did not contribute to overall predictive
+- **`event_weights(fit)`**: These are the final weights assigned to each
+  base learner. A weight of `0` means the meta-learner completely
+  dropped that model because it did not contribute to overall predictive
   accuracy. A high weight means that model heavily influences the final
   ensemble prediction. Notice how the `least_squares` and `nloglik`
   algorithms might distribute these weights differently based on their
   optimization goals!
-- **`event.cvRisks`**: This is the cross-validated error for each
-  individual base learner. The meta-learner uses these errors to
+- **`summary(fit)`**: This reports the cross-validated risk for each
+  individual base learner. The meta-learner uses these risks to
   calculate the optimal weights. Lower risk always indicates better
   performance.
 
-## 5. Generating Predictions on New Data
+## 6. Generating Predictions on New Data
 
 If you passed `newdata` during the training phase, `SuperSurv` already
 calculated the predictions for your test set. However, in a real-world
@@ -207,13 +306,14 @@ new_patients <- X_te[1:6, ]
 ensemble_preds <- predict(
   object = fit_ls, 
   newdata = new_patients, 
-  new.times = new.times
+  new.times = new.times,
+  type = "event"
 )
 
 cat("\n--- PREDICTED SURVIVAL PROBABILITIES ---\n")
 #> 
 #> --- PREDICTED SURVIVAL PROBABILITIES ---
-final_matrix <- ensemble_preds$event.predict
+final_matrix <- ensemble_preds
 colnames(final_matrix) <- paste0("Time_", new.times)
 rownames(final_matrix) <- paste0("Patient_", 1:6)
 
@@ -237,7 +337,7 @@ estimated probability that the patient will *survive* past that specific
 time point. As time increases (moving left to right across a row), the
 survival probability naturally decreases.
 
-## 6. Visualizing Patient-Specific Predictions
+## 7. Visualizing Patient-Specific Predictions
 
 While raw probability matrices ($N \times T$) are perfect for downstream
 coding and performance benchmarking, they are difficult to interpret
@@ -260,7 +360,7 @@ plot_predict(
 
 ![](supersurv-ensemble_files/figure-html/plot-predict-1.png)
 
-## 7. Next Steps
+## 8. Next Steps
 
 You now know how to prepare data, define a model library, choose a
 meta-learner, and generate patient-specific survival curves.

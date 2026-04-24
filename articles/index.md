@@ -11,6 +11,9 @@
   Estimating absolute treatment effects and covariate-adjusted group
   differences using G-computation.
 
+- [Extending
+  SuperSurv](https://yuelyu21.github.io/SuperSurv/articles/extending-supersurv.md):
+
 - [5. Advanced Hyperparameter Tuning & Grid
   Search](https://yuelyu21.github.io/SuperSurv/articles/grid-search.md):
 

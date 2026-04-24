@@ -71,22 +71,32 @@ Let’s look at the cross-validated risks and the final meta-learner
 weights.
 
 ``` r
-cat("Cross-Validated Risks (Lower is better):\n")
-#> Cross-Validated Risks (Lower is better):
-print(round(fit_parametric$event.cvRisks, 4))
-#>       surv.coxph_screen.all     surv.weibull_screen.all 
-#>                      8.8384                      8.8420 
-#> surv.exponential_screen.all   surv.lognormal_screen.all 
-#>                      8.8508                      8.8444
-
-cat("\nFinal Ensemble Weights:\n")
+summary(fit_parametric)
+#> Summary of SuperSurv fit
+#>   Selection: ensemble 
 #> 
-#> Final Ensemble Weights:
-print(round(fit_parametric$event.coef, 4))
-#>       surv.coxph_screen.all     surv.weibull_screen.all 
-#>                      0.9979                      0.0000 
-#> surv.exponential_screen.all   surv.lognormal_screen.all 
-#>                      0.0000                      0.0021
+#> Call:
+#> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
+#>     newdata = X_te, new.times = new.times, event.library = parametric_library, 
+#>     cens.library = c("surv.coxph"), verbose = FALSE, control = list(saveFitLibrary = TRUE), 
+#>     selection = "ensemble", nFolds = 3)
+#> 
+#> Event ensemble:
+#>                      learner weight   risk status
+#>        surv.coxph_screen.all 0.9979 8.8384     ok
+#>      surv.weibull_screen.all 0.0000 8.8420     ok
+#>    surv.lognormal_screen.all 0.0021 8.8444     ok
+#>  surv.exponential_screen.all 0.0000 8.8508     ok
+#> 
+#> Censoring ensemble:
+#>                learner weight   risk status
+#>  surv.coxph_screen.all      1 1.0488     ok
+#> 
+#> Predictions: 572 observations x 7 times
+#> Evaluation times: 7 values from 50 to 200 
+#> Elapsed time (seconds):
+#> everything      train    predict 
+#>      2.058      1.936      0.118
 ```
 
 ### Interpretation

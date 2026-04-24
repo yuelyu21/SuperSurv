@@ -47,7 +47,7 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
     control = list(saveFitLibrary = TRUE)
   )
 
-  preds <- predict(fit, newdata = X, new.times = eval_times)
+  preds <- predict(fit, newdata = X, new.times = eval_times, type = "event")
 
   plot_predict(
     preds = preds,

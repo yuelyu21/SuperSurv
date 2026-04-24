@@ -46,8 +46,8 @@ rf_standalone <- surv.rfsrc(
 )
 
 # 2. Extract the fitted model object and prediction matrix
-rf_fit <- rf_standalone$fit
-rf_pred_matrix <- rf_standalone$pred
+rf_fit <- rf_standalone[["fit"]]
+rf_pred_matrix <- rf_standalone[["pred"]]
 ```
 
 Because our plotting functions are universally compatible, we can plot

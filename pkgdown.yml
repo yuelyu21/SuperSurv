@@ -4,6 +4,7 @@ pkgdown_sha: ~
 articles:
   base-learner-rfsrc: base-learner-rfsrc.html
   causal-rmst: causal-rmst.html
+  extending-supersurv: extending-supersurv.html
   grid-search: grid-search.html
   installation: installation.html
   model-performance: model-performance.html
@@ -13,7 +14,7 @@ articles:
   shap-explanations: shap-explanations.html
   supersurv-best: supersurv-best.html
   supersurv-ensemble: supersurv-ensemble.html
-last_built: 2026-03-16T04:52Z
+last_built: 2026-04-24T21:07Z
 urls:
   reference: https://yuelyu21.github.io/SuperSurv/reference
   article: https://yuelyu21.github.io/SuperSurv/articles

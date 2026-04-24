@@ -84,6 +84,7 @@ A list containing:
 ## Examples
 
 ``` r
+if (FALSE) { # \dontrun{
 if (.Platform$OS.type != "windows" &&
   requireNamespace("BART", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
@@ -104,6 +105,7 @@ if (.Platform$OS.type != "windows" &&
     nskip = 5
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
+} # }
 ```

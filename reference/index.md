@@ -4,8 +4,10 @@
 
 - [`SuperSurv()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.md)
   : Super Learner for conditional survival functions
+- [`coef(`*`<SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/coef.SuperSurv.md)
+  : Extract SuperSurv ensemble coefficients
 - [`estimate_marginal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.md)
-  : Estimate Causal Restricted Mean Survival Time (RMST)
+  : Estimate an Adjusted Marginal RMST Contrast
 - [`eval_brier()`](https://yuelyu21.github.io/SuperSurv/reference/eval_brier.md)
   : IPCW Brier Score and Integrated Brier Score (IBS)
 - [`eval_cindex()`](https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.md)
@@ -14,10 +16,17 @@
   : Evaluate SuperSurv predictions on test data
 - [`eval_timeROC()`](https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.md)
   : Time-Dependent AUC and Integrated AUC
+- [`eval_times()`](https://yuelyu21.github.io/SuperSurv/reference/eval_times.md)
+  : Access SuperSurv prediction evaluation times
+- [`event_weights()`](https://yuelyu21.github.io/SuperSurv/reference/event_weights.md)
+  [`censor_weights()`](https://yuelyu21.github.io/SuperSurv/reference/event_weights.md)
+  : Access SuperSurv ensemble weights
 - [`explain_kernel()`](https://yuelyu21.github.io/SuperSurv/reference/explain_kernel.md)
   : Explain Predictions with Global SHAP (Kernel SHAP)
 - [`explain_survex()`](https://yuelyu21.github.io/SuperSurv/reference/explain_survex.md)
   : Create a Time-Dependent Survex Explainer
+- [`learner_names()`](https://yuelyu21.github.io/SuperSurv/reference/learner_names.md)
+  : Access SuperSurv learner names
 - [`list_wrappers()`](https://yuelyu21.github.io/SuperSurv/reference/list_wrappers.md)
   : List Available Wrappers and Screeners in SuperSurv
 - [`metabric`](https://yuelyu21.github.io/SuperSurv/reference/metabric.md)
@@ -33,7 +42,7 @@
 - [`plot_global_importance()`](https://yuelyu21.github.io/SuperSurv/reference/plot_global_importance.md)
   : Plot Global Feature Importance for SuperSurv
 - [`plot_marginal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_marginal_rmst_curve.md)
-  : Plot Causal RMST Difference Over Time
+  : Plot Adjusted Marginal RMST Contrast Over Time
 - [`plot_patient_waterfall()`](https://yuelyu21.github.io/SuperSurv/reference/plot_patient_waterfall.md)
   : Waterfall Plot for an Individual Patient
 - [`plot_predict()`](https://yuelyu21.github.io/SuperSurv/reference/plot_predict.md)
@@ -74,6 +83,8 @@
   : Prediction function for SVM wrapper
 - [`predict(`*`<surv.xgboost>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/predict.surv.xgboost.md)
   : Prediction function for XGBoost wrapper
+- [`print(`*`<SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/print.SuperSurv.md)
+  : Print a SuperSurv fit
 - [`screen.all()`](https://yuelyu21.github.io/SuperSurv/reference/screen.all.md)
   : Keep All Variables Screener
 - [`screen.elasticnet()`](https://yuelyu21.github.io/SuperSurv/reference/screen.elasticnet.md)
@@ -86,6 +97,11 @@
   : Random Survival Forest Screening Algorithm
 - [`screen.var()`](https://yuelyu21.github.io/SuperSurv/reference/screen.var.md)
   : High Variance Screening Algorithm (Unsupervised)
+- [`selected_variables()`](https://yuelyu21.github.io/SuperSurv/reference/selected_variables.md)
+  : Access variables selected by SuperSurv screeners
+- [`summary(`*`<SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/summary.SuperSurv.md)
+  [`print(`*`<summary.SuperSurv>`*`)`](https://yuelyu21.github.io/SuperSurv/reference/summary.SuperSurv.md)
+  : Summarize a SuperSurv fit
 - [`surv.aorsf()`](https://yuelyu21.github.io/SuperSurv/reference/surv.aorsf.md)
   : Wrapper for AORSF (Oblique Random Survival Forest)
 - [`surv.bart()`](https://yuelyu21.github.io/SuperSurv/reference/surv.bart.md)
@@ -124,3 +140,5 @@
   : Parametric Survival Prediction Wrapper (Weibull)
 - [`surv.xgboost()`](https://yuelyu21.github.io/SuperSurv/reference/surv.xgboost.md)
   : Wrapper for XGBoost (Robust CV-Tuned + Safe Prediction)
+- [`training_variables()`](https://yuelyu21.github.io/SuperSurv/reference/training_variables.md)
+  : Access SuperSurv training variable names

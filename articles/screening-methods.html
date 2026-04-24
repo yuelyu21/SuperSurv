@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
     <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -219,20 +220,12 @@ you likely want to know <em>which</em> variables actually survived the
 screening process. In clinical and biological research, these selected
 features often represent the most important biomarkers or predictive
 genes.</p>
-<p><code>SuperSurv</code> stores this screening information directly
-inside the fitted model object, specifically separated into
-<code>event.whichScreen</code> and <code>cens.whichScreen</code>. We can
-extract the logical matrix that indicates which columns were passed to
-each specific base learner.</p>
+<p><code>SuperSurv</code> provides accessor functions for fitted model
+details, so you can inspect screening results without relying on
+internal list components.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># The event.whichScreen object is a logical matrix.</span></span>
-<span><span class="co"># Rows correspond to the predictors, and columns correspond to the algorithms in our event library.</span></span>
-<span></span>
-<span><span class="co"># 1. Get the logical vector for the 2nd model (Row 2)</span></span>
-<span><span class="va">is_selected</span> <span class="op">&lt;-</span> <span class="va">fit_highdim</span><span class="op">$</span><span class="va">event.whichScreen</span><span class="op">[</span><span class="fl">2</span>, <span class="op">]</span> </span>
-<span></span>
-<span><span class="co"># 2. Map it to our original column names</span></span>
-<span><span class="va">selected_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">X_tr</span><span class="op">)</span><span class="op">[</span><span class="va">is_selected</span><span class="op">]</span></span>
+<code class="sourceCode R"><span><span class="co"># Get the variables retained by the second event learner.</span></span>
+<span><span class="va">selected_features</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/selected_variables.html">selected_variables</a></span><span class="op">(</span><span class="va">fit_highdim</span>, learner <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Total features evaluated:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X_tr</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Total features evaluated: 29</span></span>

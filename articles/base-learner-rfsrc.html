@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
     <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -117,8 +118,8 @@ can use these completely independent of the Super Learner ensemble.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2. Extract the fitted model object and prediction matrix</span></span>
-<span><span class="va">rf_fit</span> <span class="op">&lt;-</span> <span class="va">rf_standalone</span><span class="op">$</span><span class="va">fit</span></span>
-<span><span class="va">rf_pred_matrix</span> <span class="op">&lt;-</span> <span class="va">rf_standalone</span><span class="op">$</span><span class="va">pred</span></span></code></pre></div>
+<span><span class="va">rf_fit</span> <span class="op">&lt;-</span> <span class="va">rf_standalone</span><span class="op">[[</span><span class="st">"fit"</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">rf_pred_matrix</span> <span class="op">&lt;-</span> <span class="va">rf_standalone</span><span class="op">[[</span><span class="st">"pred"</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <p>Because our plotting functions are universally compatible, we can
 plot individual patient curves directly from this standalone matrix:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">

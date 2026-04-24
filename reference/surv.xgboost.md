@@ -124,7 +124,7 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
     max_depth = 1
   )
 
-  dim(fit$pred)
+  dim(fit[["pred"]])
 }
 #> Warning: Parameter 'watchlist' has been renamed to 'evals'. This warning will become an error in a future version.
 #> [1] 5 3

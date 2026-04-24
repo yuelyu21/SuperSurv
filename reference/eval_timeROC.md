@@ -55,7 +55,7 @@ the integrated AUC `iAUC`.
  eval_timeROC(
    time = dat$duration[1:10],
    event = dat$event[1:10],
-   S_mat = fit$pred,
+   S_mat = fit[["pred"]],
    times = times
  )
 #> $AUC_curve

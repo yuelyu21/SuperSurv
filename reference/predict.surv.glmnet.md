@@ -56,7 +56,7 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
     nfolds = 3
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 #> [1] 5 3

@@ -57,7 +57,7 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
     max_depth = 1
   )
 
-  pred <- predict(fit$fit, newdata = newX, new.times = times)
+  pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
   dim(pred)
 }
 #> Warning: Parameter 'watchlist' has been renamed to 'evals'. This warning will become an error in a future version.

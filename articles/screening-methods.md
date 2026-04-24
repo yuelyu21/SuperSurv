@@ -149,20 +149,13 @@ likely want to know *which* variables actually survived the screening
 process. In clinical and biological research, these selected features
 often represent the most important biomarkers or predictive genes.
 
-`SuperSurv` stores this screening information directly inside the fitted
-model object, specifically separated into `event.whichScreen` and
-`cens.whichScreen`. We can extract the logical matrix that indicates
-which columns were passed to each specific base learner.
+`SuperSurv` provides accessor functions for fitted model details, so you
+can inspect screening results without relying on internal list
+components.
 
 ``` r
-# The event.whichScreen object is a logical matrix.
-# Rows correspond to the predictors, and columns correspond to the algorithms in our event library.
-
-# 1. Get the logical vector for the 2nd model (Row 2)
-is_selected <- fit_highdim$event.whichScreen[2, ] 
-
-# 2. Map it to our original column names
-selected_features <- colnames(X_tr)[is_selected]
+# Get the variables retained by the second event learner.
+selected_features <- selected_variables(fit_highdim, learner = 2)
 
 cat("Total features evaluated:", ncol(X_tr), "\n")
 #> Total features evaluated: 29

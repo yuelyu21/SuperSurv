@@ -7,7 +7,15 @@ ensemble.
 
 ``` r
 # S3 method for class 'SuperSurv'
-predict(object, newdata, new.times, onlySL = FALSE, threshold = 1e-04, ...)
+predict(
+  object,
+  newdata,
+  new.times,
+  type = c("both", "event", "censoring"),
+  onlySL = FALSE,
+  threshold = 1e-04,
+  ...
+)
 ```
 
 ## Arguments
@@ -24,6 +32,12 @@ predict(object, newdata, new.times, onlySL = FALSE, threshold = 1e-04, ...)
 
   A numeric vector of times at which to predict survival.
 
+- type:
+
+  Character string specifying the prediction output. Use `"event"` for
+  the event survival matrix, `"censoring"` for the censoring survival
+  matrix, or `"both"` for the full list of outputs.
+
 - onlySL:
 
   Logical. If TRUE, only uses models with weights \> threshold.
@@ -38,20 +52,19 @@ predict(object, newdata, new.times, onlySL = FALSE, threshold = 1e-04, ...)
 
 ## Value
 
-A list containing:
+If `type = "event"` or `type = "censoring"`, a numeric matrix with rows
+corresponding to observations and columns corresponding to `new.times`.
+If `type = "both"`, a list containing:
 
-- `event.predict`: A numeric matrix (rows = observations, columns =
-  times) of the final predicted survival probabilities from the
-  ensemble.
+- `event.predict`: A numeric matrix of final event survival predictions.
 
-- `event.library.predict`: A 3D numeric array (observations x times x
-  models) containing the individual survival predictions from each base
-  learner.
+- `event.library.predict`: A 3D numeric array of event learner
+  predictions.
 
-- `cens.predict`: A numeric matrix of the predicted censoring
-  probabilities.
+- `cens.predict`: A numeric matrix of final censoring survival
+  predictions.
 
-- `cens.library.predict`: A 3D numeric array of the individual censoring
+- `cens.library.predict`: A 3D numeric array of censoring learner
   predictions.
 
 ## Examples
@@ -76,13 +89,14 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
     control = list(saveFitLibrary = TRUE)
   )
 
-  preds <- predict(
+  pred_event <- predict(
     object = fit,
     newdata = newX,
-    new.times = new.times
+    new.times = new.times,
+    type = "event"
   )
 
-  dim(preds$event.predict)
+  dim(pred_event)
 }
 #> [1] 10  6
 ```

@@ -90,20 +90,21 @@ fit_best <- SuperSurv(
 ## 3. Inspecting the Weights
 
 The difference between the two methodologies is immediately obvious when
-we inspect the meta-learner coefficients (`event.coef`).
+we inspect the meta-learner coefficients with
+[`event_weights()`](https://yuelyu21.github.io/SuperSurv/reference/event_weights.md).
 
 ``` r
 cat("\n--- ENSEMBLE WEIGHTS (selection = 'ensemble') ---\n")
 #> 
 #> --- ENSEMBLE WEIGHTS (selection = 'ensemble') ---
-print(round(fit_ensemble$event.coef, 4))
+print(round(event_weights(fit_ensemble), 4))
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
 #>                  0.5152                  0.1680                  0.3167
 
 cat("\n--- BEST MODEL WEIGHTS (selection = 'best') ---\n")
 #> 
 #> --- BEST MODEL WEIGHTS (selection = 'best') ---
-print(round(fit_best$event.coef, 4))
+print(round(event_weights(fit_best), 4))
 #> [1] 1 0 0
 ```
 

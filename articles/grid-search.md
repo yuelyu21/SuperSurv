@@ -93,7 +93,7 @@ fit_tuned <- SuperSurv(
 )
 
 # Inspect which hyperparameter combination won!
-round(fit_tuned$event.coef, 3)
+round(event_weights(fit_tuned), 3)
 ```
 
 By leveraging
