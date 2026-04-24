@@ -48,7 +48,7 @@ SuperSurv(
 
 \item{obsWeights}{Observation weights.}
 
-\item{metalearner}{Character string specifying the optimizer (e.g., "least_squares").}
+\item{metalearner}{Character string specifying the optimizer (e.g., "brier" or "logloss").}
 
 \item{selection}{Character. Specifies how the meta-learner combines the base models.
 Use \code{"ensemble"} (default) to calculate a weighted average (convex combination)
