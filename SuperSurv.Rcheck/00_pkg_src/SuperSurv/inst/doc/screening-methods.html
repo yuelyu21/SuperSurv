@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>4. High-Dimensional Data &amp; Variable Screening</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">4. High-Dimensional Data &amp; Variable
+Screening</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In modern clinical research and bioinformatics, it is common to
+encounter high-dimensional datasets where the number of predictors
+(genes, biomarkers, clinical features) far exceeds the number of
+observed events (<span class="math inline">\(p \gg n\)</span>).</p>
+<p>Feeding thousands of raw variables directly into complex machine
+learning algorithms introduces two massive problems: 1.
+<strong>Computational Bottlenecks:</strong> Algorithms like Random
+Survival Forests become prohibitively slow. 2.
+<strong>Overfitting:</strong> Models will mathematically memorize
+background noise instead of true biological signals, destroying
+out-of-sample prediction accuracy.</p>
+<p><code>SuperSurv</code> elegantly handles this through
+<strong>Variable Screening</strong>. Screening acts as a computational
+filter <em>before</em> the models are fitted. It evaluates all
+predictors, drops the statistical noise, and only passes the most highly
+associated features into your base learners.</p>
+</div>
+<div id="simulating-high-dimensional-data" class="section level2">
+<h2>1. Simulating High-Dimensional Data</h2>
+<p>To demonstrate how screening works, we will use our standard
+<code>metabric</code> dataset, but we will artificially inject 100
+columns of pure random noise. This simulates a high-dimensional genomic
+dataset where most measured features have absolutely no relationship to
+patient survival.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(SuperSurv)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;metabric&quot;</span>, <span class="at">package =</span> <span class="st">&quot;SuperSurv&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co"># Create 100 columns of random noise (simulating irrelevant genes/biomarkers)</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>n_patients <span class="ot">&lt;-</span> <span class="fu">nrow</span>(metabric)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>noise_data <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n_patients <span class="sc">*</span> <span class="dv">20</span>), <span class="at">nrow =</span> n_patients)</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">colnames</span>(noise_data) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;noise_&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co"># Combine the real data with the noise</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>high_dim_data <span class="ot">&lt;-</span> <span class="fu">cbind</span>(metabric, noise_data)</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co"># Standard Train/Test Split</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>train_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(high_dim_data), <span class="fl">0.7</span> <span class="sc">*</span> <span class="fu">nrow</span>(high_dim_data))</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>train <span class="ot">&lt;-</span> high_dim_data[train_idx, ]</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>test  <span class="ot">&lt;-</span> high_dim_data[<span class="sc">-</span>train_idx, ]</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>X_tr <span class="ot">&lt;-</span> train[, <span class="fu">grep</span>(<span class="st">&quot;^x|^noise&quot;</span>, <span class="fu">names</span>(high_dim_data))]</span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>X_te <span class="ot">&lt;-</span> test[, <span class="fu">grep</span>(<span class="st">&quot;^x|^noise&quot;</span>, <span class="fu">names</span>(high_dim_data))]</span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>new.times <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">50</span>, <span class="dv">200</span>, <span class="at">by =</span> <span class="dv">25</span>)</span></code></pre></div>
+</div>
+<div id="defining-the-screening-algorithms" class="section level2">
+<h2>2. Defining the Screening Algorithms</h2>
+<p>Just as we have a library for prediction algorithms,
+<code>SuperSurv</code> utilizes a library for screening algorithms. You
+can pair any prediction model with any screening function to create a
+streamlined pipeline.</p>
+<p><code>SuperSurv</code> includes a comprehensive suite of built-in
+screeners: * <strong><code>screen.marg</code></strong>: Marginal
+screening (keeps variables with strong univariate associations). *
+<strong><code>screen.glmnet</code></strong>: Penalized Lasso screening
+(shrinks irrelevant feature coefficients to exact zero). *
+<strong><code>screen.elasticnet</code></strong>: Elastic Net screening
+(combines Lasso and Ridge penalties; highly recommended for highly
+correlated biological features like gene expression data). *
+<strong><code>screen.rfsrc</code></strong>: Tree-based screening (keeps
+features with high Random Forest variable importance). *
+<strong><code>screen.var</code></strong>: Unsupervised screening (drops
+features with near-zero variance). *
+<strong><code>screen.all</code></strong>: A baseline passthrough (keeps
+all variables without screening).</p>
+<p>Let’s build a library that tests different combinations of prediction
+and screening:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># We pass a list of vectors. The first element is the prediction model, </span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># and the second element is the screening algorithm.</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>my_screen_library <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;surv.coxph&quot;</span>, <span class="st">&quot;screen.all&quot;</span>),         <span class="co"># Baseline: Cox model with ALL variables</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;surv.coxph&quot;</span>, <span class="st">&quot;screen.marg&quot;</span>),        <span class="co"># Screen by marginal association, then fit Cox</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;surv.weibull&quot;</span>, <span class="st">&quot;screen.elasticnet&quot;</span>),<span class="co"># Screen via Elastic Net, then fit Weibull</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;surv.rpart&quot;</span>, <span class="st">&quot;screen.var&quot;</span>)          <span class="co"># Drop zero-variance noise, then fit a Tree</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co"># For the censoring library, we use an unscreened approach </span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>cens_library <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;surv.coxph&quot;</span>)</span></code></pre></div>
+</div>
+<div id="training-with-embedded-screening" class="section level2">
+<h2>3. Training with Embedded Screening</h2>
+<p>When we pass this paired library into <code>SuperSurv</code>, the
+meta-learner handles the cross-validation with absolute statistical
+rigor.</p>
+<p><strong>Crucial Methodological Detail:</strong> The screening step is
+performed <em>inside</em> the cross-validation folds. If you screen the
+entire dataset before splitting it into folds, you cause “data leakage,”
+leading to overly optimistic benchmark metrics. <code>SuperSurv</code>
+protects you from this automatically.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>fit_highdim <span class="ot">&lt;-</span> <span class="fu">SuperSurv</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">time =</span> train<span class="sc">$</span>duration,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">event =</span> train<span class="sc">$</span>event,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">X =</span> X_tr,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">newdata =</span> X_te,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">new.times =</span> new.times,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">event.library =</span> my_screen_library, <span class="co"># Pass our screened library</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">cens.library =</span> cens_library,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">control =</span> <span class="fu">list</span>(<span class="at">saveFitLibrary =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">verbose =</span> T,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">nFolds =</span> <span class="dv">3</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="evaluating-the-screened-ensemble" class="section level2">
+<h2>4. Evaluating the Screened Ensemble</h2>
+<p>Despite injecting 100 columns of pure noise, our ensemble still
+performs exceptionally well because the screening algorithms
+successfully filtered out the irrelevant variables before the base
+learners could overfit to them.</p>
+<p>We can evaluate this exactly as we did in previous tutorials using
+<code>eval_summary()</code> and <code>plot_benchmark()</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Check the integrated performance</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>screened_performance <span class="ot">&lt;-</span> <span class="fu">eval_summary</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">object =</span> fit_highdim,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">newdata =</span> X_te,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">time =</span> test<span class="sc">$</span>duration,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">event =</span> test<span class="sc">$</span>event,</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="at">eval_times =</span> new.times</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co"># Plot the benchmark</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co"># plot_benchmark(fit_highdim, newdata = X_te, time = test$duration, event = test$event, eval_times = new.times)</span></span></code></pre></div>
+<p>By leveraging <code>SuperSurv</code>’s screening capabilities, you
+can scale your survival analysis to massive genomic and clinical
+datasets without sacrificing computational speed or predictive
+accuracy.</p>
+</div>
+<div id="identifying-the-selected-features" class="section level2">
+<h2>5. Identifying the Selected Features</h2>
+<p>After the Super Learner finishes its cross-validation and fitting,
+you likely want to know <em>which</em> variables actually survived the
+screening process. In clinical and biological research, these selected
+features often represent the most important biomarkers or predictive
+genes.</p>
+<p><code>SuperSurv</code> provides accessor functions for fitted model
+details, so you can inspect screening results without relying on
+internal list components.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Get the variables retained by the second event learner.</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>selected_features <span class="ot">&lt;-</span> <span class="fu">selected_variables</span>(fit_highdim, <span class="at">learner =</span> <span class="dv">2</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Total features evaluated:&quot;</span>, <span class="fu">ncol</span>(X_tr), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; Total features evaluated: 29</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Features retained by Elastic Net:&quot;</span>, <span class="fu">length</span>(selected_features), <span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; Features retained by Elastic Net: 10</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Selected Features:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; Selected Features:</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">print</span>(selected_features)</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;x0&quot;       &quot;x1&quot;       &quot;x2&quot;       &quot;x3&quot;       &quot;x4&quot;       &quot;x5&quot;      </span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;x6&quot;       &quot;x7&quot;       &quot;x8&quot;       &quot;noise_10&quot;</span></span></code></pre></div>
+<p>By extracting these features, you can seamlessly transition from pure
+predictive modeling into downstream biological inference or pathway
+analysis.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head><title>R: A Unified Framework for Machine Learning Ensembles in Survival
+Analysis</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+<h1> A Unified Framework for Machine Learning Ensembles in Survival
+Analysis
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;SuperSurv&rsquo; version 0.1.2</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../doc/index.html">User guides, package vignettes and other documentation.</a></li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table style="width: 100%;">
+<tr><td style="width: 25%;"><a href="event_weights.html">censor_weights</a></td>
+<td>Access SuperSurv ensemble weights</td></tr>
+<tr><td style="width: 25%;"><a href="event_weights.html">censor_weights.SuperSurv</a></td>
+<td>Access SuperSurv ensemble weights</td></tr>
+<tr><td style="width: 25%;"><a href="coef.SuperSurv.html">coef.SuperSurv</a></td>
+<td>Extract SuperSurv ensemble coefficients</td></tr>
+<tr><td style="width: 25%;"><a href="estimate_marginal_rmst.html">estimate_marginal_rmst</a></td>
+<td>Estimate an Adjusted Marginal RMST Contrast</td></tr>
+<tr><td style="width: 25%;"><a href="eval_brier.html">eval_brier</a></td>
+<td>IPCW Brier Score and Integrated Brier Score (IBS)</td></tr>
+<tr><td style="width: 25%;"><a href="eval_cindex.html">eval_cindex</a></td>
+<td>Calculate Concordance Index (Harrell's or Uno's)</td></tr>
+<tr><td style="width: 25%;"><a href="eval_summary.html">eval_summary</a></td>
+<td>Evaluate SuperSurv predictions on test data</td></tr>
+<tr><td style="width: 25%;"><a href="eval_timeROC.html">eval_timeROC</a></td>
+<td>Time-Dependent AUC and Integrated AUC</td></tr>
+<tr><td style="width: 25%;"><a href="eval_times.html">eval_times</a></td>
+<td>Access SuperSurv prediction evaluation times</td></tr>
+<tr><td style="width: 25%;"><a href="eval_times.html">eval_times.SuperSurv</a></td>
+<td>Access SuperSurv prediction evaluation times</td></tr>
+<tr><td style="width: 25%;"><a href="event_weights.html">event_weights</a></td>
+<td>Access SuperSurv ensemble weights</td></tr>
+<tr><td style="width: 25%;"><a href="event_weights.html">event_weights.SuperSurv</a></td>
+<td>Access SuperSurv ensemble weights</td></tr>
+<tr><td style="width: 25%;"><a href="explain_kernel.html">explain_kernel</a></td>
+<td>Explain Predictions with Global SHAP (Kernel SHAP)</td></tr>
+<tr><td style="width: 25%;"><a href="explain_survex.html">explain_survex</a></td>
+<td>Create a Time-Dependent Survex Explainer</td></tr>
+<tr><td style="width: 25%;"><a href="learner_names.html">learner_names</a></td>
+<td>Access SuperSurv learner names</td></tr>
+<tr><td style="width: 25%;"><a href="learner_names.html">learner_names.SuperSurv</a></td>
+<td>Access SuperSurv learner names</td></tr>
+<tr><td style="width: 25%;"><a href="list_wrappers.html">list_wrappers</a></td>
+<td>List Available Wrappers and Screeners in SuperSurv</td></tr>
+<tr><td style="width: 25%;"><a href="metabric.html">metabric</a></td>
+<td>METABRIC Breast Cancer Dataset</td></tr>
+<tr><td style="width: 25%;"><a href="plot_beeswarm.html">plot_beeswarm</a></td>
+<td>Beeswarm Summary Plot for SuperSurv SHAP</td></tr>
+<tr><td style="width: 25%;"><a href="plot_benchmark.html">plot_benchmark</a></td>
+<td>Plot Longitudinal Benchmark Metrics</td></tr>
+<tr><td style="width: 25%;"><a href="plot_calibration.html">plot_calibration</a></td>
+<td>Plot Survival Calibration Curve</td></tr>
+<tr><td style="width: 25%;"><a href="plot_dependence.html">plot_dependence</a></td>
+<td>Plot SHAP Dependence for SuperSurv</td></tr>
+<tr><td style="width: 25%;"><a href="plot_global_importance.html">plot_global_importance</a></td>
+<td>Plot Global Feature Importance for SuperSurv</td></tr>
+<tr><td style="width: 25%;"><a href="plot_marginal_rmst_curve.html">plot_marginal_rmst_curve</a></td>
+<td>Plot Adjusted Marginal RMST Contrast Over Time</td></tr>
+<tr><td style="width: 25%;"><a href="plot_patient_waterfall.html">plot_patient_waterfall</a></td>
+<td>Waterfall Plot for an Individual Patient</td></tr>
+<tr><td style="width: 25%;"><a href="plot_predict.html">plot_predict</a></td>
+<td>Plot Predicted Survival Curves</td></tr>
+<tr><td style="width: 25%;"><a href="plot_rmst_vs_obs.html">plot_rmst_vs_obs</a></td>
+<td>Plot Predicted RMST vs. Observed Survival Times</td></tr>
+<tr><td style="width: 25%;"><a href="plot_survival_heatmap.html">plot_survival_heatmap</a></td>
+<td>Survival Probability Heatmap</td></tr>
+<tr><td style="width: 25%;"><a href="predict.SuperSurv.html">predict.SuperSurv</a></td>
+<td>Predict method for SuperSurv fits</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.aorsf.html">predict.surv.aorsf</a></td>
+<td>Prediction function for AORSF</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.bart.html">predict.surv.bart</a></td>
+<td>Prediction function for BART</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.coxboost.html">predict.surv.coxboost</a></td>
+<td>Prediction function for CoxBoost wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.coxph.html">predict.surv.coxph</a></td>
+<td>Prediction function for Cox regression wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.gam.html">predict.surv.gam</a></td>
+<td>Prediction function for GAM wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.gbm.html">predict.surv.gbm</a></td>
+<td>Prediction function for GBM wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.glmnet.html">predict.surv.glmnet</a></td>
+<td>Prediction function for GLMNET wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.km.html">predict.surv.km</a></td>
+<td>Predict Method for Kaplan-Meier Wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.parametric.html">predict.surv.parametric</a></td>
+<td>Prediction function for Universal Parametric Wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.ranger.html">predict.surv.ranger</a></td>
+<td>Prediction function for Ranger wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.rfsrc.html">predict.surv.rfsrc</a></td>
+<td>Prediction function for survival random forest (RFSRC)</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.ridge.html">predict.surv.ridge</a></td>
+<td>Prediction function for Ridge wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.rpart.html">predict.surv.rpart</a></td>
+<td>Prediction function for rpart wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.svm.html">predict.surv.svm</a></td>
+<td>Prediction function for SVM wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="predict.surv.xgboost.html">predict.surv.xgboost</a></td>
+<td>Prediction function for XGBoost wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="summary.SuperSurv.html">print.summary.SuperSurv</a></td>
+<td>Summarize a SuperSurv fit</td></tr>
+<tr><td style="width: 25%;"><a href="print.SuperSurv.html">print.SuperSurv</a></td>
+<td>Print a SuperSurv fit</td></tr>
+<tr><td style="width: 25%;"><a href="screen.all.html">screen.all</a></td>
+<td>Keep All Variables Screener</td></tr>
+<tr><td style="width: 25%;"><a href="screen.elasticnet.html">screen.elasticnet</a></td>
+<td>Elastic Net Screening Algorithm</td></tr>
+<tr><td style="width: 25%;"><a href="screen.glmnet.html">screen.glmnet</a></td>
+<td>GLMNET (Lasso) Screening</td></tr>
+<tr><td style="width: 25%;"><a href="screen.marg.html">screen.marg</a></td>
+<td>Marginal Cox Regression Screening</td></tr>
+<tr><td style="width: 25%;"><a href="screen.rfsrc.html">screen.rfsrc</a></td>
+<td>Random Survival Forest Screening Algorithm</td></tr>
+<tr><td style="width: 25%;"><a href="screen.var.html">screen.var</a></td>
+<td>High Variance Screening Algorithm (Unsupervised)</td></tr>
+<tr><td style="width: 25%;"><a href="selected_variables.html">selected_variables</a></td>
+<td>Access variables selected by SuperSurv screeners</td></tr>
+<tr><td style="width: 25%;"><a href="selected_variables.html">selected_variables.SuperSurv</a></td>
+<td>Access variables selected by SuperSurv screeners</td></tr>
+<tr><td style="width: 25%;"><a href="summary.SuperSurv.html">summary.SuperSurv</a></td>
+<td>Summarize a SuperSurv fit</td></tr>
+<tr><td style="width: 25%;"><a href="SuperSurv.html">SuperSurv</a></td>
+<td>Super Learner for conditional survival functions</td></tr>
+<tr><td style="width: 25%;"><a href="surv.aorsf.html">surv.aorsf</a></td>
+<td>Wrapper for AORSF (Oblique Random Survival Forest)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.bart.html">surv.bart</a></td>
+<td>Wrapper for BART (Bayesian Additive Regression Trees)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.coxboost.html">surv.coxboost</a></td>
+<td>Wrapper function for Component-Wise Boosting (CoxBoost)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.coxph.html">surv.coxph</a></td>
+<td>Wrapper for standard Cox Proportional Hazards</td></tr>
+<tr><td style="width: 25%;"><a href="surv.exponential.html">surv.exponential</a></td>
+<td>Parametric Survival Prediction Wrapper (Exponential)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.gam.html">surv.gam</a></td>
+<td>Wrapper for Generalized Additive Cox Regression (GAM)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.gbm.html">surv.gbm</a></td>
+<td>Wrapper function for Gradient Boosting (GBM) prediction algorithm</td></tr>
+<tr><td style="width: 25%;"><a href="surv.glmnet.html">surv.glmnet</a></td>
+<td>Wrapper function for Penalized Cox Regression (GLMNET)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.km.html">surv.km</a></td>
+<td>Kaplan-Meier Prediction Algorithm</td></tr>
+<tr><td style="width: 25%;"><a href="surv.loglogistic.html">surv.loglogistic</a></td>
+<td>Parametric Survival Prediction Wrapper (Log-Logistic)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.lognormal.html">surv.lognormal</a></td>
+<td>Parametric Survival Prediction Wrapper (Log-Normal)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.parametric.html">surv.parametric</a></td>
+<td>Universal Parametric Survival Wrapper</td></tr>
+<tr><td style="width: 25%;"><a href="surv.ranger.html">surv.ranger</a></td>
+<td>Wrapper function for Ranger Random Survival Forest</td></tr>
+<tr><td style="width: 25%;"><a href="surv.rfsrc.html">surv.rfsrc</a></td>
+<td>Wrapper function for Random Survival Forests (RFSRC)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.ridge.html">surv.ridge</a></td>
+<td>Wrapper for Ridge Regression (Penalized Cox)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.rpart.html">surv.rpart</a></td>
+<td>Wrapper for Survival Regression Trees (rpart)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.svm.html">surv.svm</a></td>
+<td>Wrapper for Survival Support Vector Machine (survivalsvm)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.weibull.html">surv.weibull</a></td>
+<td>Parametric Survival Prediction Wrapper (Weibull)</td></tr>
+<tr><td style="width: 25%;"><a href="surv.xgboost.html">surv.xgboost</a></td>
+<td>Wrapper for XGBoost (Robust CV-Tuned + Safe Prediction)</td></tr>
+<tr><td style="width: 25%;"><a href="training_variables.html">training_variables</a></td>
+<td>Access SuperSurv training variable names</td></tr>
+<tr><td style="width: 25%;"><a href="training_variables.html">training_variables.SuperSurv</a></td>
+<td>Access SuperSurv training variable names</td></tr>
+</table>
+</div></body></html>

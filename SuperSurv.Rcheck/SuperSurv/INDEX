@@ -1,0 +1,97 @@
+SuperSurv               Super Learner for conditional survival
+                        functions
+coef.SuperSurv          Extract SuperSurv ensemble coefficients
+estimate_marginal_rmst
+                        Estimate an Adjusted Marginal RMST Contrast
+eval_brier              IPCW Brier Score and Integrated Brier Score
+                        (IBS)
+eval_cindex             Calculate Concordance Index (Harrell's or
+                        Uno's)
+eval_summary            Evaluate SuperSurv predictions on test data
+eval_timeROC            Time-Dependent AUC and Integrated AUC
+eval_times              Access SuperSurv prediction evaluation times
+event_weights           Access SuperSurv ensemble weights
+explain_kernel          Explain Predictions with Global SHAP (Kernel
+                        SHAP)
+explain_survex          Create a Time-Dependent Survex Explainer
+learner_names           Access SuperSurv learner names
+list_wrappers           List Available Wrappers and Screeners in
+                        SuperSurv
+metabric                METABRIC Breast Cancer Dataset
+plot_beeswarm           Beeswarm Summary Plot for SuperSurv SHAP
+plot_benchmark          Plot Longitudinal Benchmark Metrics
+plot_calibration        Plot Survival Calibration Curve
+plot_dependence         Plot SHAP Dependence for SuperSurv
+plot_global_importance
+                        Plot Global Feature Importance for SuperSurv
+plot_marginal_rmst_curve
+                        Plot Adjusted Marginal RMST Contrast Over Time
+plot_patient_waterfall
+                        Waterfall Plot for an Individual Patient
+plot_predict            Plot Predicted Survival Curves
+plot_rmst_vs_obs        Plot Predicted RMST vs. Observed Survival Times
+plot_survival_heatmap   Survival Probability Heatmap
+predict.SuperSurv       Predict method for SuperSurv fits
+predict.surv.aorsf      Prediction function for AORSF
+predict.surv.bart       Prediction function for BART
+predict.surv.coxboost   Prediction function for CoxBoost wrapper
+predict.surv.coxph      Prediction function for Cox regression wrapper
+predict.surv.gam        Prediction function for GAM wrapper
+predict.surv.gbm        Prediction function for GBM wrapper
+predict.surv.glmnet     Prediction function for GLMNET wrapper
+predict.surv.km         Predict Method for Kaplan-Meier Wrapper
+predict.surv.parametric
+                        Prediction function for Universal Parametric
+                        Wrapper
+predict.surv.ranger     Prediction function for Ranger wrapper
+predict.surv.rfsrc      Prediction function for survival random forest
+                        (RFSRC)
+predict.surv.ridge      Prediction function for Ridge wrapper
+predict.surv.rpart      Prediction function for rpart wrapper
+predict.surv.svm        Prediction function for SVM wrapper
+predict.surv.xgboost    Prediction function for XGBoost wrapper
+print.SuperSurv         Print a SuperSurv fit
+screen.all              Keep All Variables Screener
+screen.elasticnet       Elastic Net Screening Algorithm
+screen.glmnet           GLMNET (Lasso) Screening
+screen.marg             Marginal Cox Regression Screening
+screen.rfsrc            Random Survival Forest Screening Algorithm
+screen.var              High Variance Screening Algorithm
+                        (Unsupervised)
+selected_variables      Access variables selected by SuperSurv
+                        screeners
+summary.SuperSurv       Summarize a SuperSurv fit
+surv.aorsf              Wrapper for AORSF (Oblique Random Survival
+                        Forest)
+surv.bart               Wrapper for BART (Bayesian Additive Regression
+                        Trees)
+surv.coxboost           Wrapper function for Component-Wise Boosting
+                        (CoxBoost)
+surv.coxph              Wrapper for standard Cox Proportional Hazards
+surv.exponential        Parametric Survival Prediction Wrapper
+                        (Exponential)
+surv.gam                Wrapper for Generalized Additive Cox Regression
+                        (GAM)
+surv.gbm                Wrapper function for Gradient Boosting (GBM)
+                        prediction algorithm
+surv.glmnet             Wrapper function for Penalized Cox Regression
+                        (GLMNET)
+surv.km                 Kaplan-Meier Prediction Algorithm
+surv.loglogistic        Parametric Survival Prediction Wrapper
+                        (Log-Logistic)
+surv.lognormal          Parametric Survival Prediction Wrapper
+                        (Log-Normal)
+surv.parametric         Universal Parametric Survival Wrapper
+surv.ranger             Wrapper function for Ranger Random Survival
+                        Forest
+surv.rfsrc              Wrapper function for Random Survival Forests
+                        (RFSRC)
+surv.ridge              Wrapper for Ridge Regression (Penalized Cox)
+surv.rpart              Wrapper for Survival Regression Trees (rpart)
+surv.svm                Wrapper for Survival Support Vector Machine
+                        (survivalsvm)
+surv.weibull            Parametric Survival Prediction Wrapper
+                        (Weibull)
+surv.xgboost            Wrapper for XGBoost (Robust CV-Tuned + Safe
+                        Prediction)
+training_variables      Access SuperSurv training variable names

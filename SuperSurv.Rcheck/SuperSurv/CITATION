@@ -1,0 +1,23 @@
+citHeader("To cite SuperSurv, please use:")
+
+bibentry(
+  bibtype = "Article",
+  title = "SuperSurv: A Unified Framework for Machine Learning Ensembles in Survival Analysis",
+  author = c(
+    person("Yue", "Lyu"),
+    person("Xuelin", "Huang"),
+    person("Steven Hsesheng", "Lin"),
+    person("Ziyi", "Li")
+  ),
+  year = "2026",
+  journal = "bioRxiv",
+  doi = "10.64898/2026.03.11.711010"
+)
+
+bibentry(
+  bibtype = "Manual",
+  title = "SuperSurv: Machine Learning Ensemble Framework for Survival Analysis",
+  author = person("Yue", "Lyu"),
+  year = "2026",
+  note = "R package version 0.1.1"
+)

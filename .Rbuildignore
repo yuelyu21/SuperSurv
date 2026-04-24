@@ -9,3 +9,5 @@
 ^\.git$
 ^\.github$
 ^LICENSE\.md$
+^AGENTS\.md$
+^build$
