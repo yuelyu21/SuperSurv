@@ -164,6 +164,8 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   control <- do.call("SuperSurv.control", control)
   cvControl <- do.call("SuperSurv.CV.control", cvControl)
 
+  .validate_library_argument(event.library, "event.library")
+  .validate_library_argument(cens.library, "cens.library")
   event.library <- .createLibrary(event.library)
   cens.library <- .createLibrary(cens.library)
 

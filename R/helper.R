@@ -5,7 +5,8 @@
 #'
 #' @param base_learner Character string of the base learner function name (e.g., "surv.gbm").
 #' @param grid_params List of numeric/character vectors containing hyperparameter values.
-#' @return A character vector of the newly generated function names.
+#' @return A character vector of class \code{"SuperSurv_grid"} containing the
+#'   newly generated function names.
 #' @export
 #' @keywords internal
 create_grid <- function(base_learner, grid_params) {
@@ -57,6 +58,7 @@ create_grid <- function(base_learner, grid_params) {
     assign(learner_name, new_fun, envir = parent.frame())
   }
 
+  class(generated_learners) <- c("SuperSurv_grid", class(generated_learners))
   return(generated_learners)
 }
 
@@ -253,4 +255,3 @@ get_risk_universal <- function(object, newdata) {
     stop(paste("Unknown class in SHAP wrapper:", class(object)[1]))
   }
 }
-

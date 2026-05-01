@@ -9,6 +9,38 @@ authors:
     href: https://scholar.google.com/citations?hl=en&user=PFjMl6sAAAAJ
     email: yuelyu0521@gmail.com
 
+reference:
+  - title: Main functions
+    contents:
+      - SuperSurv
+      - predict.SuperSurv
+      - eval_times
+      - event_weights
+      - censor_weights
+      - coef.SuperSurv
+      - learner_names
+      - selected_variables
+      - training_variables
+      - print.SuperSurv
+      - summary.SuperSurv
+      - create_grid
+  - title: Base learners and screening
+    contents:
+      - starts_with("surv.")
+      - starts_with("screen.")
+      - list_wrappers
+  - title: Evaluation and interpretation
+    contents:
+      - starts_with("eval_")
+      - starts_with("plot_")
+      - starts_with("explain_")
+      - starts_with("estimate_")
+      - get_rmst
+  - title: Low-level predict methods
+    desc: S3 methods for fitted base-learner wrapper objects.
+    contents:
+      - starts_with("predict.surv.")
+
 navbar:
   title: "SuperSurv"
   left:

@@ -1,8 +1,8 @@
 ---
-title: "Extending SuperSurv"
+title: "11. Extending SuperSurv"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Extending SuperSurv}
+  %\VignetteIndexEntry{11. Extending SuperSurv}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

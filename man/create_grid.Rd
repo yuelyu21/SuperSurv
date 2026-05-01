@@ -12,7 +12,8 @@ create_grid(base_learner, grid_params)
 \item{grid_params}{List of numeric/character vectors containing hyperparameter values.}
 }
 \value{
-A character vector of the newly generated function names.
+A character vector of class \code{"SuperSurv_grid"} containing the
+newly generated function names.
 }
 \description{
 Dynamically generates custom wrapper functions for a specified base learner
