@@ -1,8 +1,8 @@
 ---
-title: "3. Ensemble vs. Best Model Selection"
+title: "03. Ensemble vs. Best Model Selection"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{3. Ensemble vs. Best Model Selection}
+  %\VignetteIndexEntry{03. Ensemble vs. Best Model Selection}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

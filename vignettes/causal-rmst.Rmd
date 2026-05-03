@@ -1,9 +1,9 @@
 ---
-title: "9. Causal Effects and Adjusted Marginal Contrasts (RMST)"
+title: "09. Causal Effects and Adjusted Marginal Contrasts (RMST)"
 description: "Estimating absolute treatment effects and covariate-adjusted group differences using G-computation."
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{9. Causal Effects and Adjusted Marginal Contrasts (RMST)}
+  %\VignetteIndexEntry{09. Causal Effects and Adjusted Marginal Contrasts (RMST)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,8 +1,8 @@
 ---
-title: "0. Installation & Setup"
+title: "00. Installation & Setup"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{0. Installation & Setup}
+  %\VignetteIndexEntry{00. Installation & Setup}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,8 +1,8 @@
 ---
-title: "5. Advanced Hyperparameter Tuning & Grid Search"
+title: "05. Advanced Hyperparameter Tuning & Grid Search"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{5. Advanced Hyperparameter Tuning & Grid Search}
+  %\VignetteIndexEntry{05. Advanced Hyperparameter Tuning & Grid Search}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

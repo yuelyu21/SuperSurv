@@ -1,8 +1,8 @@
 ---
-title: "4. High-Dimensional Data & Variable Screening"
+title: "04. High-Dimensional Data & Variable Screening"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{4. High-Dimensional Data & Variable Screening}
+  %\VignetteIndexEntry{04. High-Dimensional Data & Variable Screening}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

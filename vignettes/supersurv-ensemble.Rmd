@@ -1,8 +1,8 @@
 ---
-title: "1. SuperSurv with Ensemble"
+title: "01. SuperSurv with Ensemble"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{1. SuperSurv with Ensemble}
+  %\VignetteIndexEntry{01. SuperSurv with Ensemble}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

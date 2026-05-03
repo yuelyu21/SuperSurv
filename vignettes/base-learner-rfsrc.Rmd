@@ -1,8 +1,8 @@
 ---
-title: "6. Machine Learning with Random Survival Forests"
+title: "06. Machine Learning with Random Survival Forests"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{6. Machine Learning with Random Survival Forests}
+  %\VignetteIndexEntry{06. Machine Learning with Random Survival Forests}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -139,7 +139,6 @@ plot_benchmark(
 ```
 
 By incorporating advanced machine learning algorithms into your library, `SuperSurv` mathematically guarantees that your final predictions adapt to the complexity of your data, achieving the lowest possible Brier Score.
-
 
 
 

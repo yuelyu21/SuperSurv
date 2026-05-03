@@ -48,25 +48,25 @@ navbar:
       href: articles/supersurv-ensemble.html
     - text: "Tutorials"
       menu:
-        - text: "0. Installation & Setup"
+        - text: "00. Installation & Setup"
           href: articles/installation.html
-        - text: "1. The SuperSurv Ensemble"
+        - text: "01. The SuperSurv Ensemble"
           href: articles/supersurv-ensemble.html
-        - text: "2. Model Performance"
+        - text: "02. Model Performance"
           href: articles/model-performance.html
-        - text: "3. Selection vs. Ensemble"
+        - text: "03. Selection vs. Ensemble"
           href: articles/supersurv-best.html
-        - text: "4. Screening Methods"
+        - text: "04. Screening Methods"
           href: articles/screening-methods.html
-        - text: "5. Hyperparameter Tuning"
+        - text: "05. Hyperparameter Tuning"
           href: articles/grid-search.html
-        - text: "6. Random Forests (rfsrc)"
+        - text: "06. Random Forests (rfsrc)"
           href: articles/base-learner-rfsrc.html
-        - text: "7. Parametric Models"
+        - text: "07. Parametric Models"
           href: articles/parametric-models.html
-        - text: "8. SHAP Interpretability"
+        - text: "08. SHAP Interpretability"
           href: articles/shap-explanations.html
-        - text: "9. Causal Inference (RMST)"
+        - text: "09. Causal Inference (RMST)"
           href: articles/causal-rmst.html
         - text: "10. Parallel Processing"
           href: articles/scaleup-parallel.html

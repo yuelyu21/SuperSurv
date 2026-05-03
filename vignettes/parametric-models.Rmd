@@ -1,8 +1,8 @@
 ---
-title: "7. Parametric Survival Models"
+title: "07. Parametric Survival Models"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{7. Parametric Survival Models}
+  %\VignetteIndexEntry{07. Parametric Survival Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
