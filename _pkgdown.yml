@@ -24,11 +24,13 @@ reference:
       - print.SuperSurv
       - summary.SuperSurv
       - create_grid
+
   - title: Base learners and screening
     contents:
       - starts_with("surv.")
       - starts_with("screen.")
       - list_wrappers
+
   - title: Evaluation and interpretation
     contents:
       - starts_with("eval_")
@@ -36,10 +38,16 @@ reference:
       - starts_with("explain_")
       - starts_with("estimate_")
       - get_rmst
+
+  - title: Data
+    contents:
+      - metabric
+
   - title: Low-level predict methods
     desc: S3 methods for fitted base-learner wrapper objects.
     contents:
       - starts_with("predict.surv.")
+
 
 navbar:
   title: "SuperSurv"
