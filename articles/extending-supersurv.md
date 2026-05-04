@@ -1,4 +1,4 @@
-# Extending SuperSurv
+# 11. Extending SuperSurv
 
 This vignette describes the practical contract used by
 [`SuperSurv()`](https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.md)
@@ -12,6 +12,7 @@ Learners are supplied to
 by name:
 
 ``` r
+
 event.library <- c("surv.coxph", "my.surv.km")
 ```
 
@@ -27,6 +28,7 @@ as long as it is available in the R session before calling
 A survival learner wrapper should have this shape:
 
 ``` r
+
 my.surv.learner <- function(time, event, X, newdata, new.times,
                             obsWeights, id, ...) {
   # fit model on X, time, event
@@ -37,16 +39,16 @@ my.surv.learner <- function(time, event, X, newdata, new.times,
 
 The required arguments are:
 
-| Argument     | Meaning                                                       |
-|--------------|---------------------------------------------------------------|
-| `time`       | numeric observed follow-up time                               |
-| `event`      | event indicator, with `1` for the event and `0` for censoring |
-| `X`          | training covariates as a data frame                           |
-| `newdata`    | covariates for prediction as a data frame                     |
-| `new.times`  | time grid where survival probabilities are needed             |
-| `obsWeights` | observation weights, possibly `NULL`                          |
-| `id`         | optional cluster or subject identifier, possibly `NULL`       |
-| `...`        | learner-specific tuning parameters                            |
+| Argument | Meaning |
+|----|----|
+| `time` | numeric observed follow-up time |
+| `event` | event indicator, with `1` for the event and `0` for censoring |
+| `X` | training covariates as a data frame |
+| `newdata` | covariates for prediction as a data frame |
+| `new.times` | time grid where survival probabilities are needed |
+| `obsWeights` | observation weights, possibly `NULL` |
+| `id` | optional cluster or subject identifier, possibly `NULL` |
+| `...` | learner-specific tuning parameters |
 
 The returned `pred` must be a numeric matrix with:
 
@@ -72,6 +74,7 @@ store a classed object in `fit` and define a matching S3 prediction
 method:
 
 ``` r
+
 predict.my.surv.learner <- function(object, newdata, new.times, ...) {
   pred_matrix
 }
@@ -110,6 +113,7 @@ full
 learner contract.
 
 ``` r
+
 my.surv.km <- function(time, event, X, newdata, new.times,
                        obsWeights = NULL, id = NULL, ...) {
   if (is.null(obsWeights)) {
@@ -155,6 +159,7 @@ You can test the wrapper outside the ensemble before adding it to a
 library:
 
 ``` r
+
 data("metabric", package = "SuperSurv")
 dat <- metabric[1:40, ]
 x_cols <- grep("^x", names(dat))[1:3]
@@ -178,6 +183,7 @@ dim(predict(wrapper_out[["fit"]], newdata = X[1:5, , drop = FALSE], new.times = 
 The custom learner can be mixed with built-in learners:
 
 ``` r
+
 fit <- SuperSurv(
   time = train$duration,
   event = train$event,
@@ -199,6 +205,7 @@ the same basic training inputs and return a logical vector with one
 value per column of `X`:
 
 ``` r
+
 my.screen.first3 <- function(time, event, X, obsWeights = NULL, id = NULL, ...) {
   keep <- rep(FALSE, ncol(X))
   keep[seq_len(min(3, ncol(X)))] <- TRUE
@@ -210,6 +217,7 @@ my.screen.first3 <- function(time, event, X, obsWeights = NULL, id = NULL, ...) 
 Use a list entry to pair a learner with one or more screeners:
 
 ``` r
+
 fit <- SuperSurv(
   time = train$duration,
   event = train$event,

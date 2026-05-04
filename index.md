@@ -56,12 +56,14 @@ You can also browse the full documentation site here:
 Install the CRAN release:
 
 ``` r
+
 install.packages("SuperSurv")
 ```
 
 Install the development version from GitHub:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("yuelyu21/SuperSurv")
 ```
@@ -132,6 +134,7 @@ The package website includes tutorials covering:
 To cite the package, use:
 
 ``` r
+
 citation("SuperSurv")
 ```
 

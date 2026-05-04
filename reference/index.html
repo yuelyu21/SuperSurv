@@ -18,16 +18,16 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/supersurv-ensemble.html">Get Started</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-tutorials" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Tutorials</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials"><li><a class="dropdown-item" href="../articles/installation.html">0. Installation &amp; Setup</a></li>
-    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
-    <li><a class="dropdown-item" href="../articles/model-performance.html">2. Model Performance</a></li>
-    <li><a class="dropdown-item" href="../articles/supersurv-best.html">3. Selection vs. Ensemble</a></li>
-    <li><a class="dropdown-item" href="../articles/screening-methods.html">4. Screening Methods</a></li>
-    <li><a class="dropdown-item" href="../articles/grid-search.html">5. Hyperparameter Tuning</a></li>
-    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">6. Random Forests (rfsrc)</a></li>
-    <li><a class="dropdown-item" href="../articles/parametric-models.html">7. Parametric Models</a></li>
-    <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials"><li><a class="dropdown-item" href="../articles/installation.html">00. Installation &amp; Setup</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">01. The SuperSurv Ensemble</a></li>
+    <li><a class="dropdown-item" href="../articles/model-performance.html">02. Model Performance</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-best.html">03. Selection vs. Ensemble</a></li>
+    <li><a class="dropdown-item" href="../articles/screening-methods.html">04. Screening Methods</a></li>
+    <li><a class="dropdown-item" href="../articles/grid-search.html">05. Hyperparameter Tuning</a></li>
+    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">06. Random Forests (rfsrc)</a></li>
+    <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
+    <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
     <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
     <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
   </ul></li>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="main-functions">Main functions<a class="anchor" aria-label="anchor" href="#main-functions"></a></h2>
 
 
 
@@ -62,45 +62,10 @@
 
         <dt>
 
-          <code><a href="coef.SuperSurv.html">coef(<i>&lt;SuperSurv&gt;</i>)</a></code>
+          <code><a href="predict.SuperSurv.html">predict(<i>&lt;SuperSurv&gt;</i>)</a></code>
 
         </dt>
-        <dd>Extract SuperSurv ensemble coefficients</dd>
-
-        <dt>
-
-          <code><a href="estimate_marginal_rmst.html">estimate_marginal_rmst()</a></code>
-
-        </dt>
-        <dd>Estimate an Adjusted Marginal RMST Contrast</dd>
-
-        <dt>
-
-          <code><a href="eval_brier.html">eval_brier()</a></code>
-
-        </dt>
-        <dd>IPCW Brier Score and Integrated Brier Score (IBS)</dd>
-
-        <dt>
-
-          <code><a href="eval_cindex.html">eval_cindex()</a></code>
-
-        </dt>
-        <dd>Calculate Concordance Index (Harrell's or Uno's)</dd>
-
-        <dt>
-
-          <code><a href="eval_summary.html">eval_summary()</a></code>
-
-        </dt>
-        <dd>Evaluate SuperSurv predictions on test data</dd>
-
-        <dt>
-
-          <code><a href="eval_timeROC.html">eval_timeROC()</a></code>
-
-        </dt>
-        <dd>Time-Dependent AUC and Integrated AUC</dd>
+        <dd>Predict method for SuperSurv fits</dd>
 
         <dt>
 
@@ -118,17 +83,10 @@
 
         <dt>
 
-          <code><a href="explain_kernel.html">explain_kernel()</a></code>
+          <code><a href="coef.SuperSurv.html">coef(<i>&lt;SuperSurv&gt;</i>)</a></code>
 
         </dt>
-        <dd>Explain Predictions with Global SHAP (Kernel SHAP)</dd>
-
-        <dt>
-
-          <code><a href="explain_survex.html">explain_survex()</a></code>
-
-        </dt>
-        <dd>Create a Time-Dependent Survex Explainer</dd>
+        <dd>Extract SuperSurv ensemble coefficients</dd>
 
         <dt>
 
@@ -139,199 +97,17 @@
 
         <dt>
 
-          <code><a href="list_wrappers.html">list_wrappers()</a></code>
+          <code><a href="selected_variables.html">selected_variables()</a></code>
 
         </dt>
-        <dd>List Available Wrappers and Screeners in SuperSurv</dd>
+        <dd>Access variables selected by SuperSurv screeners</dd>
 
         <dt>
 
-          <code><a href="metabric.html">metabric</a></code>
+          <code><a href="training_variables.html">training_variables()</a></code>
 
         </dt>
-        <dd>METABRIC Breast Cancer Dataset</dd>
-
-        <dt>
-
-          <code><a href="plot_beeswarm.html">plot_beeswarm()</a></code>
-
-        </dt>
-        <dd>Beeswarm Summary Plot for SuperSurv SHAP</dd>
-
-        <dt>
-
-          <code><a href="plot_benchmark.html">plot_benchmark()</a></code>
-
-        </dt>
-        <dd>Plot Longitudinal Benchmark Metrics</dd>
-
-        <dt>
-
-          <code><a href="plot_calibration.html">plot_calibration()</a></code>
-
-        </dt>
-        <dd>Plot Survival Calibration Curve</dd>
-
-        <dt>
-
-          <code><a href="plot_dependence.html">plot_dependence()</a></code>
-
-        </dt>
-        <dd>Plot SHAP Dependence for SuperSurv</dd>
-
-        <dt>
-
-          <code><a href="plot_global_importance.html">plot_global_importance()</a></code>
-
-        </dt>
-        <dd>Plot Global Feature Importance for SuperSurv</dd>
-
-        <dt>
-
-          <code><a href="plot_marginal_rmst_curve.html">plot_marginal_rmst_curve()</a></code>
-
-        </dt>
-        <dd>Plot Adjusted Marginal RMST Contrast Over Time</dd>
-
-        <dt>
-
-          <code><a href="plot_patient_waterfall.html">plot_patient_waterfall()</a></code>
-
-        </dt>
-        <dd>Waterfall Plot for an Individual Patient</dd>
-
-        <dt>
-
-          <code><a href="plot_predict.html">plot_predict()</a></code>
-
-        </dt>
-        <dd>Plot Predicted Survival Curves</dd>
-
-        <dt>
-
-          <code><a href="plot_rmst_vs_obs.html">plot_rmst_vs_obs()</a></code>
-
-        </dt>
-        <dd>Plot Predicted RMST vs. Observed Survival Times</dd>
-
-        <dt>
-
-          <code><a href="plot_survival_heatmap.html">plot_survival_heatmap()</a></code>
-
-        </dt>
-        <dd>Survival Probability Heatmap</dd>
-
-        <dt>
-
-          <code><a href="predict.SuperSurv.html">predict(<i>&lt;SuperSurv&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Predict method for SuperSurv fits</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.aorsf.html">predict(<i>&lt;surv.aorsf&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for AORSF</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.bart.html">predict(<i>&lt;surv.bart&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for BART</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.coxboost.html">predict(<i>&lt;surv.coxboost&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for CoxBoost wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.coxph.html">predict(<i>&lt;surv.coxph&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for Cox regression wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.gam.html">predict(<i>&lt;surv.gam&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for GAM wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.gbm.html">predict(<i>&lt;surv.gbm&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for GBM wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.glmnet.html">predict(<i>&lt;surv.glmnet&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for GLMNET wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.km.html">predict(<i>&lt;surv.km&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Predict Method for Kaplan-Meier Wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.parametric.html">predict(<i>&lt;surv.parametric&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for Universal Parametric Wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.ranger.html">predict(<i>&lt;surv.ranger&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for Ranger wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.rfsrc.html">predict(<i>&lt;surv.rfsrc&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for survival random forest (RFSRC)</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.ridge.html">predict(<i>&lt;surv.ridge&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for Ridge wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.rpart.html">predict(<i>&lt;surv.rpart&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for rpart wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.svm.html">predict(<i>&lt;surv.svm&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for SVM wrapper</dd>
-
-        <dt>
-
-          <code><a href="predict.surv.xgboost.html">predict(<i>&lt;surv.xgboost&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Prediction function for XGBoost wrapper</dd>
+        <dd>Access SuperSurv training variable names</dd>
 
         <dt>
 
@@ -342,61 +118,28 @@
 
         <dt>
 
-          <code><a href="screen.all.html">screen.all()</a></code>
-
-        </dt>
-        <dd>Keep All Variables Screener</dd>
-
-        <dt>
-
-          <code><a href="screen.elasticnet.html">screen.elasticnet()</a></code>
-
-        </dt>
-        <dd>Elastic Net Screening Algorithm</dd>
-
-        <dt>
-
-          <code><a href="screen.glmnet.html">screen.glmnet()</a></code>
-
-        </dt>
-        <dd>GLMNET (Lasso) Screening</dd>
-
-        <dt>
-
-          <code><a href="screen.marg.html">screen.marg()</a></code>
-
-        </dt>
-        <dd>Marginal Cox Regression Screening</dd>
-
-        <dt>
-
-          <code><a href="screen.rfsrc.html">screen.rfsrc()</a></code>
-
-        </dt>
-        <dd>Random Survival Forest Screening Algorithm</dd>
-
-        <dt>
-
-          <code><a href="screen.var.html">screen.var()</a></code>
-
-        </dt>
-        <dd>High Variance Screening Algorithm (Unsupervised)</dd>
-
-        <dt>
-
-          <code><a href="selected_variables.html">selected_variables()</a></code>
-
-        </dt>
-        <dd>Access variables selected by SuperSurv screeners</dd>
-
-        <dt>
-
           <code><a href="summary.SuperSurv.html">summary(<i>&lt;SuperSurv&gt;</i>)</a></code> <code><a href="summary.SuperSurv.html">print(<i>&lt;summary.SuperSurv&gt;</i>)</a></code>
 
         </dt>
         <dd>Summarize a SuperSurv fit</dd>
 
         <dt>
+
+          <code><a href="create_grid.html">create_grid()</a></code>
+
+        </dt>
+        <dd>Create a Tuning Grid of Survival Learners</dd>
+      </dl></div><div class="section level2">
+      <h2 id="base-learners-and-screening">Base learners and screening<a class="anchor" aria-label="anchor" href="#base-learners-and-screening"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="surv.aorsf.html">surv.aorsf()</a></code>
 
@@ -531,12 +274,223 @@
 
         <dt>
 
-          <code><a href="training_variables.html">training_variables()</a></code>
+          <code><a href="screen.all.html">screen.all()</a></code>
 
         </dt>
-        <dd>Access SuperSurv training variable names</dd>
-      </dl></div>
-  </main></div>
+        <dd>Keep All Variables Screener</dd>
+
+        <dt>
+
+          <code><a href="screen.elasticnet.html">screen.elasticnet()</a></code>
+
+        </dt>
+        <dd>Elastic Net Screening Algorithm</dd>
+
+        <dt>
+
+          <code><a href="screen.glmnet.html">screen.glmnet()</a></code>
+
+        </dt>
+        <dd>GLMNET (Lasso) Screening</dd>
+
+        <dt>
+
+          <code><a href="screen.marg.html">screen.marg()</a></code>
+
+        </dt>
+        <dd>Marginal Cox Regression Screening</dd>
+
+        <dt>
+
+          <code><a href="screen.rfsrc.html">screen.rfsrc()</a></code>
+
+        </dt>
+        <dd>Random Survival Forest Screening Algorithm</dd>
+
+        <dt>
+
+          <code><a href="screen.var.html">screen.var()</a></code>
+
+        </dt>
+        <dd>High Variance Screening Algorithm (Unsupervised)</dd>
+
+        <dt>
+
+          <code><a href="list_wrappers.html">list_wrappers()</a></code>
+
+        </dt>
+        <dd>List Available Wrappers and Screeners in SuperSurv</dd>
+      </dl></div><div class="section level2">
+      <h2 id="evaluation-and-interpretation">Evaluation and interpretation<a class="anchor" aria-label="anchor" href="#evaluation-and-interpretation"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="eval_brier.html">eval_brier()</a></code>
+
+        </dt>
+        <dd>IPCW Brier Score and Integrated Brier Score (IBS)</dd>
+
+        <dt>
+
+          <code><a href="eval_cindex.html">eval_cindex()</a></code>
+
+        </dt>
+        <dd>Calculate Concordance Index (Harrell's or Uno's)</dd>
+
+        <dt>
+
+          <code><a href="eval_summary.html">eval_summary()</a></code>
+
+        </dt>
+        <dd>Evaluate SuperSurv predictions on test data</dd>
+
+        <dt>
+
+          <code><a href="eval_timeROC.html">eval_timeROC()</a></code>
+
+        </dt>
+        <dd>Time-Dependent AUC and Integrated AUC</dd>
+
+        <dt>
+
+          <code><a href="eval_times.html">eval_times()</a></code>
+
+        </dt>
+        <dd>Access SuperSurv prediction evaluation times</dd>
+
+        <dt>
+
+          <code><a href="plot_beeswarm.html">plot_beeswarm()</a></code>
+
+        </dt>
+        <dd>Beeswarm Summary Plot for SuperSurv SHAP</dd>
+
+        <dt>
+
+          <code><a href="plot_benchmark.html">plot_benchmark()</a></code>
+
+        </dt>
+        <dd>Plot Longitudinal Benchmark Metrics</dd>
+
+        <dt>
+
+          <code><a href="plot_calibration.html">plot_calibration()</a></code>
+
+        </dt>
+        <dd>Plot Survival Calibration Curve</dd>
+
+        <dt>
+
+          <code><a href="plot_dependence.html">plot_dependence()</a></code>
+
+        </dt>
+        <dd>Plot SHAP Dependence for SuperSurv</dd>
+
+        <dt>
+
+          <code><a href="plot_global_importance.html">plot_global_importance()</a></code>
+
+        </dt>
+        <dd>Plot Global Feature Importance for SuperSurv</dd>
+
+        <dt>
+
+          <code><a href="plot_marginal_rmst_curve.html">plot_marginal_rmst_curve()</a></code>
+
+        </dt>
+        <dd>Plot Adjusted Marginal RMST Contrast Over Time</dd>
+
+        <dt>
+
+          <code><a href="plot_patient_waterfall.html">plot_patient_waterfall()</a></code>
+
+        </dt>
+        <dd>Waterfall Plot for an Individual Patient</dd>
+
+        <dt>
+
+          <code><a href="plot_predict.html">plot_predict()</a></code>
+
+        </dt>
+        <dd>Plot Predicted Survival Curves</dd>
+
+        <dt>
+
+          <code><a href="plot_rmst_vs_obs.html">plot_rmst_vs_obs()</a></code>
+
+        </dt>
+        <dd>Plot Predicted RMST vs. Observed Survival Times</dd>
+
+        <dt>
+
+          <code><a href="plot_survival_heatmap.html">plot_survival_heatmap()</a></code>
+
+        </dt>
+        <dd>Survival Probability Heatmap</dd>
+
+        <dt>
+
+          <code><a href="explain_kernel.html">explain_kernel()</a></code>
+
+        </dt>
+        <dd>Explain Predictions with Global SHAP (Kernel SHAP)</dd>
+
+        <dt>
+
+          <code><a href="explain_survex.html">explain_survex()</a></code>
+
+        </dt>
+        <dd>Create a Time-Dependent Survex Explainer</dd>
+
+        <dt>
+
+          <code><a href="estimate_marginal_rmst.html">estimate_marginal_rmst()</a></code>
+
+        </dt>
+        <dd>Estimate an Adjusted Marginal RMST Contrast</dd>
+
+        <dt>
+
+          <code><a href="get_rmst.html">get_rmst()</a></code>
+
+        </dt>
+        <dd>Calculate Restricted Mean Survival Time (RMST)</dd>
+      </dl></div><div class="section level2">
+      <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="metabric.html">metabric</a></code>
+
+        </dt>
+        <dd>METABRIC Breast Cancer Dataset</dd>
+      </dl></div><div class="section level2">
+      <h2 id="low-level-predict-methods">Low-level predict methods<a class="anchor" aria-label="anchor" href="#low-level-predict-methods"></a></h2>
+
+      <div class="section-desc"><p>S3 methods for fitted base-learner wrapper objects.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl></dl></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

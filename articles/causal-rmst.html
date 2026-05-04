@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>9. Causal Effects and Adjusted Marginal Contrasts (RMST) • SuperSurv</title>
+<title>09. Causal Effects and Adjusted Marginal Contrasts (RMST) • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="9. Causal Effects and Adjusted Marginal Contrasts (RMST)">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="09. Causal Effects and Adjusted Marginal Contrasts (RMST)">
 <meta name="description" content="Estimating absolute treatment effects and covariate-adjusted group differences using G-computation.">
 <meta property="og:description" content="Estimating absolute treatment effects and covariate-adjusted group differences using G-computation.">
 <meta property="og:image" content="https://yuelyu21.github.io/SuperSurv/logo.png">
@@ -36,16 +36,16 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-tutorials" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Tutorials</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials">
-<li><a class="dropdown-item" href="../articles/installation.html">0. Installation &amp; Setup</a></li>
-    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">1. The SuperSurv Ensemble</a></li>
-    <li><a class="dropdown-item" href="../articles/model-performance.html">2. Model Performance</a></li>
-    <li><a class="dropdown-item" href="../articles/supersurv-best.html">3. Selection vs. Ensemble</a></li>
-    <li><a class="dropdown-item" href="../articles/screening-methods.html">4. Screening Methods</a></li>
-    <li><a class="dropdown-item" href="../articles/grid-search.html">5. Hyperparameter Tuning</a></li>
-    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">6. Random Forests (rfsrc)</a></li>
-    <li><a class="dropdown-item" href="../articles/parametric-models.html">7. Parametric Models</a></li>
-    <li><a class="dropdown-item" href="../articles/shap-explanations.html">8. SHAP Interpretability</a></li>
-    <li><a class="dropdown-item" href="../articles/causal-rmst.html">9. Causal Inference (RMST)</a></li>
+<li><a class="dropdown-item" href="../articles/installation.html">00. Installation &amp; Setup</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-ensemble.html">01. The SuperSurv Ensemble</a></li>
+    <li><a class="dropdown-item" href="../articles/model-performance.html">02. Model Performance</a></li>
+    <li><a class="dropdown-item" href="../articles/supersurv-best.html">03. Selection vs. Ensemble</a></li>
+    <li><a class="dropdown-item" href="../articles/screening-methods.html">04. Screening Methods</a></li>
+    <li><a class="dropdown-item" href="../articles/grid-search.html">05. Hyperparameter Tuning</a></li>
+    <li><a class="dropdown-item" href="../articles/base-learner-rfsrc.html">06. Random Forests (rfsrc)</a></li>
+    <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
+    <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
+    <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
     <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
     <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
   </ul>
@@ -66,7 +66,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>9. Causal Effects and Adjusted Marginal Contrasts (RMST)</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>09. Causal Effects and Adjusted Marginal Contrasts (RMST)</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/causal-rmst.Rmd" class="external-link"><code>vignettes/causal-rmst.Rmd</code></a></small>
@@ -95,13 +95,13 @@ time horizon,
 By comparing the expected RMST if <em>everyone</em> in the dataset
 belonged to Group 1 versus if <em>everyone</em> belonged to Group 0, we
 obtain a robust, absolute measure of the difference:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mtext mathvariant="normal">RMST</mtext><mo>=</mo><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>Y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>−</mo><mi>E</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>Y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><msub><mtext mathvariant="normal">RMST</mtext><mtext mathvariant="normal">Group 1</mtext></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><msub><mtext mathvariant="normal">RMST</mtext><mtext mathvariant="normal">Group 0</mtext></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex"> \Delta \text{RMST} = E[Y(1)] - E[Y(0)] = \text{RMST}_{\text{Group 1}}(\tau) - \text{RMST}_{\text{Group 0}}(\tau) </annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mtext mathvariant="normal">RMST</mtext><mo>=</mo><mi>E</mi><mo stretchy="false" form="prefix">[</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">]</mo><mo>−</mo><mi>E</mi><mo stretchy="false" form="prefix">[</mo><mi>Y</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo><mo stretchy="false" form="postfix">]</mo><mo>=</mo><msub><mtext mathvariant="normal">RMST</mtext><mtext mathvariant="normal">Group 1</mtext></msub><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><msub><mtext mathvariant="normal">RMST</mtext><mtext mathvariant="normal">Group 0</mtext></msub><mo stretchy="false" form="prefix">(</mo><mi>τ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex"> \Delta \text{RMST} = E[Y(1)] - E[Y(0)] = \text{RMST}_{\text{Group 1}}(\tau) - \text{RMST}_{\text{Group 0}}(\tau) </annotation></semantics></math></p>
 </div>
 <div class="section level2">
 <h2 id="philosophy-causal-effect-vs--marginal-contrast">Philosophy: “Causal Effect” vs. “Marginal Contrast”<a class="anchor" aria-label="anchor" href="#philosophy-causal-effect-vs--marginal-contrast"></a>
 </h2>
 <p>How you interpret this
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mtext mathvariant="normal">RMST</mtext></mrow><annotation encoding="application/x-tex">\Delta \text{RMST}</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mtext mathvariant="normal">RMST</mtext></mrow><annotation encoding="application/x-tex">\Delta \text{RMST}</annotation></semantics></math>
 depends entirely on the nature of your exposure variable. The math of
 G-computation is identical for both, but the statistical terminology
 must be used responsibly.</p>
@@ -197,7 +197,7 @@ two standardized averages yields the adjusted RMST contrast.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results</span><span class="op">$</span><span class="va">ATE_RMST</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] -1.269855</span></span></code></pre></div>
 <p><strong>Interpretation:</strong> If the resulting
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>RMST
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>RMST
 value is <code>-1.24</code>, this indicates that, after standardizing
 over the observed covariate distribution using the fitted Super Learner
 ensemble, the group with <code>x4 = 1</code> is predicted to have

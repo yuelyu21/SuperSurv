@@ -1,4 +1,4 @@
-# 1. SuperSurv with Ensemble
+# 01. SuperSurv with Ensemble
 
 ## Introduction
 
@@ -14,6 +14,7 @@ We will use the built-in `metabric` dataset, extracting the covariates
 and performing a standard 80/20 train-test split.
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -43,6 +44,7 @@ We define a library of base survival models. For this quick
 demonstration, we use lightning-fast parametric and tree-based models.
 
 ``` r
+
 my_library <- c("surv.coxph", "surv.weibull", "surv.rpart")
 ```
 
@@ -106,6 +108,7 @@ Let’s fit two models with `verbose = FALSE` to see how the meta-learner
 choice affects the final ensemble weights.
 
 ``` r
+
 # Fit 1: Least Squares Meta-learner
 fit_ls <- SuperSurv(
   time = train$duration,
@@ -146,6 +149,7 @@ summary methods for a quick overview, and use accessors for common
 fitted-model details.
 
 ``` r
+
 fit_ls
 #> SuperSurv fit
 #>   Selection: ensemble 
@@ -183,7 +187,7 @@ summary(fit_ls)
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      3.948      3.695      0.249
+#>      3.836      3.589      0.241
 
 event_weights(fit_ls)
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
@@ -210,6 +214,7 @@ Let’s inspect the weights and cross-validated risks for both of our
 meta-learners.
 
 ``` r
+
 cat("\n--- LEAST SQUARES METALEARNER ---\n")
 #> 
 #> --- LEAST SQUARES METALEARNER ---
@@ -239,7 +244,7 @@ summary(fit_ls)
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      3.948      3.695      0.249
+#>      3.836      3.589      0.241
 
 cat("\n--- NLOGLIK METALEARNER ---\n")
 #> 
@@ -270,7 +275,7 @@ summary(fit_nll)
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>     14.412     14.163      0.241
+#>     14.414     14.167      0.244
 ```
 
 ### How to Interpret This:
@@ -299,6 +304,7 @@ we can use the standard R
 [`predict()`](https://rdrr.io/r/stats/predict.html) method.
 
 ``` r
+
 # Select 3 brand new patients from our test set
 new_patients <- X_te[1:6, ]
 
@@ -331,18 +337,18 @@ print(round(final_matrix, 4))
 
 The [`predict()`](https://rdrr.io/r/stats/predict.html) function returns
 a list, but the most important element is `event.SL.predict`. \* **Rows
-($N$)**: Represent individual patients. \* **Columns ($T$)**: Represent
-the specific time points we defined in `new.times`. \* **Values**: The
-estimated probability that the patient will *survive* past that specific
-time point. As time increases (moving left to right across a row), the
-survival probability naturally decreases.
+($`N`$)**: Represent individual patients. \* **Columns ($`T`$)**:
+Represent the specific time points we defined in `new.times`. \*
+**Values**: The estimated probability that the patient will *survive*
+past that specific time point. As time increases (moving left to right
+across a row), the survival probability naturally decreases.
 
 ## 7. Visualizing Patient-Specific Predictions
 
-While raw probability matrices ($N \times T$) are perfect for downstream
-coding and performance benchmarking, they are difficult to interpret
-clinically. Doctors and researchers need to see the actual survival
-trajectories.
+While raw probability matrices ($`N \times T`$) are perfect for
+downstream coding and performance benchmarking, they are difficult to
+interpret clinically. Doctors and researchers need to see the actual
+survival trajectories.
 
 `SuperSurv` includes a built-in
 [`plot_predict()`](https://yuelyu21.github.io/SuperSurv/reference/plot_predict.md)
@@ -350,6 +356,7 @@ function to effortlessly translate this matrix into publication-ready
 survival curves for individual patients.
 
 ``` r
+
 # Plot the predicted survival curves for our 3 new patients (Rows 1, 2, and 3)
 plot_predict(
   preds = ensemble_preds,

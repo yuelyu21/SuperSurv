@@ -1,4 +1,4 @@
-# 6. Machine Learning with Random Survival Forests
+# 06. Machine Learning with Random Survival Forests
 
 ## Introduction
 
@@ -14,6 +14,7 @@ finally include it in a Super Learner ensemble.
 ## 1. Prepare the Data
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -37,6 +38,7 @@ training and standardization of survival probabilities. You can use
 these completely independent of the Super Learner ensemble.
 
 ``` r
+
 # 1. Fit the standalone wrapper
 rf_standalone <- surv.rfsrc(
   time = train$duration,
@@ -54,6 +56,7 @@ Because our plotting functions are universally compatible, we can plot
 individual patient curves directly from this standalone matrix:
 
 ``` r
+
 # Plot the first 3 patients in our training set
 plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
 ```
@@ -66,6 +69,7 @@ We can also pass this standalone model directly into our evaluation
 suite to test its performance on new data.
 
 ``` r
+
 # The function automatically detects this is a single model and plots it!
 plot_benchmark(
   object = rf_fit,
@@ -79,6 +83,7 @@ plot_benchmark(
 ![](base-learner-rfsrc_files/figure-html/eval-standalone-1.png)
 
 ``` r
+
 
 # plot_calibration(
 #   object   = rf_fit,
@@ -97,6 +102,7 @@ outperforms classical models by putting them together in a `SuperSurv`
 ensemble.
 
 ``` r
+
 my_library <- c("surv.coxph", "surv.weibull", "surv.rfsrc")
 
 fit_supersurv <- SuperSurv(
@@ -120,6 +126,7 @@ function, it automatically unpacks the library and plots the ensemble
 against all its constituent models.
 
 ``` r
+
 plot_benchmark(
   object = fit_supersurv,
   newdata = X_te,

@@ -1,4 +1,4 @@
-# 2. Model Performance & Benchmarking
+# 02. Model Performance & Benchmarking
 
 ## Introduction
 
@@ -31,6 +31,7 @@ Survival Trees) mathematically cannot extrapolate, and parametric models
 bind your evaluation grid within the limits of your observed data!
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -53,6 +54,7 @@ We will fit an ensemble consisting of a Cox model, a Weibull model, and
 a Survival Tree using the default Least Squares meta-learner.
 
 ``` r
+
 my_library <- c("surv.coxph", "surv.weibull", "surv.rpart")
 
 fit_supersurv <- SuperSurv(
@@ -78,6 +80,7 @@ returns a clean, comparative table of the *integrated* metrics across
 your entire time grid.
 
 ``` r
+
 # Evaluate performance directly using the fitted model and test data
 performance_results <- eval_summary(
   object = fit_supersurv,
@@ -104,6 +107,7 @@ function generates a stacked dashboard to visualize this dynamic
 performance over time.
 
 ``` r
+
 plot_benchmark(
   object = fit_supersurv,
   newdata = X_te,
@@ -139,6 +143,7 @@ patients into risk quantiles and plots their predicted probability
 against the actual observed Kaplan-Meier survival rate.
 
 ``` r
+
 # Assess calibration specifically at Time = 150
 plot_calibration(
   object = fit_supersurv,

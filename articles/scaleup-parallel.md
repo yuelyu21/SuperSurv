@@ -20,6 +20,7 @@ To use parallel processing, you need to have the `future` and
 `future.apply` packages installed.
 
 ``` r
+
 install.packages(c("future", "future.apply"))
 ```
 
@@ -30,6 +31,7 @@ the function. This gives you complete control over how many resources
 the package is allowed to consume.
 
 ``` r
+
 library(SuperSurv)
 library(future)
 library(survival)
@@ -49,6 +51,7 @@ call. The internal cross-validation loop will automatically detect your
 workers and distribute the folds simultaneously.
 
 ``` r
+
 X <- metabric[, grep("^x", names(metabric))]
 new.times <- seq(50, 200, by = 25)
 
@@ -73,6 +76,7 @@ standard, sequential processing once your intensive models are finished
 fitting. This frees up memory on your machine.
 
 ``` r
+
 # 3. Return to sequential processing
 plan(sequential)
 ```

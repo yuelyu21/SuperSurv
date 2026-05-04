@@ -1,4 +1,4 @@
-# 9. Causal Effects and Adjusted Marginal Contrasts (RMST)
+# 09. Causal Effects and Adjusted Marginal Contrasts (RMST)
 
 ## Moving Beyond the Hazard Ratio
 
@@ -15,15 +15,17 @@ time scale using the **Restricted Mean Survival Time (RMST)** via
 G-computation (Standardization) on top of our Ensemble Super Learner.
 
 RMST calculates the area under the survival curve up to a specific time
-horizon, $\tau$. By comparing the expected RMST if *everyone* in the
+horizon, $`\tau`$. By comparing the expected RMST if *everyone* in the
 dataset belonged to Group 1 versus if *everyone* belonged to Group 0, we
 obtain a robust, absolute measure of the difference:
 
-$$\Delta\text{RMST} = E\left\lbrack Y(1) \right\rbrack - E\left\lbrack Y(0) \right\rbrack = \text{RMST}_{\text{Group 1}}(\tau) - \text{RMST}_{\text{Group 0}}(\tau)$$
+``` math
+ \Delta \text{RMST} = E[Y(1)] - E[Y(0)] = \text{RMST}_{\text{Group 1}}(\tau) - \text{RMST}_{\text{Group 0}}(\tau) 
+```
 
 ## Philosophy: “Causal Effect” vs. “Marginal Contrast”
 
-How you interpret this $\Delta\text{RMST}$ depends entirely on the
+How you interpret this $`\Delta \text{RMST}`$ depends entirely on the
 nature of your exposure variable. The math of G-computation is identical
 for both, but the statistical terminology must be used responsibly.
 
@@ -53,6 +55,7 @@ absent). Because `x4` is a biomarker, we will interpret the result as an
 **Adjusted Marginal Contrast**.
 
 ``` r
+
 library(SuperSurv)
 set.seed(123)
 
@@ -71,6 +74,7 @@ First, train the ensemble. We must set
 G-computation prediction phase.
 
 ``` r
+
 fit <- SuperSurv(
   time = metabric$duration,
   event = metabric$event,
@@ -95,6 +99,7 @@ set to 0. The difference between these two standardized averages yields
 the adjusted RMST contrast.
 
 ``` r
+
 # Estimate the adjusted difference up to tau = 100 months
 results <- estimate_marginal_rmst(
   fit = fit, 
@@ -111,8 +116,8 @@ print(results$ATE_RMST)
 #> [1] -1.269855
 ```
 
-**Interpretation:** If the resulting $\Delta$RMST value is `-1.24`, this
-indicates that, after standardizing over the observed covariate
+**Interpretation:** If the resulting $`\Delta`$RMST value is `-1.24`,
+this indicates that, after standardizing over the observed covariate
 distribution using the fitted Super Learner ensemble, the group with
 `x4 = 1` is predicted to have approximately 1.24 fewer months of
 restricted mean survival than the group with `x4 = 0` over a 100-month
@@ -125,6 +130,7 @@ conditional on the fitted ensemble. This returns a perturbation-based
 standard error, confidence interval, and Wald-type p-value.
 
 ``` r
+
 rmst_results_inf <- estimate_marginal_rmst(
   fit = fit,
   data = metabric,
@@ -164,6 +170,7 @@ When `inference = TRUE`, the function also displays perturbation-based
 confidence intervals as a ribbon.
 
 ``` r
+
 # Plot the Delta RMST across a sequence of tau values
 tau_grid <- seq(20, 140, by = 30)
 plot_marginal_rmst_curve(
@@ -191,9 +198,10 @@ plot_marginal_rmst_curve(
 To evaluate how well our model’s restricted expectations align with
 reality, we can plot the predicted RMST for the observed data against
 their true survival times. Patients who experienced the event should lie
-close to the diagonal line up to $\tau$.
+close to the diagonal line up to $`\tau`$.
 
 ``` r
+
 plot_rmst_vs_obs(
   fit = fit, 
   data = metabric, 

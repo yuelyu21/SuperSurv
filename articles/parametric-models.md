@@ -1,4 +1,4 @@
-# 7. Parametric Survival Models
+# 07. Parametric Survival Models
 
 ## Introduction
 
@@ -22,6 +22,7 @@ the assumption is wrong, the cross-validation risk will spike, and
 ## 1. Setup and Library Definition
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -50,6 +51,7 @@ these Accelerated Failure Time (AFT) models and map their continuous
 survival predictions onto our discrete `new.times` evaluation grid.
 
 ``` r
+
 fit_parametric <- SuperSurv(
   time = train$duration,
   event = train$event,
@@ -71,6 +73,7 @@ Let’s look at the cross-validated risks and the final meta-learner
 weights.
 
 ``` r
+
 summary(fit_parametric)
 #> Summary of SuperSurv fit
 #>   Selection: ensemble 
@@ -96,7 +99,7 @@ summary(fit_parametric)
 #> Evaluation times: 7 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      2.058      1.936      0.118
+#>      1.989      1.872      0.114
 ```
 
 ### Interpretation
@@ -109,7 +112,7 @@ increases with time or peaks shortly after surgery).
 
 Because the Exponential assumption fits the data poorly, its
 cross-validated risk will be high, and `SuperSurv` will smartly assign
-it a weight of $0.00$.
+it a weight of $`0.00`$.
 
 By including parametric models in your `SuperSurv` library, you allow
 the data—not the researcher—to dictate which mathematical distributions

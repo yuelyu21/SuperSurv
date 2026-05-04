@@ -1,11 +1,11 @@
-# 4. High-Dimensional Data & Variable Screening
+# 04. High-Dimensional Data & Variable Screening
 
 ## Introduction
 
 In modern clinical research and bioinformatics, it is common to
 encounter high-dimensional datasets where the number of predictors
 (genes, biomarkers, clinical features) far exceeds the number of
-observed events ($p \gg n$).
+observed events ($`p \gg n`$).
 
 Feeding thousands of raw variables directly into complex machine
 learning algorithms introduces two massive problems: 1. **Computational
@@ -27,6 +27,7 @@ noise. This simulates a high-dimensional genomic dataset where most
 measured features have absolutely no relationship to patient survival.
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -72,6 +73,7 @@ Let’s build a library that tests different combinations of prediction
 and screening:
 
 ``` r
+
 # We pass a list of vectors. The first element is the prediction model, 
 # and the second element is the screening algorithm.
 
@@ -98,6 +100,7 @@ overly optimistic benchmark metrics. `SuperSurv` protects you from this
 automatically.
 
 ``` r
+
 fit_highdim <- SuperSurv(
   time = train$duration,
   event = train$event,
@@ -125,6 +128,7 @@ and
 [`plot_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/plot_benchmark.md).
 
 ``` r
+
 # Check the integrated performance
 screened_performance <- eval_summary(
   object = fit_highdim,
@@ -154,6 +158,7 @@ can inspect screening results without relying on internal list
 components.
 
 ``` r
+
 # Get the variables retained by the second event learner.
 selected_features <- selected_variables(fit_highdim, learner = 2)
 

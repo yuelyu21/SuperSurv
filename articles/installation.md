@@ -1,4 +1,4 @@
-# 0. Installation & Setup
+# 00. Installation & Setup
 
 ## Welcome to SuperSurv!
 
@@ -28,6 +28,7 @@ You can install the development version of `SuperSurv` directly from
 GitHub using the `devtools` or `remotes` package:
 
 ``` r
+
 # Install devtools if you don't have it
 if (!requireNamespace("devtools", quietly = TRUE)) {
   install.packages("devtools")
@@ -41,6 +42,7 @@ Once installed, you can load the package and view all the available
 modeling and screening wrappers:
 
 ``` r
+
 library(SuperSurv)
 
 # See all 19 prediction models and 6 screening algorithms!
@@ -61,6 +63,7 @@ copy and paste the following script to install the most commonly used
 machine learning and interpretability engines:
 
 ``` r
+
 # List of highly recommended modeling engines
 ml_packages <- c(
   "survival",        # Classical Cox models

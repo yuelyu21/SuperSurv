@@ -1,4 +1,4 @@
-# 5. Advanced Hyperparameter Tuning & Grid Search
+# 05. Advanced Hyperparameter Tuning & Grid Search
 
 ## Introduction
 
@@ -18,6 +18,7 @@ entirely.
 ## 1. Prepare the Data
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -42,6 +43,7 @@ parameters, we define a list of the values we want to test.
 
 ``` r
 
+
 # Define our hyperparameter search space
 rf_tuning_params <- list(
   nodesize = c(3, 15, 30), # Deep vs. Shallow trees
@@ -57,6 +59,7 @@ The function will automatically generate unique R functions for all 6
 combinations in your global environment and return their names!
 
 ``` r
+
 # Automatically generate 6 different Random Forest wrappers
 rf_grid <- create_grid(
   base_learner = "surv.rfsrc", 
@@ -68,6 +71,8 @@ print(rf_grid)
 #> [1] "surv.rfsrc_nodesize3_ntree100"  "surv.rfsrc_nodesize15_ntree100"
 #> [3] "surv.rfsrc_nodesize30_ntree100" "surv.rfsrc_nodesize3_ntree500" 
 #> [5] "surv.rfsrc_nodesize15_ntree500" "surv.rfsrc_nodesize30_ntree500"
+#> attr(,"class")
+#> [1] "SuperSurv_grid" "character"
 ```
 
 ## 4. Fitting the Tuned Ensemble
@@ -77,6 +82,7 @@ into your `SuperSurv` library. We can combine our tuned ML grid with a
 baseline Cox model to ensure we always have a linear fallback.
 
 ``` r
+
 # Combine baseline with our 6 tuned forests
 my_ml_library <- c("surv.coxph", rf_grid)
 

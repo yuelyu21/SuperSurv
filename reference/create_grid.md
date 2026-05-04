@@ -21,4 +21,5 @@ create_grid(base_learner, grid_params)
 
 ## Value
 
-A character vector of the newly generated function names.
+A character vector of class `"SuperSurv_grid"` containing the newly
+generated function names.

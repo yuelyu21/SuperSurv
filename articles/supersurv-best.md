@@ -1,4 +1,4 @@
-# 3. Ensemble vs. Best Model Selection
+# 03. Ensemble vs. Best Model Selection
 
 ## Introduction
 
@@ -30,6 +30,7 @@ We load the `metabric` dataset and define our evaluation time grid
 exactly as we did in the previous tutorials.
 
 ``` r
+
 library(SuperSurv)
 library(survival)
 
@@ -56,6 +57,7 @@ default Ensemble approach (`selection = "ensemble"`), and the second
 will use the winner-take-all approach (`selection = "best"`).
 
 ``` r
+
 # 1. The Ensemble Super Learner (Weighted Average)
 fit_ensemble <- SuperSurv(
   time = train$duration,
@@ -94,6 +96,7 @@ we inspect the meta-learner coefficients with
 [`event_weights()`](https://yuelyu21.github.io/SuperSurv/reference/event_weights.md).
 
 ``` r
+
 cat("\n--- ENSEMBLE WEIGHTS (selection = 'ensemble') ---\n")
 #> 
 #> --- ENSEMBLE WEIGHTS (selection = 'ensemble') ---
@@ -123,6 +126,7 @@ We can answer this instantly using
 [`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md).
 
 ``` r
+
 # Evaluate the Ensemble
 cat("Performance of the ENSEMBLE Super Learner:\n")
 #> Performance of the ENSEMBLE Super Learner:
