@@ -19,4 +19,11 @@ newly generated function names.
 Dynamically generates custom wrapper functions for a specified base learner
 across a grid of hyperparameters.
 }
+\details{
+Generated functions are assigned to the calling environment. The
+base learner is resolved there (with package functions as a fallback) when
+the grid is created and retained by each generated function. Local base
+learners and grids can therefore be used inside a function that calls
+\code{SuperSurv()}, without modifying the global environment.
+}
 \keyword{internal}

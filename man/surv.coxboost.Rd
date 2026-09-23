@@ -14,6 +14,8 @@ surv.coxboost(
   id,
   stepno = 100,
   penalty = 100,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 }
@@ -35,6 +37,13 @@ surv.coxboost(
 \item{stepno}{Number of boosting steps (default: 100).}
 
 \item{penalty}{Penalty value for the update (default: 100).}
+
+\item{ties}{Tied-event approximation used for risk-score calibration:
+\code{"breslow"} (default) or \code{"efron"}.}
+
+\item{survival_transform}{Transformation from calibrated hazard increments
+to survival probabilities: \code{"exponential"} (default) or
+\code{"product_limit"}.}
 
 \item{...}{Additional arguments passed to \code{\link[CoxBoost]{CoxBoost}}.}
 }

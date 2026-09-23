@@ -15,6 +15,8 @@ surv.rpart(
   cp = 0.01,
   minsplit = 20,
   maxdepth = 30,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 }
@@ -38,6 +40,13 @@ surv.rpart(
 \item{minsplit}{Minimum number of observations to attempt a split (default: 20).}
 
 \item{maxdepth}{Maximum depth of any node of the final tree (default: 30).}
+
+\item{ties}{Tied-event approximation used for risk-score calibration:
+\code{"breslow"} (default) or \code{"efron"}.}
+
+\item{survival_transform}{Transformation from calibrated hazard increments
+to survival probabilities: \code{"exponential"} (default) or
+\code{"product_limit"}.}
 
 \item{...}{Additional arguments passed to \code{\link[rpart]{rpart.control}}.}
 }

@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
   fig.width = 7,
   fig.height = 5
 )
+has_rfsrc <- requireNamespace("randomForestSRC", quietly = TRUE)
 ```
 
 ## Introduction
@@ -45,7 +46,7 @@ new.times <- seq(50, 200, by = 25)
 
 `SuperSurv` provides unified wrappers that automatically handle the training and standardization of survival probabilities. You can use these completely independent of the Super Learner ensemble.
 
-```{r standalone-rf}
+```{r standalone-rf, eval=requireNamespace("randomForestSRC", quietly = TRUE)}
 # 1. Fit the standalone wrapper
 rf_standalone <- surv.rfsrc(
   time = train$duration,
@@ -63,7 +64,7 @@ Because our plotting functions are universally compatible, we can plot individua
 
 
 
-```{r plot-standalone, fig.align='center'}
+```{r plot-standalone, fig.align='center', eval=requireNamespace("randomForestSRC", quietly = TRUE)}
 # Plot the first 3 patients in our training set
 plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
 ```
@@ -72,7 +73,7 @@ plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
 
 We can also pass this standalone model directly into our evaluation suite to test its performance on new data. 
 
-```{r eval-standalone, fig.align='center', fig.height=4, fig.width= 9}
+```{r eval-standalone, fig.align='center', fig.height=4, fig.width= 9, eval=requireNamespace("randomForestSRC", quietly = TRUE)}
 # The function automatically detects this is a single model and plots it!
 plot_benchmark(
   object = rf_fit,
@@ -105,7 +106,7 @@ plot_benchmark(
 
 While the standalone RSF is powerful, we can objectively evaluate if it outperforms classical models by putting them together in a `SuperSurv` ensemble. 
 
-```{r fit-models, results='hide', message=FALSE, warning=FALSE}
+```{r fit-models, results='hide', message=FALSE, warning=FALSE, eval=requireNamespace("randomForestSRC", quietly = TRUE)}
 my_library <- c("surv.coxph", "surv.weibull", "surv.rfsrc")
 
 fit_supersurv <- SuperSurv(
@@ -128,7 +129,7 @@ When we pass the `SuperSurv` ensemble into the exact same benchmark function, it
 
 
 
-```{r plot-ensemble-benchmark, fig.align='center', fig.height=9}
+```{r plot-ensemble-benchmark, fig.align='center', fig.height=9, eval=requireNamespace("randomForestSRC", quietly = TRUE)}
 plot_benchmark(
   object = fit_supersurv,
   newdata = X_te,
@@ -138,10 +139,7 @@ plot_benchmark(
 )
 ```
 
-By incorporating advanced machine learning algorithms into your library, `SuperSurv` mathematically guarantees that your final predictions adapt to the complexity of your data, achieving the lowest possible Brier Score.
-
-
-
+Including flexible learners broadens the candidate library and may improve adaptation to nonlinear or non-proportional-hazards structure. Their contribution is determined by the selected cross-validated objective and should be evaluated on held-out data.
 
 
 

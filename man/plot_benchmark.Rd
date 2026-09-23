@@ -15,15 +15,20 @@ plot_benchmark(
 )
 }
 \arguments{
-\item{object}{A fitted SuperSurv object OR a fitted standalone learner.}
+\item{object}{A fitted SuperSurv object, a fitted standalone learner, or a
+benchmark returned by \code{eval_benchmark()}. A benchmark is plotted without
+recomputing predictions or metrics.}
 
-\item{newdata}{A data.frame of test covariates.}
+\item{newdata}{A data.frame of test covariates. Omit when \code{object} is a benchmark.}
 
-\item{time}{Numeric vector of observed follow-up times for the test set.}
+\item{time}{Numeric vector of observed follow-up times for the test set.
+Omit when \code{object} is a benchmark.}
 
-\item{event}{Numeric vector of event indicators for the test set.}
+\item{event}{Numeric vector of event indicators for the test set.
+Omit when \code{object} is a benchmark.}
 
-\item{eval_times}{Numeric vector of times at which to evaluate predictions.}
+\item{eval_times}{Numeric vector of times at which to evaluate predictions.
+Omit when \code{object} is a benchmark.}
 
 \item{metrics}{Character vector specifying which plots to return.
 Options: "brier", "auc", "cindex". Defaults to all three.}
@@ -31,14 +36,17 @@ Options: "brier", "auc", "cindex". Defaults to all three.}
 \item{verbose}{Logical; if TRUE, progress messages are shown. Defaults to FALSE.}
 }
 \value{
-A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
+A combined patchwork object when \pkg{patchwork} is installed, a
+single ggplot when one metric is selected, or a named list of ggplots when
+multiple metrics are requested without \pkg{patchwork}.
 }
 \description{
 Generates time-dependent performance curves comparing the SuperSurv ensemble
 against its base learners, or evaluates a single standalone learner.
 }
 \examples{
-if (requireNamespace("glmnet", quietly = TRUE)) {
+if (requireNamespace("ranger", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:120, ]
   x_cols <- grep("^x", names(dat))[1:5]

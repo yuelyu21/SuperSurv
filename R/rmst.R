@@ -5,6 +5,26 @@
 #' @return A vector of RMST values for each patient
 #' @keywords internal
 get_rmst <- function(surv_matrix, times, tau) {
+  times <- .validate_time_grid(times, "times")
+  if (!is.matrix(surv_matrix) && !is.data.frame(surv_matrix)) {
+    stop("`surv_matrix` must be a numeric matrix with observations in rows and `times` in columns.",
+         call. = FALSE)
+  }
+  surv_matrix <- as.matrix(surv_matrix)
+  if (!is.numeric(surv_matrix) || ncol(surv_matrix) != length(times) ||
+      nrow(surv_matrix) == 0L) {
+    stop("`surv_matrix` must be a non-empty numeric matrix with one column per value in `times`.",
+         call. = FALSE)
+  }
+  if (any(!is.finite(surv_matrix)) || any(surv_matrix < 0 | surv_matrix > 1)) {
+    stop("`surv_matrix` must contain finite survival probabilities in [0, 1].",
+         call. = FALSE)
+  }
+  if (!is.numeric(tau) || length(tau) != 1L || !is.finite(tau) ||
+      tau < 0 || tau > max(times)) {
+    stop("`tau` must be one finite, non-negative number no greater than `max(times)`.",
+         call. = FALSE)
+  }
   surv_matrix <- as.matrix(surv_matrix)
   ord <- order(times)
   times <- times[ord]
@@ -45,14 +65,6 @@ get_rmst <- function(surv_matrix, times, tau) {
 #' intervention and additional identification assumptions hold, the same
 #' standardized procedure may also support a causal interpretation.
 #'
-#' If \code{inference = TRUE}, the function additionally performs a
-#' perturbation-based inference procedure conditional on the fitted
-#' \code{SuperSurv} model. In this implementation, the fitted learner library,
-#' hyperparameters, base learners, and ensemble weights are held fixed, and
-#' random positive weights are applied to the individual-level RMST contrasts to
-#' estimate a perturbation-based standard error, Wald-type confidence interval,
-#' and p-value.
-#'
 #' @param fit A fitted object of class \code{"SuperSurv"}.
 #' @param data A \code{data.frame} containing the covariates used for
 #'   standardization, including the binary grouping variable specified by
@@ -64,15 +76,11 @@ get_rmst <- function(surv_matrix, times, tau) {
 #'   evaluation grid used for survival prediction.
 #' @param tau Numeric scalar giving the restriction horizon for RMST. Must not
 #'   exceed \code{max(times)}.
-#' @param inference Logical; if \code{TRUE}, compute perturbation-based standard
-#'   errors, confidence intervals, and a Wald-type p-value. Defaults to
-#'   \code{FALSE}.
-#' @param B Integer giving the number of perturbation replicates when
-#'   \code{inference = TRUE}. Defaults to \code{200}.
-#' @param seed Optional integer seed for reproducibility of the perturbation
-#'   procedure.
-#' @param ci_level Numeric scalar in \code{(0, 1)} specifying the confidence
-#'   level for the Wald-type confidence interval. Defaults to \code{0.95}.
+#' @param inference Deprecated compatibility argument. Formal inference is not
+#'   provided; it requires a validated procedure accounting for model-estimation
+#'   uncertainty. Must remain \code{FALSE}.
+#' @param B,seed,ci_level Deprecated compatibility arguments; ignored when
+#'   \code{inference = FALSE}.
 #'
 #' @return A list containing:
 #' \itemize{
@@ -89,18 +97,7 @@ get_rmst <- function(surv_matrix, times, tau) {
 #'   RMST values under \code{A = 0}.
 #'   \item \code{patient_delta_rmst}: Vector of individual-level predicted RMST
 #'   contrasts.
-#'   \item \code{inference}: Logical indicator for whether perturbation-based
-#'   inference was requested.
-#'   \item \code{B}: Number of perturbation replicates used when
-#'   \code{inference = TRUE}; otherwise \code{NULL}.
-#'   \item \code{SE_RMST}: Perturbation-based standard error of the RMST
-#'   contrast; otherwise \code{NULL}.
-#'   \item \code{CI_RMST}: Wald-type confidence interval for the RMST contrast;
-#'   otherwise \code{NULL}.
-#'   \item \code{z_value}: Wald-type test statistic; otherwise \code{NULL}.
-#'   \item \code{p_value}: Two-sided Wald-type p-value; otherwise \code{NULL}.
-#'   \item \code{perturb_reps}: Vector of perturbation replicate estimates;
-#'   otherwise \code{NULL}.
+#'   \item \code{inference}: Always \code{FALSE}; retained for compatibility.
 #' }
 #'
 #' @details
@@ -109,12 +106,10 @@ get_rmst <- function(surv_matrix, times, tau) {
 #' numerically from the predicted survival matrix using a left Riemann sum over
 #' the supplied grid \code{times}.
 #'
-#' The perturbation-based inference implemented here is conditional on the
-#' fitted \code{SuperSurv} model. It does not re-tune hyperparameters, reselect
-#' the learner library, or refit the base learners under each perturbation.
-#' Instead, it perturbs the aggregation of the individual-level predicted RMST
-#' contrasts. This yields a lightweight uncertainty quantification procedure for
-#' the standardized RMST contrast given the final fitted ensemble.
+#' The returned contrast is a model-based point estimate. Formal uncertainty
+#' quantification would need to account for nuisance estimation, tuning,
+#' cross-validation, learner fitting, and ensemble-weight estimation, for
+#' example through a validated full-pipeline refitting procedure.
 #'
 #' @examples
 #' \dontrun{
@@ -140,52 +135,46 @@ get_rmst <- function(surv_matrix, times, tau) {
 #'   data = metabric,
 #'   trt_col = "x4",
 #'   times = new.times,
-#'   tau = 100,
-#'   inference = TRUE,
-#'   B = 200,
-#'   seed = 123
+#'   tau = 100
 #' )
 #'
 #' rmst_res$ATE_RMST
-#' rmst_res$SE_RMST
-#' rmst_res$CI_RMST
-#' format.pval(rmst_res$p_value, digits = 3, eps = 1e-16)
 #' }
 #'
 #' @export
 estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
                                  inference = FALSE, B = 200,
                                  seed = NULL, ci_level = 0.95) {
-
-  if (!inherits(fit, "SuperSurv")) {
-    stop("'fit' must be a fitted 'SuperSurv' object.")
-  }
+  .validate_SuperSurv_object(fit, "fit")
 
   if (!is.data.frame(data)) {
-    stop("'data' must be a data.frame.")
+    stop("`data` must be a data frame.", call. = FALSE)
   }
-
+  if (!is.character(trt_col) || length(trt_col) != 1L || is.na(trt_col) ||
+      !nzchar(trt_col)) {
+    stop("`trt_col` must be one non-empty column name.", call. = FALSE)
+  }
+  .validate_scalar_logical(inference, "inference")
+  if (isTRUE(inference)) {
+    stop(
+      "Perturbation-based RMST inference has been removed because it does not account for model fitting, tuning, cross-validation, or ensemble selection. Use the returned RMST point contrast; this package does not provide a validated inference procedure accounting for these sources of uncertainty.",
+      call. = FALSE
+    )
+  }
   if (!trt_col %in% names(data)) {
-    stop("'", trt_col, "' not found in 'data'.")
+    stop("Treatment column '", trt_col, "' was not found in `data`.", call. = FALSE)
   }
-
-  if (tau > max(times)) {
-    stop("'tau' cannot be greater than the maximum value in 'times'.")
+  treatment <- data[[trt_col]]
+  if (anyNA(treatment) || !all(treatment %in% c(0, 1))) {
+    stop("`data[[trt_col]]` must contain only 0 and 1 with no missing values.",
+         call. = FALSE)
   }
-
-  if (!is.logical(inference) || length(inference) != 1) {
-    stop("'inference' must be TRUE or FALSE.")
+  times <- .validate_time_grid(times, "times")
+  if (!is.numeric(tau) || length(tau) != 1L || !is.finite(tau) ||
+      tau < 0 || tau > max(times)) {
+    stop("`tau` must be one finite, non-negative number no greater than `max(times)`.",
+         call. = FALSE)
   }
-
-  if (!is.numeric(B) || length(B) != 1 || B <= 1) {
-    stop("'B' must be a single integer greater than 1.")
-  }
-
-  if (!is.numeric(ci_level) || length(ci_level) != 1 ||
-      ci_level <= 0 || ci_level >= 1) {
-    stop("'ci_level' must be a single number in (0, 1).")
-  }
-
   # Use the exact variables the model was trained on.
   model_vars <- training_variables(fit)
 
@@ -194,6 +183,7 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
     stop("The following training variables are missing from 'data': ",
          paste(missing_vars, collapse = ", "))
   }
+  .validate_data_frame_columns(data[, model_vars, drop = FALSE], "data")
 
   # -----------------------------
   # Counterfactual predictions: A = 1
@@ -225,49 +215,6 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
   delta_i <- rmst_1 - rmst_0
   ATE <- mean(delta_i)
 
-  # -----------------------------
-  # Optional perturbation inference
-  # -----------------------------
-  perturb_reps <- NULL
-  SE_RMST <- NULL
-  CI_RMST <- NULL
-  p_value <- NULL
-  z_value <- NULL
-
-  if (isTRUE(inference)) {
-    if (!is.null(seed)) set.seed(seed)
-
-    n <- length(delta_i)
-    perturb_reps <- numeric(B)
-
-    for (b in seq_len(B)) {
-      # Exponential perturbation weights with mean ~1 after normalization
-      w <- stats::rexp(n, rate = 1)
-      w <- w / mean(w)
-
-      perturb_reps[b] <- sum(w * delta_i) / sum(w)
-    }
-
-    SE_RMST <- stats::sd(perturb_reps)
-
-    alpha <- 1 - ci_level
-    zcrit <- stats::qnorm(1 - alpha / 2)
-
-    CI_RMST <- c(
-      ATE - zcrit * SE_RMST,
-      ATE + zcrit * SE_RMST
-    )
-    names(CI_RMST) <- c("lower", "upper")
-
-    if (!is.na(SE_RMST) && SE_RMST > 0) {
-      z_value <- ATE / SE_RMST
-      p_value <- 2 * stats::pnorm(-abs(z_value))
-    } else {
-      z_value <- NA_real_
-      p_value <- NA_real_
-    }
-  }
-
   res <- list(
     ATE_RMST = ATE,
     mean_RMST_Treated = mean(rmst_1),
@@ -276,27 +223,11 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
     patient_rmst_treated = rmst_1,
     patient_rmst_control = rmst_0,
     patient_delta_rmst = delta_i,
-    inference = inference,
-    B = if (isTRUE(inference)) B else NULL,
-    SE_RMST = SE_RMST,
-    CI_RMST = CI_RMST,
-    z_value = z_value,
-    p_value = p_value,
-    # p_value = base::format.pval(p_value, digits = 3, eps = 1e-16),
-    perturb_reps = perturb_reps
+    inference = FALSE
   )
 
   msg <- sprintf("Adjusted Delta RMST at tau = %s: %s time units",
                  tau, round(ATE, 3))
-
-  if (isTRUE(inference) && !is.null(SE_RMST)) {
-    msg <- paste0(
-      msg,
-      " | SE = ", round(SE_RMST, 3),
-      " | ", round(ci_level * 100), "% CI = [",
-      round(CI_RMST[1], 3), ", ", round(CI_RMST[2], 3), "]"
-    )
-  }
 
   message(msg)
 
@@ -315,23 +246,16 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
 #' Generates a curve showing how the adjusted marginal restricted mean survival
 #' time (RMST) contrast evolves across a sequence of restriction times.
 #'
-#' If \code{inference = TRUE}, the function additionally displays perturbation-based
-#' Wald confidence intervals at each value of \code{tau}.
-#'
 #' @param fit A fitted \code{SuperSurv} ensemble object.
 #' @param data A \code{data.frame} containing the covariates and the binary grouping variable.
 #' @param trt_col Character string. The exact name of the binary grouping variable in \code{data}.
 #' @param times Numeric vector of time points matching the prediction grid.
 #' @param tau_seq Numeric vector. A sequence of restriction times (\code{tau}) to evaluate and plot.
-#' @param inference Logical; if \code{TRUE}, compute perturbation-based confidence intervals.
-#'   Defaults to \code{FALSE}.
-#' @param B Integer. Number of perturbation replicates used when \code{inference = TRUE}.
-#'   Defaults to \code{200}.
-#' @param seed Optional integer seed for reproducibility.
-#' @param ci_level Numeric scalar in \code{(0,1)} specifying the confidence level for the
-#'   confidence interval. Defaults to \code{0.95}.
+#' @param inference Deprecated compatibility argument. Must remain \code{FALSE}.
+#' @param B,seed,ci_level Deprecated compatibility arguments; ignored.
 #'
 #' @examples
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
 #' data("metabric", package = "SuperSurv")
 #' dat <- metabric[1:80, ]
 #' x_cols <- grep("^x", names(dat), value = TRUE)[1:5]
@@ -344,7 +268,7 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
 #'   X = X,
 #'   newdata = X,
 #'   new.times = new.times,
-#'   event.library = c("surv.coxph", "surv.glmnet"),
+#'   event.library = c("surv.coxph"),
 #'   cens.library = c("surv.coxph"),
 #'   control = list(saveFitLibrary = TRUE)
 #' )
@@ -355,35 +279,39 @@ estimate_marginal_rmst <- function(fit, data, trt_col, times, tau,
 #'   data = dat,
 #'   trt_col = "x4",
 #'   times = new.times,
-#'   tau_seq = tau_grid,
-#'   inference = TRUE,
-#'   B = 100,
-#'   seed = 123
+#'   tau_seq = tau_grid
 #' )
+#' }
 #'
 #' @return A \code{ggplot} object visualizing the adjusted marginal RMST contrast curve.
 #' @export
 plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
                                      inference = FALSE, B = 200,
                                      seed = NULL, ci_level = 0.95) {
-  requireNamespace("ggplot2", quietly = TRUE)
+  .require_optional_packages("ggplot2", "plot_marginal_rmst_curve()")
+  .validate_scalar_logical(inference, "inference")
+  if (isTRUE(inference)) {
+    stop(
+      "Perturbation-based RMST confidence intervals have been removed because they do not account for the fitted learning and ensemble-selection pipeline.",
+      call. = FALSE
+    )
+  }
+  times <- .validate_time_grid(times, "times")
+  tau_seq <- .validate_time_grid(tau_seq, "tau_seq")
+  if (max(tau_seq) > max(times)) {
+    stop("Every value in `tau_seq` must be no greater than `max(times)`.",
+         call. = FALSE)
+  }
 
   results <- lapply(seq_along(tau_seq), function(i) {
     t <- tau_seq[i]
-
-    # optional varying seed across tau values for reproducibility
-    seed_i <- if (!is.null(seed)) seed + i - 1 else NULL
 
     res <- estimate_marginal_rmst(
       fit = fit,
       data = data,
       trt_col = trt_col,
       times = times,
-      tau = t,
-      inference = inference,
-      B = B,
-      seed = seed_i,
-      ci_level = ci_level
+      tau = t
     )
 
     out <- data.frame(
@@ -392,28 +320,12 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
       stringsAsFactors = FALSE
     )
 
-    if (isTRUE(inference)) {
-      out$SE_RMST <- res$SE_RMST
-      out$lower <- res$CI_RMST["lower"]
-      out$upper <- res$CI_RMST["upper"]
-      out$p_value <- res$p_value
-    }
-
     out
   })
 
   res_df <- do.call(rbind, results)
 
   p <- ggplot2::ggplot(res_df, ggplot2::aes(x = Tau, y = Delta_RMST))
-
-  if (isTRUE(inference)) {
-    p <- p +
-      ggplot2::geom_ribbon(
-        ggplot2::aes(ymin = lower, ymax = upper),
-        alpha = 0.4,
-        fill = "#e63946"
-      )
-  }
 
   p <- p +
     ggplot2::geom_line(color = "#e63946", linewidth = 1) +
@@ -422,11 +334,7 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
     ggplot2::theme_minimal() +
     ggplot2::labs(
       title = "Adjusted Marginal RMST Contrast Over Time",
-      subtitle = if (isTRUE(inference)) {
-        paste0("Difference in RMST with ", round(ci_level * 100), "% perturbation-based confidence intervals")
-      } else {
-        "Difference in Restricted Mean Survival Time between groups"
-      },
+      subtitle = "Model-based difference in restricted mean survival time",
       x = "Restriction Time (Tau)",
       y = expression(Delta ~ "RMST")
     ) +
@@ -457,6 +365,7 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
 #'
 #' @return A \code{ggplot} object comparing predicted RMST to observed outcomes.
 #' @examples
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
 #' data("metabric", package = "SuperSurv")
 #' dat <- metabric[1:80, ]
 #' x_cols <- grep("^x", names(dat))[1:5]
@@ -469,7 +378,7 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
 #'   X = X,
 #'   newdata = X,
 #'   new.times = new.times,
-#'   event.library = c("surv.coxph", "surv.glmnet"),
+#'   event.library = c("surv.coxph"),
 #'   cens.library = c("surv.coxph"),
 #'   control = list(saveFitLibrary = TRUE)
 #' )
@@ -480,13 +389,48 @@ plot_marginal_rmst_curve <- function(fit, data, trt_col, times, tau_seq,
 #'   time_col = "duration",
 #'   event_col = "event",
 #'   times = new.times,
-#'   tau = 350
+#'   tau = 100
 #' )
+#' }
 #' @export
 plot_rmst_vs_obs <- function(fit, data, time_col, event_col, times, tau) {
-  requireNamespace("ggplot2", quietly = TRUE)
+  .require_optional_packages("ggplot2", "plot_rmst_vs_obs()")
+  .validate_SuperSurv_object(fit, "fit")
+  if (!is.data.frame(data) || nrow(data) == 0L) {
+    stop("`data` must be a non-empty data frame.", call. = FALSE)
+  }
+  for (argument in c("time_col", "event_col")) {
+    value <- get(argument)
+    if (!is.character(value) || length(value) != 1L || is.na(value) ||
+        !nzchar(value)) {
+      stop("`", argument, "` must be one non-empty column name.", call. = FALSE)
+    }
+    if (!value %in% names(data)) {
+      stop("Column '", value, "' supplied through `", argument,
+           "` was not found in `data`.", call. = FALSE)
+    }
+  }
+  observed_time <- data[[time_col]]
+  observed_event <- data[[event_col]]
+  if (!is.numeric(observed_time) || any(!is.finite(observed_time)) ||
+      any(observed_time < 0)) {
+    stop("`data[[time_col]]` must contain finite, non-negative numeric values.",
+         call. = FALSE)
+  }
+  if (!is.numeric(observed_event) || any(!is.finite(observed_event)) ||
+      any(!observed_event %in% c(0, 1))) {
+    stop("`data[[event_col]]` must contain only numeric 0/1 values.",
+         call. = FALSE)
+  }
+  times <- .validate_time_grid(times, "times")
   model_vars <- training_variables(fit)
+  missing_vars <- setdiff(model_vars, names(data))
+  if (length(missing_vars)) {
+    stop("`data` is missing training feature(s): ",
+         paste(missing_vars, collapse = ", "), ".", call. = FALSE)
+  }
   X_obs <- data[, model_vars, drop = FALSE]
+  .validate_data_frame_columns(X_obs, "data")
 
   # Using the standardized 'newdata' argument
   pred_obs_obj <- predict(fit, newdata = X_obs, new.times = times)

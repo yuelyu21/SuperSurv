@@ -38,6 +38,7 @@
 #' @method coef SuperSurv
 #' @export
 coef.SuperSurv <- function(object, type = c("event", "censoring", "both"), ...) {
+  .validate_SuperSurv_object(object)
   type <- match.arg(type)
 
   switch(
@@ -89,9 +90,17 @@ event_weights <- function(object, ...) {
 }
 
 #' @rdname event_weights
+#' @method event_weights default
+#' @export
+event_weights.default <- function(object, ...) {
+  .unsupported_SuperSurv_accessor(object, "event_weights")
+}
+
+#' @rdname event_weights
 #' @method event_weights SuperSurv
 #' @export
 event_weights.SuperSurv <- function(object, ...) {
+  .validate_SuperSurv_object(object)
   coef(object, type = "event")
 }
 
@@ -102,9 +111,17 @@ censor_weights <- function(object, ...) {
 }
 
 #' @rdname event_weights
+#' @method censor_weights default
+#' @export
+censor_weights.default <- function(object, ...) {
+  .unsupported_SuperSurv_accessor(object, "censor_weights")
+}
+
+#' @rdname event_weights
 #' @method censor_weights SuperSurv
 #' @export
 censor_weights.SuperSurv <- function(object, ...) {
+  .validate_SuperSurv_object(object)
   coef(object, type = "censoring")
 }
 
@@ -127,11 +144,19 @@ learner_names <- function(object, ...) {
 }
 
 #' @rdname learner_names
+#' @method learner_names default
+#' @export
+learner_names.default <- function(object, ...) {
+  .unsupported_SuperSurv_accessor(object, "learner_names")
+}
+
+#' @rdname learner_names
 #' @method learner_names SuperSurv
 #' @export
 learner_names.SuperSurv <- function(object,
                                     type = c("event", "censoring", "both"),
                                     ...) {
+  .validate_SuperSurv_object(object)
   type <- match.arg(type)
 
   event_names <- names(event_weights(object))
@@ -160,9 +185,17 @@ eval_times <- function(object, ...) {
 }
 
 #' @rdname eval_times
+#' @method eval_times default
+#' @export
+eval_times.default <- function(object, ...) {
+  .unsupported_SuperSurv_accessor(object, "eval_times")
+}
+
+#' @rdname eval_times
 #' @method eval_times SuperSurv
 #' @export
 eval_times.SuperSurv <- function(object, ...) {
+  .validate_SuperSurv_object(object)
   times <- object$eval.times
   if (is.null(times)) {
     pred_dimnames <- dimnames(object$event.predict)
@@ -191,9 +224,17 @@ training_variables <- function(object, ...) {
 }
 
 #' @rdname training_variables
+#' @method training_variables default
+#' @export
+training_variables.default <- function(object, ...) {
+  .unsupported_SuperSurv_accessor(object, "training_variables")
+}
+
+#' @rdname training_variables
 #' @method training_variables SuperSurv
 #' @export
 training_variables.SuperSurv <- function(object, ...) {
+  .validate_SuperSurv_object(object)
   vars <- object$varNames
   if (is.null(vars)) {
     stop("Training variable names are not available in this SuperSurv object.", call. = FALSE)
@@ -223,12 +264,20 @@ selected_variables <- function(object, ...) {
 }
 
 #' @rdname selected_variables
+#' @method selected_variables default
+#' @export
+selected_variables.default <- function(object, ...) {
+  .unsupported_SuperSurv_accessor(object, "selected_variables")
+}
+
+#' @rdname selected_variables
 #' @method selected_variables SuperSurv
 #' @export
 selected_variables.SuperSurv <- function(object,
                                          type = c("event", "censoring"),
                                          learner = NULL,
                                          ...) {
+  .validate_SuperSurv_object(object)
   type <- match.arg(type)
   vars <- training_variables(object)
 
@@ -277,6 +326,7 @@ selected_variables.SuperSurv <- function(object,
 #' @method print SuperSurv
 #' @export
 print.SuperSurv <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
+  .validate_SuperSurv_object(x, "x")
   cat("SuperSurv fit\n")
   cat("  Selection:", .SuperSurv_selection(x), "\n")
   cat("  Event learners:", .SuperSurv_n_learners(x$event.libraryNames), "\n")
@@ -286,7 +336,11 @@ print.SuperSurv <- function(x, digits = max(3L, getOption("digits") - 3L), ...) 
   if (length(pred_dim) == 2L) {
     cat("  Predictions:", pred_dim[1L], "observations x", pred_dim[2L], "times\n")
   }
-  cat("  Evaluation times:", .SuperSurv_range_label(eval_times(x)), "\n")
+  if (!is.null(x$eval.times)) {
+    cat("  Evaluation times:", .SuperSurv_range_label(eval_times(x)), "\n")
+  } else {
+    cat("  Stored predictions: none (fit-only mode)\n")
+  }
 
   event_weights <- event_weights(x)
   active <- event_weights[event_weights > 0]
@@ -320,6 +374,7 @@ print.SuperSurv <- function(x, digits = max(3L, getOption("digits") - 3L), ...) 
 #' @method summary SuperSurv
 #' @export
 summary.SuperSurv <- function(object, ...) {
+  .validate_SuperSurv_object(object)
   out <- list(
     call = object$call,
     selection = .SuperSurv_selection(object),
@@ -343,7 +398,7 @@ summary.SuperSurv <- function(object, ...) {
       event_library = dim(object$event.library.predict),
       censoring_library = dim(object$cens.library.predict)
     ),
-    eval_times = eval_times(object),
+    eval_times = if (is.null(object$eval.times)) NULL else eval_times(object),
     times = object$times
   )
 
@@ -355,6 +410,10 @@ summary.SuperSurv <- function(object, ...) {
 #' @method print summary.SuperSurv
 #' @export
 print.summary.SuperSurv <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
+  if (!inherits(x, "summary.SuperSurv") || !is.list(x)) {
+    stop("`x` must be an object returned by `summary()` for a fitted 'SuperSurv' model.",
+         call. = FALSE)
+  }
   cat("Summary of SuperSurv fit\n")
   cat("  Selection:", x$selection, "\n\n")
 
@@ -382,6 +441,19 @@ print.summary.SuperSurv <- function(x, digits = max(3L, getOption("digits") - 3L
   }
 
   invisible(x)
+}
+
+
+.unsupported_SuperSurv_accessor <- function(object, generic) {
+  object_class <- class(object)[1L]
+  if (is.null(object_class) || is.na(object_class) || !nzchar(object_class)) {
+    object_class <- typeof(object)
+  }
+  stop(
+    "`", generic, "()` requires a fitted 'SuperSurv' object; received an object of class '",
+    object_class, "'.",
+    call. = FALSE
+  )
 }
 
 .SuperSurv_selection <- function(object) {

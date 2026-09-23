@@ -14,6 +14,8 @@ surv.glmnet(
   id,
   alpha = 1,
   nfolds = 10,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 }
@@ -35,6 +37,14 @@ surv.glmnet(
 \item{alpha}{The elasticnet mixing parameter (0 = Ridge, 1 = Lasso). Default is 1.}
 
 \item{nfolds}{Number of folds for internal cross-validation to select lambda. Default is 10.}
+
+\item{ties}{Tied-event approximation used to recover the baseline cumulative
+hazard from the fitted risk score. Either \code{"breslow"} (default) or
+\code{"efron"}.}
+
+\item{survival_transform}{Transformation used to convert calibrated hazard
+increments to survival probabilities. Either \code{"exponential"}
+(default) or \code{"product_limit"}.}
 
 \item{...}{Additional arguments passed to \code{\link[glmnet]{cv.glmnet}}.}
 }

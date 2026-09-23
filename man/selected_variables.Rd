@@ -2,10 +2,13 @@
 % Please edit documentation in R/SuperSurv-methods.R
 \name{selected_variables}
 \alias{selected_variables}
+\alias{selected_variables.default}
 \alias{selected_variables.SuperSurv}
 \title{Access variables selected by SuperSurv screeners}
 \usage{
 selected_variables(object, ...)
+
+\method{selected_variables}{default}(object, ...)
 
 \method{selected_variables}{SuperSurv}(object, type = c("event", "censoring"), learner = NULL, ...)
 }

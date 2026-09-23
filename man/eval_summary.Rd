@@ -32,8 +32,9 @@ scores for Uno C-index. Defaults to the median of \code{eval_times}.}
 \item{verbose}{Logical; if \code{TRUE}, progress messages are shown.}
 }
 \value{
-An object of class \code{"SuperSurv_eval"} containing benchmark
-metrics for the ensemble and base learners.
+A data frame of integrated benchmark metrics for the ensemble and
+base learners. Use \code{eval_benchmark()} to also obtain time-specific
+numerical results.
 }
 \description{
 Computes the integrated Brier score (IBS), Uno C-index, and integrated area

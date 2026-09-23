@@ -48,7 +48,10 @@ SuperSurv(
 
 \item{obsWeights}{Observation weights.}
 
-\item{metalearner}{Character string specifying the optimizer (e.g., "brier" or "logloss").}
+\item{metalearner}{Character string specifying the optimizer. Supported
+choices are \code{"brier"} and \code{"logloss"}. The legacy
+\code{"entropy"} option is deprecated and retained temporarily for
+backward compatibility.}
 
 \item{selection}{Character. Specifies how the meta-learner combines the base models.
 Use \code{"ensemble"} (default) to calculate a weighted average (convex combination)
@@ -68,6 +71,8 @@ A list of class \code{SuperSurv} containing:
 \item \code{eval.times}: Numeric vector of prediction evaluation times.
 \item \code{event.coef}: Numeric vector of optimized ensemble weights for the event.
 \item \code{cens.coef}: Numeric vector of optimized ensemble weights for censoring.
+\item \code{algorithm.diagnostics}: Convergence, optimizer, and IPCW
+stabilization diagnostics from the iterative metalearner.
 \item \code{event.library.predict}: 3D array of cross-validated predictions from individual event learners.
 \item \code{event.libraryNames}: Data frame detailing the algorithms and screeners used.
 \item \code{event.fitLibrary}: List of the fitted base learner models (if \code{saveFitLibrary = TRUE}).
@@ -89,10 +94,19 @@ defining a wrapper function and passing its name in \code{event.library} or
 \code{fit}, the fitted object used for future prediction. If saved fits are
 needed, give \code{fit} a class and provide a corresponding
 \code{predict.<class>()} method that returns the same matrix shape.
+Wrapper outputs are validated before they enter the ensemble. Malformed
+prediction dimensions, non-finite values, values outside \code{[0, 1]}, or a
+missing saved fit produce an error naming the learner and fitting stage.
 
 Screening methods can also be supplied by name. A screener should accept the
 training inputs and return a logical vector aligned with the columns of
-\code{X}. See \code{vignette("extending-supersurv", package = "SuperSurv")}
+\code{X}. Learner and screener names are resolved in the calling environment
+first, with package functions as a fallback. The resolved functions are reused
+across folds and full-data fitting, including parallel cross-validation.
+Thus, locally defined wrappers and grids can be used without assigning them
+globally. Prediction methods for custom fitted-object classes must still be
+available through normal S3 dispatch when predicting from saved fits.
+See \code{vignette("extending-supersurv", package = "SuperSurv")}
 for a practical custom learner and screener example.
 }
 \examples{

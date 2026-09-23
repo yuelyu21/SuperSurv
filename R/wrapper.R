@@ -92,9 +92,7 @@ surv.rfsrc <- function(time, event, X, newdata = NULL, new.times, obsWeights = N
     stats::approx(train_times, y, xout = new.times, method = "constant", rule = 2, ties = mean)$y
   }))
 
-  if (is.null(dim(pred))) {
-    pred <- matrix(pred, nrow = nrow(newdata_df), ncol = length(new.times))
-  }
+  pred <- matrix(pred, nrow = nrow(newdata_df), ncol = length(new.times))
 
   # 7. Safety: Monotonicity and Clamping
   pred[pred < 0] <- 0
@@ -162,9 +160,7 @@ predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
   }))
 
   # 5. Safety Check: Dimensions
-  if (is.null(dim(pred))) {
-    pred <- matrix(pred, nrow = nrow(newdata), ncol = length(new.times))
-  }
+  pred <- matrix(pred, nrow = nrow(newdata), ncol = length(new.times))
 
   # 6. Safety Check: Clamp and Monotonicity
   pred[pred < 0] <- 0
@@ -202,6 +198,11 @@ predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
 #' @param min_child_weight Minimum sum of instance weight in a child (default: 5).
 #' @param lambda L2 regularization term on weights (default: 10).
 #' @param subsample Subsample ratio of the training instances (default: 0.7).
+#' @param ties Tied-event approximation used for risk-score calibration:
+#'   \code{"breslow"} (default) or \code{"efron"}.
+#' @param survival_transform Transformation from calibrated hazard increments
+#'   to survival probabilities: \code{"exponential"} (default) or
+#'   \code{"product_limit"}.
 #' @param ... Additional arguments passed to \code{\link[xgboost]{xgb.train}}.
 #' @return A list containing:
 #' \itemize{
@@ -211,7 +212,7 @@ predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
 #'     evaluated at the specified \code{new.times} grid.
 #' }
 #' @examples
-#' if (requireNamespace("xgboost", quietly = TRUE)) {
+#' if (interactive() && requireNamespace("xgboost", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:30, ]
 #'   x_cols <- grep("^x", names(dat))[1:3]
@@ -229,7 +230,8 @@ predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
 #'     id = NULL,
 #'     nrounds = 5,
 #'     early_stopping_rounds = 2,
-#'     max_depth = 1
+#'     max_depth = 1,
+#'     nthread = 1
 #'   )
 #'
 #'   dim(fit[["pred"]])
@@ -238,10 +240,15 @@ predict.surv.rfsrc <- function(object, newdata, new.times, ...) {
 surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights, id,
                          nrounds = 1000, early_stopping_rounds = 10,
                          eta = 0.05, max_depth = 2, min_child_weight = 5,
-                         lambda = 10, subsample = 0.7, ...) {
+                         lambda = 10, subsample = 0.7,
+                         ties = c("breslow", "efron"),
+                         survival_transform = c("exponential", "product_limit"),
+                         ...) {
 
   requireNamespace("xgboost", quietly = TRUE)
   requireNamespace("survival", quietly = TRUE)
+  ties <- match.arg(ties)
+  survival_transform <- match.arg(survival_transform)
 
   if(is.null(newdata)) newdata <- X
 
@@ -285,34 +292,25 @@ surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights,
     ...
   )
 
-  # 4. Center Training Scores (To stabilize hazard)
+  # 4. Calibrate the complete event-time baseline representation.
   lp_train <- predict(fit, newdata = X_mat)
-  tr_mean <- mean(lp_train)
-  lp_train_centered <- lp_train - tr_mean
-
-  # 5. Calculate Baseline Hazard (using your custom safe function)
-  bh <- safe_breslow_step(
-    time = time, event = event,
-    risk_score = lp_train_centered, new.times = new.times
+  calibration <- .fit_risk_score_calibration(
+    time, event, lp_train, obsWeights, ties
   )
 
-  # 6. Predict on New Data
+  # 5. Predict on new data.
   lp_new <- predict(fit, newdata = newdata_mat)
-  lp_new_centered <- lp_new - tr_mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  # 7. Safety Clamp
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
-
+  pred <- .predict_risk_score_survival(
+    calibration, lp_new, new.times, survival_transform
+  )
 
   fit_obj <- list(
     object  = fit,
-    basehaz = bh,
-    times   = new.times,
-    stats   = list(mean = tr_mean, features = colnames(X_mat))
+    calibration = calibration,
+    basehaz = calibration$cumulative.hazard,
+    times = calibration$event.times,
+    survival_transform = survival_transform,
+    stats = list(mean = calibration$center, features = colnames(X_mat))
   )
   class(fit_obj) <- c("surv.xgboost")
 
@@ -336,7 +334,7 @@ surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights,
 #'   to the observations in \code{newdata} and columns correspond to the evaluation
 #'   times in \code{new.times}.
 #' @examples
-#' if (requireNamespace("xgboost", quietly = TRUE)) {
+#' if (interactive() && requireNamespace("xgboost", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:30, ]
 #'   x_cols <- grep("^x", names(dat))[1:3]
@@ -354,7 +352,8 @@ surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights,
 #'     id = NULL,
 #'     nrounds = 5,
 #'     early_stopping_rounds = 2,
-#'     max_depth = 1
+#'     max_depth = 1,
+#'     nthread = 1
 #'   )
 #'
 #'   pred <- predict(fit[["fit"]], newdata = newX, new.times = times)
@@ -363,14 +362,6 @@ surv.xgboost <- function(time, event, X, newdata = NULL,  new.times, obsWeights,
 #' @noRd
 #' @export
 predict.surv.xgboost <- function(object, newdata, new.times, ...) {
-
-
-  # 1. Faster/Safer Interpolation using stepfun
-  bh_fun <- stats::stepfun(object$times, c(0, object$basehaz), right = FALSE)
-  bh <- bh_fun(new.times)
-
-  # 2. Format Matrix and Align Columns
-  # Must use the exact features the XGBoost model expects
   expected_cols <- object$stats$features
   if (is.null(expected_cols)) {
     expected_cols <- object$object$feature_names
@@ -388,22 +379,20 @@ predict.surv.xgboost <- function(object, newdata, new.times, ...) {
   }
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
-  # 3. Predict Linear Predictor
   lp_new <- predict(object$object, newdata = newdata_mat)
+  if (!is.null(object$calibration)) {
+    transform <- object$survival_transform
+    if (is.null(transform)) transform <- "exponential"
+    return(.predict_risk_score_survival(
+      object$calibration, lp_new, new.times, transform
+    ))
+  }
 
-  # 4. Center and Clamp
-  lp_new_centered <- lp_new - object$stats$mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  # 5. Survival Formula
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  # 6. Safety Clamping
-  pred[pred < 0] <- 0
-  pred[pred > 1] <- 1
-
-  return(pred)
+  bh <- .step_curve_at(object$times, object$basehaz, new.times, initial = 0)
+  centered <- pmin(lp_new - object$stats$mean, 700)
+  pred <- outer(centered, bh, function(lp, hazard) exp(-exp(lp) * hazard))
+  matrix(pmin(pmax(pred, 0), 1), nrow = nrow(newdata),
+         ncol = length(new.times))
 }
 
 
@@ -626,6 +615,11 @@ predict.surv.svm <- function(object, newdata, new.times, ...) {
 #' @param cp Complexity parameter (default: 0.01).
 #' @param minsplit Minimum number of observations to attempt a split (default: 20).
 #' @param maxdepth Maximum depth of any node of the final tree (default: 30).
+#' @param ties Tied-event approximation used for risk-score calibration:
+#'   \code{"breslow"} (default) or \code{"efron"}.
+#' @param survival_transform Transformation from calibrated hazard increments
+#'   to survival probabilities: \code{"exponential"} (default) or
+#'   \code{"product_limit"}.
 #' @param ... Additional arguments passed to \code{\link[rpart]{rpart.control}}.
 #' @return A list containing:
 #' \itemize{
@@ -660,9 +654,14 @@ predict.surv.svm <- function(object, newdata, new.times, ...) {
 #' }
 #' @export
 surv.rpart <- function(time, event, X, newdata, new.times, obsWeights, id,
-                       cp = 0.01, minsplit = 20, maxdepth = 30, ...) {
+                       cp = 0.01, minsplit = 20, maxdepth = 30,
+                       ties = c("breslow", "efron"),
+                       survival_transform = c("exponential", "product_limit"),
+                       ...) {
 
   requireNamespace("rpart", quietly = TRUE)
+  ties <- match.arg(ties)
+  survival_transform <- match.arg(survival_transform)
 
   if(missing(obsWeights) || is.null(obsWeights)) obsWeights <- rep(1, length(time))
 
@@ -694,40 +693,25 @@ surv.rpart <- function(time, event, X, newdata, new.times, obsWeights, id,
   rate_train <- predict(fit, newdata = X_df)
   lp_train <- log(pmax(rate_train, 1e-10))
 
-  # 5. Center Training Scores
-  tr_mean <- mean(lp_train)
-  lp_train_centered <- lp_train - tr_mean
-
-  # 6. Baseline Hazard Calculation
-  bh <- safe_breslow_step(
-    time = time,
-    event = event,
-    risk_score = lp_train_centered,
-    new.times = new.times
+  # 5. Calibrate the complete event-time baseline representation.
+  calibration <- .fit_risk_score_calibration(
+    time, event, lp_train, obsWeights, ties
   )
 
-  # 7. Predict on newdata
+  # 6. Predict on newdata.
   rate_new <- predict(fit, newdata = newdata_df)
   lp_new <- log(pmax(rate_new, 1e-10))
-
-  lp_new_centered <- lp_new - tr_mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  # 8. Calculate Survival S(t)
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata_df), ncol = length(new.times))
-
-  # 9. Safety Clamps
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
-  if (ncol(pred) > 1) {
-    pred <- t(apply(pred, 1, cummin))
-  }
+  pred <- .predict_risk_score_survival(
+    calibration, lp_new, new.times, survival_transform
+  )
 
   fit_obj <- list(
     object = fit,
-    basehaz = bh,
-    times = new.times,
-    stats = list(mean = tr_mean)
+    calibration = calibration,
+    basehaz = calibration$cumulative.hazard,
+    times = calibration$event.times,
+    survival_transform = survival_transform,
+    stats = list(mean = calibration$center)
   )
   class(fit_obj) <- c("surv.rpart")
 
@@ -774,29 +758,21 @@ surv.rpart <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @noRd
 #' @export
 predict.surv.rpart <- function(object, newdata, new.times, ...) {
-
-  # 1. Reconstruct Baseline Hazard
-  bh_fun <- stats::stepfun(object$times, c(0, object$basehaz), right = FALSE)
-  bh <- bh_fun(new.times)
-
-  # 2. Predict Event Rate and Convert to Centered LP
   rate_new <- predict(object$object, newdata = as.data.frame(newdata))
   lp_new <- log(pmax(rate_new, 1e-10))
-
-  lp_new_centered <- lp_new - object$stats$mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  # 3. Calculate Survival S(t)
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  # 4. Safety Clamps
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
-  if (ncol(pred) > 1) {
-    pred <- t(apply(pred, 1, cummin))
+  if (!is.null(object$calibration)) {
+    transform <- object$survival_transform
+    if (is.null(transform)) transform <- "exponential"
+    return(.predict_risk_score_survival(
+      object$calibration, lp_new, new.times, transform
+    ))
   }
 
-  return(pred)
+  bh <- .step_curve_at(object$times, object$basehaz, new.times, initial = 0)
+  centered <- pmin(lp_new - object$stats$mean, 700)
+  pred <- outer(centered, bh, function(lp, hazard) exp(-exp(lp) * hazard))
+  matrix(pmin(pmax(pred, 0), 1), nrow = nrow(newdata),
+         ncol = length(new.times))
 }
 
 
@@ -822,6 +798,11 @@ predict.surv.rpart <- function(object, newdata, new.times, ...) {
 #' @param obsWeights Observation weights.
 #' @param id Optional cluster/individual ID indicator.
 #' @param nfolds Number of folds for internal cross-validation to select lambda. Default is 10.
+#' @param ties Tied-event approximation used for risk-score calibration:
+#'   \code{"breslow"} (default) or \code{"efron"}.
+#' @param survival_transform Transformation from calibrated hazard increments
+#'   to survival probabilities: \code{"exponential"} (default) or
+#'   \code{"product_limit"}.
 #' @param ... Additional arguments passed to \code{\link[glmnet]{cv.glmnet}}.
 #' @return A list containing:
 #' \itemize{
@@ -851,9 +832,15 @@ predict.surv.rpart <- function(object, newdata, new.times, ...) {
 #'   dim(fit[["pred"]])
 #' }
 #' @export
-surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id = NULL, nfolds = 10, ...) {
+surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL,
+                       id = NULL, nfolds = 10,
+                       ties = c("breslow", "efron"),
+                       survival_transform = c("exponential", "product_limit"),
+                       ...) {
 
   requireNamespace("glmnet", quietly = TRUE)
+  ties <- match.arg(ties)
+  survival_transform <- match.arg(survival_transform)
 
   # We clamp the minimum time to a tiny positive number.
   time <- pmax(time, 1e-5)
@@ -883,35 +870,25 @@ surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id
     ...
   )
 
-  # 3. Predict Risk Scores & Center them
+  # 3. Predict risk scores and calibrate the complete event-time baseline.
   lp_train <- as.numeric(predict(fit, newx = X_mat, s = "lambda.min", type = "link"))
-  tr_mean <- mean(lp_train)
-  lp_train_centered <- lp_train - tr_mean
-
-  # 4. Baseline Hazard (Using our robust helper)
-  bh <- safe_breslow_step(
-    time = time,
-    event = event,
-    risk_score = lp_train_centered,
-    new.times = new.times
+  calibration <- .fit_risk_score_calibration(
+    time, event, lp_train, obsWeights, ties
   )
 
-  # 5. Predict on newdata
+  # 4. Predict on newdata.
   lp_new <- as.numeric(predict(fit, newx = newdata_mat, s = "lambda.min", type = "link"))
-  lp_new_centered <- lp_new - tr_mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  # Safety Clamp
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
+  pred <- .predict_risk_score_survival(
+    calibration, lp_new, new.times, survival_transform
+  )
 
   fit_obj <- list(
     object = fit,
-    basehaz = bh,
-    times = new.times,
-    stats = list(mean = tr_mean, features = colnames(X_mat))
+    calibration = calibration,
+    basehaz = calibration$cumulative.hazard,
+    times = calibration$event.times,
+    survival_transform = survival_transform,
+    stats = list(mean = calibration$center, features = colnames(X_mat))
   )
   class(fit_obj) <- c("surv.ridge")
 
@@ -954,12 +931,6 @@ surv.ridge <- function(time, event, X, newdata, new.times, obsWeights = NULL, id
 #' @noRd
 #' @export
 predict.surv.ridge <- function(object, newdata, new.times, ...) {
-
-  # 1. Faster/Safer Interpolation
-  bh_fun <- stats::stepfun(object$times, c(0, object$basehaz), right = FALSE)
-  bh <- bh_fun(new.times)
-
-  # 2. Format Matrix and Align Columns
   expected_cols <- object$stats$features
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
 
@@ -971,21 +942,20 @@ predict.surv.ridge <- function(object, newdata, new.times, ...) {
   }
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
-  # 3. Predict Linear Predictor
   lp_new <- as.numeric(predict(object$object, newx = newdata_mat, s = "lambda.min", type = "link"))
+  if (!is.null(object$calibration)) {
+    transform <- object$survival_transform
+    if (is.null(transform)) transform <- "exponential"
+    return(.predict_risk_score_survival(
+      object$calibration, lp_new, new.times, transform
+    ))
+  }
 
-  # 4. Center and Clamp
-  lp_new_centered <- lp_new - object$stats$mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  # 5. Survival Formula
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  pred[pred < 0] <- 0
-  pred[pred > 1] <- 1
-
-  return(pred)
+  bh <- .step_curve_at(object$times, object$basehaz, new.times, initial = 0)
+  centered <- pmin(lp_new - object$stats$mean, 700)
+  pred <- outer(centered, bh, function(lp, hazard) exp(-exp(lp) * hazard))
+  matrix(pmin(pmax(pred, 0), 1), nrow = nrow(newdata),
+         ncol = length(new.times))
 }
 
 
@@ -1075,8 +1045,9 @@ surv.ranger <- function(time, event, X, newdata, new.times, obsWeights, id,
 
   # 4. Predict on newdata (Training Grid)
   p_obj <- predict(fit, data = as.data.frame(newdata))
-  surv_probs <- p_obj$survival
   train_times <- p_obj$unique.death.times
+  surv_probs <- matrix(p_obj$survival, nrow = nrow(newdata),
+                       ncol = length(train_times))
 
   # 5. Vectorized Interpolation to new.times
   pred <- t(apply(surv_probs, 1, function(y) {
@@ -1084,6 +1055,7 @@ surv.ranger <- function(time, event, X, newdata, new.times, obsWeights, id,
   }))
 
   # 6. Safety Clamp and Monotonicity
+  pred <- matrix(pred, nrow = nrow(newdata), ncol = length(new.times))
   pred[pred < 0] <- 0
   pred[pred > 1] <- 1
   if (ncol(pred) > 1) {
@@ -1140,8 +1112,9 @@ predict.surv.ranger <- function(object, newdata, new.times, ...) {
 
   # 1. Predict using saved model
   p_obj <- predict(object$object, data = as.data.frame(newdata))
-  surv_probs  <- p_obj$survival
   train_times <- p_obj$unique.death.times
+  surv_probs <- matrix(p_obj$survival, nrow = nrow(newdata),
+                       ncol = length(train_times))
 
   # 2. Vectorized Interpolation
   pred <- t(apply(surv_probs, 1, function(y) {
@@ -1149,9 +1122,7 @@ predict.surv.ranger <- function(object, newdata, new.times, ...) {
   }))
 
   # 3. Dimensions Safety Check
-  if (is.null(dim(pred))) {
-    pred <- matrix(pred, nrow = nrow(newdata), ncol = length(new.times))
-  }
+  pred <- matrix(pred, nrow = nrow(newdata), ncol = length(new.times))
 
   # 4. Safety Clamp and Monotonicity
   pred[pred < 0] <- 0
@@ -1640,6 +1611,12 @@ predict.surv.km <- function(object, newdata, new.times, ...) {
 #' @param id Optional cluster/individual ID indicator.
 #' @param alpha The elasticnet mixing parameter (0 = Ridge, 1 = Lasso). Default is 1.
 #' @param nfolds Number of folds for internal cross-validation to select lambda. Default is 10.
+#' @param ties Tied-event approximation used to recover the baseline cumulative
+#'   hazard from the fitted risk score. Either \code{"breslow"} (default) or
+#'   \code{"efron"}.
+#' @param survival_transform Transformation used to convert calibrated hazard
+#'   increments to survival probabilities. Either \code{"exponential"}
+#'   (default) or \code{"product_limit"}.
 #' @param ... Additional arguments passed to \code{\link[glmnet]{cv.glmnet}}.
 #' @return A list containing:
 #' \itemize{
@@ -1674,9 +1651,14 @@ predict.surv.km <- function(object, newdata, new.times, ...) {
 #' }
 #' @export
 surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
-                        alpha = 1, nfolds = 10, ...) {
+                        alpha = 1, nfolds = 10,
+                        ties = c("breslow", "efron"),
+                        survival_transform = c("exponential", "product_limit"),
+                        ...) {
 
   requireNamespace("glmnet", quietly = TRUE)
+  ties <- match.arg(ties)
+  survival_transform <- match.arg(survival_transform)
 
   # We clamp the minimum time to a tiny positive number.
   time <- pmax(time, 1e-5)
@@ -1720,36 +1702,32 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
     }
   }
 
-  # 3. Calibrate Baseline Hazard (Breslow Estimator)
+  # 3. Calibrate the complete event-time baseline representation.
   lp_train <- as.numeric(predict(fit, newx = X_mat, s = s_use, type = "link"))
-  cox_off <- survival::coxph(
-    survival::Surv(time, event) ~ offset(lp_train),
-    weights = obsWeights,
-    ties = "breslow"
+  calibration <- .fit_risk_score_calibration(
+    time = time,
+    event = event,
+    risk_score = lp_train,
+    obsWeights = obsWeights,
+    ties = ties
   )
-
-  bh_df <- survival::basehaz(cox_off, centered = FALSE)
-  bh <- stats::approx(
-    bh_df$time, bh_df$hazard, xout = new.times,
-    method = "constant", f = 0, rule = 2, ties = mean
-  )$y
-  bh <- cummax(replace(bh, is.na(bh), 0))
 
   # 4. Predict on newdata
   lp_new <- as.numeric(predict(fit, newx = newdata_mat, s = s_use, type = "link"))
-  pred <- outer(lp_new, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  # 5. Safety Clamp
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
+  pred <- .predict_risk_score_survival(
+    calibration, lp_new, new.times, survival_transform
+  )
 
   fit_obj <- list(
     object = fit,
-    basehaz = bh,
-    times = new.times,
+    calibration = calibration,
+    basehaz = calibration$cumulative.hazard,
+    times = calibration$event.times,
+    survival_transform = survival_transform,
     stats = list(
       features = colnames(X_mat),
-      s_use = s_use
+      s_use = s_use,
+      mean = calibration$center
     )
   )
   class(fit_obj) <- c("surv.glmnet")
@@ -1798,21 +1776,6 @@ surv.glmnet <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @noRd
 #' @export
 predict.surv.glmnet <- function(object, newdata, new.times, ...) {
-
-  # 1. Align Baseline Hazard (Step Function)
-  if (identical(all.equal(new.times, object$times), TRUE)) {
-    bh <- object$basehaz
-  } else {
-    bh <- stats::approx(
-      object$times, object$basehaz, xout = new.times,
-      method = "constant", f = 0, rule = 2, ties = mean
-    )$y
-  }
-  bh <- cummax(replace(bh, is.na(bh), 0))
-
-  # 2. Convert newdata to matrix safely
-  # model.matrix removes NAs, so we ensure the dataframe is intact
-
   expected_cols <- object$stats$features
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
 
@@ -1825,7 +1788,6 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
 
-  # 3. Predict Linear Predictor
   s_use <- object$stats$s_use
   if (is.null(s_use)) s_use <- "lambda.min"
 
@@ -1837,15 +1799,20 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
   ))
 
 
-  # 4. Convert LP to Survival Probability Matrix
-  pred <- outer(lp_new, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
+  if (!is.null(object$calibration)) {
+    transform <- object$survival_transform
+    if (is.null(transform)) transform <- "exponential"
+    return(.predict_risk_score_survival(
+      object$calibration, lp_new, new.times, transform
+    ))
+  }
 
-  # 5. Safety Clamp
-  pred[pred < 0] <- 0
-  pred[pred > 1] <- 1
-
-  return(pred)
+  # Backward compatibility for fitted objects created before full event-time
+  # calibration was stored.
+  bh <- .step_curve_at(object$times, object$basehaz, new.times, initial = 0)
+  pred <- outer(lp_new, bh, function(lp, hazard) exp(-exp(lp) * hazard))
+  matrix(pmin(pmax(pred, 0), 1), nrow = nrow(newdata),
+         ncol = length(new.times))
 }
 
 
@@ -1872,6 +1839,11 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
 #' @param shrinkage A shrinkage parameter applied to each tree (default: 0.01).
 #' @param cv.folds Number of cross-validation folds to perform internally for optimal tree selection (default: 5).
 #' @param n.minobsinnode Minimum number of observations in the trees terminal nodes (default: 10).
+#' @param ties Tied-event approximation used for risk-score calibration:
+#'   \code{"breslow"} (default) or \code{"efron"}.
+#' @param survival_transform Transformation from calibrated hazard increments
+#'   to survival probabilities: \code{"exponential"} (default) or
+#'   \code{"product_limit"}.
 #' @param ... Additional arguments passed to \code{\link[gbm]{gbm}}.
 #' @return A list containing:
 #' \itemize{
@@ -1909,10 +1881,15 @@ predict.surv.glmnet <- function(object, newdata, new.times, ...) {
 #' @export
 surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
                      n.trees = 1000, interaction.depth = 2, shrinkage = 0.01,
-                     cv.folds = 5, n.minobsinnode = 10, ...) {
+                     cv.folds = 5, n.minobsinnode = 10,
+                     ties = c("breslow", "efron"),
+                     survival_transform = c("exponential", "product_limit"),
+                     ...) {
 
   requireNamespace("gbm", quietly = TRUE)
   requireNamespace("survival", quietly = TRUE)
+  ties <- match.arg(ties)
+  survival_transform <- match.arg(survival_transform)
 
   # 1. CRITICAL FIX: Prevent C++ Crashes (Data Types)
   if(is.matrix(X)) X <- as.data.frame(X)
@@ -1962,38 +1939,26 @@ surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
   method_perf <- if(cv.folds > 0) "cv" else "OOB"
   best.iter <- gbm::gbm.perf(fit, method = method_perf, plot.it = FALSE)
 
-  # 5. Calibration (Breslow Estimator)
-  # Get Risk Scores (Linear Predictor) on Training Data
+  # 5. Calibrate the complete event-time baseline representation.
   lp_train <- predict(fit, newdata = X, n.trees = best.iter, type = "link")
-
-  cox_df <- data.frame(time = time, event = event, lp = lp_train)
-  cox_off <- survival::coxph(
-    survival::Surv(time, event) ~ offset(lp),
-    data = cox_df,
-    weights = obsWeights,
-    ties = "breslow"
+  calibration <- .fit_risk_score_calibration(
+    time, event, lp_train, obsWeights, ties
   )
-
-  bh_df <- survival::basehaz(cox_off, centered = FALSE)
-
-  # Interpolate to new.times (Step Function)
-  bh <- stats::approx(
-    bh_df$time, bh_df$hazard, xout = new.times,
-    method = "constant", f = 0, rule = 2, ties = mean
-  )$y
-  bh[is.na(bh)] <- 0
-  bh <- cummax(bh)
 
   # 6. Predict on New Data
   lp_new <- predict(fit, newdata = newdata, n.trees = best.iter, type = "link")
+  pred <- .predict_risk_score_survival(
+    calibration, lp_new, new.times, survival_transform
+  )
 
-  # S(t) = exp(-H0(t) * exp(lp))
-  pred <- outer(lp_new, bh, function(lp, h) exp(-exp(lp) * h))
-
-  # 7. Safety Clamp
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
-
-  fit_obj <- list(object = fit, basehaz = bh, times = new.times, best.iter = best.iter)
+  fit_obj <- list(
+    object = fit,
+    calibration = calibration,
+    basehaz = calibration$cumulative.hazard,
+    times = calibration$event.times,
+    survival_transform = survival_transform,
+    best.iter = best.iter
+  )
   class(fit_obj) <- c("surv.gbm")
 
   list(pred = pred, fit = fit_obj)
@@ -2055,13 +2020,6 @@ surv.gbm <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @noRd
 #' @export
 predict.surv.gbm <- function(object, newdata, new.times, ...) {
-
-  # 1. Safer Interpolation using stepfun
-  # Prepend 0 to handle times before the first event safely
-  bh_fun <- stats::stepfun(object$times, c(0, object$basehaz), right = FALSE)
-  bh <- bh_fun(new.times)
-
-  # 2. Linear Predictor
   lp_new <- predict(
     object$object,
     newdata = as.data.frame(newdata),
@@ -2069,14 +2027,18 @@ predict.surv.gbm <- function(object, newdata, new.times, ...) {
     type = "link"
   )
 
-  # 3. Survival Formula S(t) = exp(-H0(t) * exp(lp))
-  pred <- outer(lp_new, bh, function(lp, h) exp(-exp(lp) * h))
+  if (!is.null(object$calibration)) {
+    transform <- object$survival_transform
+    if (is.null(transform)) transform <- "exponential"
+    return(.predict_risk_score_survival(
+      object$calibration, lp_new, new.times, transform
+    ))
+  }
 
-  # 4. Safety Clamping
-  pred[pred < 0] <- 0
-  pred[pred > 1] <- 1
-
-  return(pred)
+  bh <- .step_curve_at(object$times, object$basehaz, new.times, initial = 0)
+  pred <- outer(lp_new, bh, function(lp, hazard) exp(-exp(lp) * hazard))
+  matrix(pmin(pmax(pred, 0), 1), nrow = nrow(newdata),
+         ncol = length(new.times))
 }
 
 
@@ -2444,6 +2406,11 @@ predict.surv.coxph <- function(object, newdata, new.times, ...) {
 #' @param id Optional cluster/individual ID indicator.
 #' @param stepno Number of boosting steps (default: 100).
 #' @param penalty Penalty value for the update (default: 100).
+#' @param ties Tied-event approximation used for risk-score calibration:
+#'   \code{"breslow"} (default) or \code{"efron"}.
+#' @param survival_transform Transformation from calibrated hazard increments
+#'   to survival probabilities: \code{"exponential"} (default) or
+#'   \code{"product_limit"}.
 #' @param ... Additional arguments passed to \code{\link[CoxBoost]{CoxBoost}}.
 #' @return A list containing:
 #' \itemize{
@@ -2477,9 +2444,17 @@ predict.surv.coxph <- function(object, newdata, new.times, ...) {
 #' }
 #' @export
 surv.coxboost <- function(time, event, X, newdata, new.times, obsWeights, id,
-                          stepno = 100, penalty = 100, ...) {
+                          stepno = 100, penalty = 100,
+                          ties = c("breslow", "efron"),
+                          survival_transform = c("exponential", "product_limit"),
+                          ...) {
 
   requireNamespace("CoxBoost", quietly = TRUE)
+  ties <- match.arg(ties)
+  survival_transform <- match.arg(survival_transform)
+  if (missing(obsWeights) || is.null(obsWeights)) {
+    obsWeights <- rep(1, length(time))
+  }
 
   # 1. Prepare Matrices & Align Columns
   X_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(X))
@@ -2509,38 +2484,25 @@ surv.coxboost <- function(time, event, X, newdata, new.times, obsWeights, id,
   # but by default returns the final step. We ensure it's a vector.
   lp_train <- as.numeric(predict(fit, newdata = X_mat, type = "lp"))
 
-  # 4. Center Training Scores (To stabilize hazard calculation)
-  tr_mean <- mean(lp_train)
-  lp_train_centered <- lp_train - tr_mean
-
-  # 5. Baseline Hazard (Using our robust helper)
-  # Ensure safe_breslow_step is loaded in your environment!
-  bh <- safe_breslow_step(
-    time = time,
-    event = event,
-    risk_score = lp_train_centered,
-    new.times = new.times
+  # 4. Calibrate the complete event-time baseline representation.
+  calibration <- .fit_risk_score_calibration(
+    time, event, lp_train, obsWeights, ties
   )
 
-  # 6. Predict on New Data
+  # 5. Predict on new data.
   lp_new <- as.numeric(predict(fit, newdata = newdata_mat, type = "lp"))
-  lp_new_centered <- lp_new - tr_mean
-
-  # SAFETY CLAMP: Prevent Inf * 0 = NaN
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  # 7. Convert to Survival Probabilities
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  pred[pred < 0] <- 0; pred[pred > 1] <- 1
+  pred <- .predict_risk_score_survival(
+    calibration, lp_new, new.times, survival_transform
+  )
 
   # Save the column names so the predict method knows exactly what to expect
   fit_obj <- list(
     object = fit,
-    basehaz = bh,
-    times = new.times,
-    stats = list(mean = tr_mean, features = colnames(X_mat))
+    calibration = calibration,
+    basehaz = calibration$cumulative.hazard,
+    times = calibration$event.times,
+    survival_transform = survival_transform,
+    stats = list(mean = calibration$center, features = colnames(X_mat))
   )
   class(fit_obj) <- c("surv.coxboost")
 
@@ -2586,12 +2548,6 @@ surv.coxboost <- function(time, event, X, newdata, new.times, obsWeights, id,
 #' @noRd
 #' @export
 predict.surv.coxboost <- function(object, newdata, new.times, ...) {
-
-  # 1. Faster/Safer Interpolation using stepfun
-  bh_fun <- stats::stepfun(object$times, c(0, object$basehaz), right = FALSE)
-  bh <- bh_fun(new.times)
-
-  # 2. Format Matrix and Align Columns
   expected_cols <- object$stats$features
   newdata_mat <- stats::model.matrix(~ . - 1, data = as.data.frame(newdata))
 
@@ -2603,22 +2559,20 @@ predict.surv.coxboost <- function(object, newdata, new.times, ...) {
   }
   newdata_mat <- newdata_mat[, expected_cols, drop = FALSE]
 
-  # 3. Predict Linear Predictor
   lp_new <- as.numeric(predict(object$object, newdata = newdata_mat, type = "lp"))
+  if (!is.null(object$calibration)) {
+    transform <- object$survival_transform
+    if (is.null(transform)) transform <- "exponential"
+    return(.predict_risk_score_survival(
+      object$calibration, lp_new, new.times, transform
+    ))
+  }
 
-  # 4. Center and Clamp
-  lp_new_centered <- lp_new - object$stats$mean
-  lp_new_centered <- pmin(lp_new_centered, 700)
-
-  # 5. Survival Formula
-  pred <- outer(lp_new_centered, bh, function(lp, h) exp(-exp(lp) * h))
-  pred <- matrix(as.vector(pred), nrow = nrow(newdata), ncol = length(new.times))
-
-  # 6. Safety Clamping
-  pred[pred < 0] <- 0
-  pred[pred > 1] <- 1
-
-  return(pred)
+  bh <- .step_curve_at(object$times, object$basehaz, new.times, initial = 0)
+  centered <- pmin(lp_new - object$stats$mean, 700)
+  pred <- outer(centered, bh, function(lp, hazard) exp(-exp(lp) * hazard))
+  matrix(pmin(pmax(pred, 0), 1), nrow = nrow(newdata),
+         ncol = length(new.times))
 }
 
 
@@ -2753,6 +2707,7 @@ surv.bart <- function(time, event, X, newdata = NULL, new.times, obsWeights = NU
   }))
 
   # 7) Safety clamps + monotonicity
+  pred <- matrix(pred, nrow = n_new, ncol = length(new.times))
   pred[pred < 0] <- 0
   pred[pred > 1] <- 1
   if (ncol(pred) > 1) pred <- t(apply(pred, 1, cummin))
@@ -2877,6 +2832,7 @@ predict.surv.bart <- function(object, newdata, new.times, ...) {
     stats::stepfun(bart_times, c(1, y), right = FALSE)(new.times)
   }))
 
+  pred <- matrix(pred, nrow = n_new, ncol = length(new.times))
   pred[pred < 0] <- 0
   pred[pred > 1] <- 1
   if (ncol(pred) > 1) pred <- t(apply(pred, 1, cummin))
@@ -3063,10 +3019,3 @@ predict.surv.aorsf <- function(object, newdata, new.times, ...) {
 
   return(out)
 }
-
-
-
-
-
-
-

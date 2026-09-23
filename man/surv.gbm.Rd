@@ -17,6 +17,8 @@ surv.gbm(
   shrinkage = 0.01,
   cv.folds = 5,
   n.minobsinnode = 10,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 }
@@ -44,6 +46,13 @@ surv.gbm(
 \item{cv.folds}{Number of cross-validation folds to perform internally for optimal tree selection (default: 5).}
 
 \item{n.minobsinnode}{Minimum number of observations in the trees terminal nodes (default: 10).}
+
+\item{ties}{Tied-event approximation used for risk-score calibration:
+\code{"breslow"} (default) or \code{"efron"}.}
+
+\item{survival_transform}{Transformation from calibrated hazard increments
+to survival probabilities: \code{"exponential"} (default) or
+\code{"product_limit"}.}
 
 \item{...}{Additional arguments passed to \code{\link[gbm]{gbm}}.}
 }

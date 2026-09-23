@@ -2,10 +2,13 @@
 % Please edit documentation in R/SuperSurv-methods.R
 \name{eval_times}
 \alias{eval_times}
+\alias{eval_times.default}
 \alias{eval_times.SuperSurv}
 \title{Access SuperSurv prediction evaluation times}
 \usage{
 eval_times(object, ...)
+
+\method{eval_times}{default}(object, ...)
 
 \method{eval_times}{SuperSurv}(object, ...)
 }

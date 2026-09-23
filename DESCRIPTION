@@ -1,7 +1,7 @@
 Package: SuperSurv
 Type: Package
 Title: A Unified Framework for Machine Learning Ensembles in Survival Analysis
-Version: 0.1.2
+Version: 0.1.8
 Authors@R: 
     person("Yue", "Lyu", email = "yuelyu0521@gmail.com", role = c("aut", "cre"))
 Author: Yue Lyu [aut, cre]
@@ -31,6 +31,7 @@ Imports:
     nnls,
     future.apply,
     stats,
+    utils,
     dplyr,
     magrittr
 URL: https://github.com/yuelyu21/SuperSurv, https://yuelyu21.github.io/SuperSurv/
@@ -39,15 +40,22 @@ Suggests:
     aorsf,
     BART,
     CoxBoost,
+    flexsurv,
     glmnet,
     gbm,
+    grf,
     mgcv,
+    mboost,
     randomForestSRC,
     ranger,
+    reticulate,
+    riskRegression,
     rpart,
+    survivalmodels,
+    survPen,
     survivalsvm,
     xgboost,
-    fastshap,
+    kernelshap,
     survex,
     ggplot2,
     tidyr,
