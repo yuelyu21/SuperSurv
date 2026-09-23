@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 has_rpart <- requireNamespace("rpart", quietly = TRUE)
+has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
 ## Introduction
@@ -230,7 +231,9 @@ While raw probability matrices ($N \times T$) are perfect for downstream coding 
 `SuperSurv` includes a built-in `plot_predict()` function to effortlessly translate this matrix into publication-ready survival curves for individual patients.
 
 
-```{r plot-predict, fig.align='center', fig.width=6, fig.height=5}
+This plotting example runs only when the optional `ggplot2` package is installed; fitting and numerical prediction do not require it.
+
+```{r plot-predict, fig.align='center', fig.width=6, fig.height=5, eval=has_ggplot2}
 # Plot the predicted survival curves for our 3 new patients (Rows 1, 2, and 3)
 plot_predict(
   preds = ensemble_preds,

@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
   fig.height = 5
 )
 has_rpart <- requireNamespace("rpart", quietly = TRUE)
+has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
 ## Introduction
@@ -103,7 +104,9 @@ A single integrated number rarely tells the whole story. Different models excel 
 
 The `plot_benchmark()` function visualizes the time-specific results. If the optional `patchwork` package is unavailable, it returns a named list of individual plots rather than failing.
 
-```{r plot-benchmark, fig.align='center', fig.width=9, fig.height=3}
+The plotting examples below run only when the optional `ggplot2` package is installed; numerical evaluation above remains available without it.
+
+```{r plot-benchmark, fig.align='center', fig.width=9, fig.height=3, eval=has_ggplot2}
 plot_benchmark(
   object = fit_supersurv,
   newdata = X_te,
@@ -124,7 +127,7 @@ Before deploying a model to the clinic, doctors need to know if the probabilitie
 
 We use `plot_calibration()` to evaluate this at a specific clinical milestone. The function groups patients into risk quantiles and plots their predicted probability against the actual observed Kaplan-Meier survival rate.
 
-```{r plot-calibration, fig.align='center'}
+```{r plot-calibration, fig.align='center', eval=has_ggplot2}
 # Assess calibration specifically at Time = 150
 plot_calibration(
   object = fit_supersurv,

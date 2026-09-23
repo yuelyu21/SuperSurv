@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
   fig.height = 5
 )
 has_rfsrc <- requireNamespace("randomForestSRC", quietly = TRUE)
+has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
 ## Introduction
@@ -62,9 +63,10 @@ rf_pred_matrix <- rf_standalone[["pred"]]
 
 Because our plotting functions are universally compatible, we can plot individual patient curves directly from this standalone matrix:
 
+Plotting examples run only when both `randomForestSRC` and the optional `ggplot2` package are installed.
 
 
-```{r plot-standalone, fig.align='center', eval=requireNamespace("randomForestSRC", quietly = TRUE)}
+```{r plot-standalone, fig.align='center', eval=has_rfsrc && has_ggplot2}
 # Plot the first 3 patients in our training set
 plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
 ```
@@ -73,7 +75,7 @@ plot_predict(preds = rf_pred_matrix, eval_times = new.times, patient_idx = 1:3)
 
 We can also pass this standalone model directly into our evaluation suite to test its performance on new data. 
 
-```{r eval-standalone, fig.align='center', fig.height=4, fig.width= 9, eval=requireNamespace("randomForestSRC", quietly = TRUE)}
+```{r eval-standalone, fig.align='center', fig.height=4, fig.width= 9, eval=has_rfsrc && has_ggplot2}
 # The function automatically detects this is a single model and plots it!
 plot_benchmark(
   object = rf_fit,
@@ -129,7 +131,7 @@ When we pass the `SuperSurv` ensemble into the exact same benchmark function, it
 
 
 
-```{r plot-ensemble-benchmark, fig.align='center', fig.height=9, eval=requireNamespace("randomForestSRC", quietly = TRUE)}
+```{r plot-ensemble-benchmark, fig.align='center', fig.height=9, eval=has_rfsrc && has_ggplot2}
 plot_benchmark(
   object = fit_supersurv,
   newdata = X_te,
@@ -140,7 +142,6 @@ plot_benchmark(
 ```
 
 Including flexible learners broadens the candidate library and may improve adaptation to nonlinear or non-proportional-hazards structure. Their contribution is determined by the selected cross-validated objective and should be evaluated on held-out data.
-
 
 
 

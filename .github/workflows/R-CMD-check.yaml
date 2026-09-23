@@ -78,8 +78,11 @@ jobs:
             any::knitr
             any::rmarkdown
 
-      - name: Verify the SHAP backend is absent
-        run: stopifnot(!requireNamespace("kernelshap", quietly = TRUE))
+      - name: Verify optional SHAP and plotting packages are absent
+        run: |
+          stopifnot(!any(vapply(
+            c("kernelshap", "ggplot2"), requireNamespace, logical(1), quietly = TRUE
+          )))
         shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v2

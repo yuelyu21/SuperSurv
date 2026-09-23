@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 has_rfsrc <- requireNamespace("randomForestSRC", quietly = TRUE)
+has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
 ## Moving Beyond the Hazard Ratio
@@ -109,7 +110,9 @@ procedure. This version does not provide such a procedure.
 ### 3. Visualizing the Effect Over Time
 The difference between groups might be near zero early on but substantial later. We can visualize how the adjusted RMST point contrast evolves across different restriction times using `plot_marginal_rmst_curve()`.
 
-```{r plot-curve}
+The plotting examples below run only when the optional `ggplot2` package is installed; the numerical RMST estimates above do not require it.
+
+```{r plot-curve, eval=has_ggplot2}
 # Plot the Delta RMST across a sequence of tau values
 tau_grid <- seq(20, 140, by = 30)
 plot_marginal_rmst_curve(
@@ -126,7 +129,7 @@ This descriptive plot compares predicted conditional mean restricted survival wi
 
 
 
-```{r plot-obs}
+```{r plot-obs, eval=has_ggplot2}
 plot_rmst_vs_obs(
   fit = fit, 
   data = metabric, 
