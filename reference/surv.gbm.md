@@ -22,6 +22,8 @@ surv.gbm(
   shrinkage = 0.01,
   cv.folds = 5,
   n.minobsinnode = 10,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 ```
@@ -78,10 +80,20 @@ surv.gbm(
   Minimum number of observations in the trees terminal nodes (default:
   10).
 
+- ties:
+
+  Tied-event approximation used for risk-score calibration: `"breslow"`
+  (default) or `"efron"`.
+
+- survival_transform:
+
+  Transformation from calibrated hazard increments to survival
+  probabilities: `"exponential"` (default) or `"product_limit"`.
+
 - ...:
 
   Additional arguments passed to
-  [`gbm`](https://rdrr.io/pkg/gbm/man/gbm.html).
+  [`gbm`](https://gbm-developers.github.io/gbm/reference/gbm.html).
 
 ## Value
 

@@ -3,7 +3,7 @@
 ## Introduction
 
 The core feature of the `SuperSurv` package is its ability to combine
-multiple base survival learners into a highly predictive meta-ensemble.
+multiple base survival learners using cross-validated ensemble weights.
 This tutorial walks through preparing data, defining a library of
 models, fitting the Super Learner, and generating predictions for new
 patients.
@@ -21,13 +21,17 @@ library(survival)
 # Load built-in METABRIC data
 data("metabric", package = "SuperSurv")
 
-# Quick 80/20 Train-Test split
+# Use a fixed teaching subset so the package vignette remains quick to rebuild.
+# The full-data comparison used in the manuscript is provided separately in the
+# replication materials.
 set.seed(42)
-n_total <- nrow(metabric)
+example_idx <- sample(seq_len(nrow(metabric)), 400)
+metabric_example <- metabric[example_idx, ]
+n_total <- nrow(metabric_example)
 train_idx <- sample(1:n_total, 0.8 * n_total)
 
-train <- metabric[train_idx, ]
-test  <- metabric[-train_idx, ]
+train <- metabric_example[train_idx, ]
+test  <- metabric_example[-train_idx, ]
 
 # Extract just the X covariates (assuming they are named x0, x1, etc.)
 x_cols <- grep("^x", names(metabric), value = TRUE)
@@ -36,16 +40,25 @@ X_te <- test[, x_cols]
 
 # Define the prediction time grid (e.g., survival at 50, 100, 150, 200 months)
 new.times <- c(50, 100, 150, 200)
+
+common_control <- list(
+  saveFitLibrary = TRUE,
+  event.t.grid = seq(0, max(train$duration[train$event == 1]), length.out = 40),
+  cens.t.grid = seq(0, max(train$duration[train$event == 0]), length.out = 40)
+)
 ```
 
 ## 2. Define the Ensemble Library
 
-We define a library of base survival models. For this quick
-demonstration, we use lightning-fast parametric and tree-based models.
+We define a small library of parametric and tree-based survival models
+for a reproducible demonstration.
 
 ``` r
 
-my_library <- c("surv.coxph", "surv.weibull", "surv.rpart")
+my_library <- c("surv.coxph", "surv.weibull")
+if (has_rpart) {
+  my_library <- c(my_library, "surv.rpart")
+}
 ```
 
 ## 3. Train the SuperSurv Metalearner
@@ -86,12 +99,14 @@ Here is the complete guide to the arguments you need to pass:
 
 ### The Meta-Learner & Tuning
 
-- **`metalearner`**: The optimization algorithm used to calculate the
-  final ensemble weights. `SuperSurv` offers two distinct approaches:
-  - `"brier"` (Default): Optimizes weights by minimizing the IPCW Brier
-    score. Excellent for overall prediction accuracy.
-  - `"logloss"`: Optimizes weights by minimizing the negative
-    log-likelihood. Excellent for improving hazard discrimination.
+- **`metalearner`**: The objective used to calculate the final ensemble
+  weights. `SuperSurv` offers two supported approaches:
+  - `"brier"` (default): minimizes the IPCW pseudo-outcome squared
+    criterion described in the package methodology.
+  - `"logloss"`: minimizes a two-term IPCW log-loss. It penalizes
+    overconfident incorrect probabilities more strongly than squared
+    loss, but neither objective is expected to dominate in every
+    dataset.
 - **`nFolds`**: The number of cross-validation folds used to train the
   meta-learner. `V = 5` or `V = 10` is standard. This cross-validation
   is what prevents the ensemble from overfitting to the base learners.
@@ -110,6 +125,7 @@ choice affects the final ensemble weights.
 ``` r
 
 # Fit 1: Least Squares Meta-learner
+set.seed(2026)
 fit_ls <- SuperSurv(
   time = train$duration,
   event = train$event,
@@ -119,13 +135,14 @@ fit_ls <- SuperSurv(
   event.library = my_library,
   cens.library = my_library,
   metalearner = "brier", 
-  control = list(saveFitLibrary = TRUE), 
-  verbose = T,             # Turn to TRUE in practice to see progress!
+  control = common_control,
+  verbose = FALSE,
   selection = "ensemble",
-  nFolds = 5                   # 5-fold CV for the meta-learner
+  nFolds = 3
 )
 
 # Fit 2: Negative Log-Likelihood Meta-learner
+set.seed(2026) # Reuse the same cross-validation folds for a fair comparison.
 fit_nll <- SuperSurv(
   time = train$duration,
   event = train$event,
@@ -135,10 +152,10 @@ fit_nll <- SuperSurv(
   event.library = my_library,
   cens.library = my_library,
   metalearner = "logloss",       # Swap to nloglik
-  control = list(saveFitLibrary = TRUE), 
+  control = common_control,
   verbose = FALSE,
   selection = "ensemble",
-  nFolds = 5
+  nFolds = 3
 )
 ```
 
@@ -155,11 +172,11 @@ fit_ls
 #>   Selection: ensemble 
 #>   Event learners: 3 
 #>   Censoring learners: 3 
-#>   Predictions: 381 observations x 4 times
+#>   Predictions: 80 observations x 4 times
 #>   Evaluation times: 4 values from 50 to 200 
 #>   Nonzero event weights:
 #> surv.weibull_screen.all   surv.coxph_screen.all   surv.rpart_screen.all 
-#>                  0.5906                  0.2344                  0.1750
+#>                  0.5387                  0.3600                  0.1013
 
 summary(fit_ls)
 #> Summary of SuperSurv fit
@@ -168,30 +185,30 @@ summary(fit_ls)
 #> Call:
 #> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
 #>     newdata = X_te, new.times = new.times, event.library = my_library, 
-#>     cens.library = my_library, verbose = T, control = list(saveFitLibrary = TRUE), 
-#>     metalearner = "brier", selection = "ensemble", nFolds = 5)
+#>     cens.library = my_library, verbose = FALSE, control = common_control, 
+#>     metalearner = "brier", selection = "ensemble", nFolds = 3)
 #> 
 #> Event ensemble:
 #>                  learner weight   risk status
-#>  surv.weibull_screen.all 0.5906 0.4854     ok
-#>    surv.coxph_screen.all 0.2344 0.4856     ok
-#>    surv.rpart_screen.all 0.1750 0.4958     ok
+#>  surv.weibull_screen.all 0.5387 0.8656     ok
+#>    surv.coxph_screen.all 0.3600 0.8656     ok
+#>    surv.rpart_screen.all 0.1013 0.8981     ok
 #> 
 #> Censoring ensemble:
 #>                  learner weight   risk status
-#>    surv.coxph_screen.all 0.0689 1.0627     ok
-#>  surv.weibull_screen.all 0.5611 1.0720     ok
-#>    surv.rpart_screen.all 0.3700 1.0754     ok
+#>  surv.weibull_screen.all 0.6631 0.8174     ok
+#>    surv.coxph_screen.all 0.0947 0.8181     ok
+#>    surv.rpart_screen.all 0.2423 0.8303     ok
 #> 
-#> Predictions: 381 observations x 4 times
+#> Predictions: 80 observations x 4 times
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      3.836      3.589      0.241
+#>      5.062      4.956      0.104
 
 event_weights(fit_ls)
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>               0.2344382               0.5906097               0.1749521
+#>               0.3600037               0.5386712               0.1013251
 
 learner_names(fit_ls)
 #> [1] "surv.coxph_screen.all"   "surv.weibull_screen.all"
@@ -204,14 +221,14 @@ selected_variables(fit_ls, learner = 1)
 #> [1] "x0" "x1" "x2" "x3" "x4" "x5" "x6" "x7" "x8"
 ```
 
-## 5. Inspect the Ensemble Weights and Risks
+## 5. Compare the Fitting Objectives
 
-The defining feature of the Super Learner is that it does not just pick
-the single “best” model; it finds the optimal weighted combination of
-all models based on their cross-validated performance.
+With `selection = "ensemble"`, the meta-learner estimates a convex
+combination of the candidate predictions under the selected
+cross-validated objective. The two objectives can produce different
+weights.
 
-Let’s inspect the weights and cross-validated risks for both of our
-meta-learners.
+First inspect the fitted weights and algorithm summaries.
 
 ``` r
 
@@ -225,26 +242,26 @@ summary(fit_ls)
 #> Call:
 #> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
 #>     newdata = X_te, new.times = new.times, event.library = my_library, 
-#>     cens.library = my_library, verbose = T, control = list(saveFitLibrary = TRUE), 
-#>     metalearner = "brier", selection = "ensemble", nFolds = 5)
+#>     cens.library = my_library, verbose = FALSE, control = common_control, 
+#>     metalearner = "brier", selection = "ensemble", nFolds = 3)
 #> 
 #> Event ensemble:
 #>                  learner weight   risk status
-#>  surv.weibull_screen.all 0.5906 0.4854     ok
-#>    surv.coxph_screen.all 0.2344 0.4856     ok
-#>    surv.rpart_screen.all 0.1750 0.4958     ok
+#>  surv.weibull_screen.all 0.5387 0.8656     ok
+#>    surv.coxph_screen.all 0.3600 0.8656     ok
+#>    surv.rpart_screen.all 0.1013 0.8981     ok
 #> 
 #> Censoring ensemble:
 #>                  learner weight   risk status
-#>    surv.coxph_screen.all 0.0689 1.0627     ok
-#>  surv.weibull_screen.all 0.5611 1.0720     ok
-#>    surv.rpart_screen.all 0.3700 1.0754     ok
+#>  surv.weibull_screen.all 0.6631 0.8174     ok
+#>    surv.coxph_screen.all 0.0947 0.8181     ok
+#>    surv.rpart_screen.all 0.2423 0.8303     ok
 #> 
-#> Predictions: 381 observations x 4 times
+#> Predictions: 80 observations x 4 times
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      3.836      3.589      0.241
+#>      5.062      4.956      0.104
 
 cat("\n--- NLOGLIK METALEARNER ---\n")
 #> 
@@ -256,41 +273,63 @@ summary(fit_nll)
 #> Call:
 #> SuperSurv(time = train$duration, event = train$event, X = X_tr, 
 #>     newdata = X_te, new.times = new.times, event.library = my_library, 
-#>     cens.library = my_library, verbose = FALSE, control = list(saveFitLibrary = TRUE), 
-#>     metalearner = "logloss", selection = "ensemble", nFolds = 5)
+#>     cens.library = my_library, verbose = FALSE, control = common_control, 
+#>     metalearner = "logloss", selection = "ensemble", nFolds = 3)
 #> 
 #> Event ensemble:
 #>                  learner weight   risk status
-#>    surv.coxph_screen.all 0.9929 0.4520     ok
-#>  surv.weibull_screen.all 0.0042 0.4583     ok
-#>    surv.rpart_screen.all 0.0029 0.4800     ok
+#>  surv.weibull_screen.all 0.6619 0.5515     ok
+#>    surv.coxph_screen.all 0.3358 0.5541     ok
+#>    surv.rpart_screen.all 0.0023 0.7276     ok
 #> 
 #> Censoring ensemble:
 #>                  learner weight   risk status
-#>    surv.coxph_screen.all 0.0563 1.0840     ok
-#>    surv.rpart_screen.all 0.4646 1.0848     ok
-#>  surv.weibull_screen.all 0.4790 1.0932     ok
+#>  surv.weibull_screen.all 0.7401 0.8510     ok
+#>    surv.coxph_screen.all 0.0154 0.8519     ok
+#>    surv.rpart_screen.all 0.2445 0.8639     ok
 #> 
-#> Predictions: 381 observations x 4 times
+#> Predictions: 80 observations x 4 times
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>     14.414     14.167      0.244
+#>     75.662     75.567      0.094
 ```
 
-### How to Interpret This:
+Then evaluate both fitted ensembles on the same held-out observations
+using both IPCW Brier score and IPCW log-loss. This comparison
+illustrates the objectives without assuming in advance that one must
+perform better.
 
-- **`event_weights(fit)`**: These are the final weights assigned to each
-  base learner. A weight of `0` means the meta-learner completely
-  dropped that model because it did not contribute to overall predictive
-  accuracy. A high weight means that model heavily influences the final
-  ensemble prediction. Notice how the `least_squares` and `nloglik`
-  algorithms might distribute these weights differently based on their
-  optimization goals!
-- **`summary(fit)`**: This reports the cross-validated risk for each
-  individual base learner. The meta-learner uses these risks to
-  calculate the optimal weights. Lower risk always indicates better
-  performance.
+``` r
+
+benchmark_ls <- eval_benchmark(
+  fit_ls, X_te, test$duration, test$event, new.times
+)
+benchmark_nll <- eval_benchmark(
+  fit_nll, X_te, test$duration, test$event, new.times
+)
+
+objective_comparison <- rbind(
+  transform(
+    benchmark_ls$summary[benchmark_ls$summary$Model == "SuperSurv_Ensemble", ],
+    Fitting_Objective = "Brier"
+  ),
+  transform(
+    benchmark_nll$summary[benchmark_nll$summary$Model == "SuperSurv_Ensemble", ],
+    Fitting_Objective = "Log-loss"
+  )
+)
+objective_comparison[, c("Fitting_Objective", "IBS", "IPCW_LogLoss", "Uno_C", "iAUC")]
+#>   Fitting_Objective       IBS IPCW_LogLoss     Uno_C      iAUC
+#> 1             Brier 0.2062459    0.5970542 0.6163364 0.6616964
+#> 2          Log-loss 0.2084490    0.6021272 0.6134644 0.6553774
+```
+
+`event_weights(fit)` reports each learner’s contribution to the final
+convex combination. A zero weight means that the learner does not
+contribute to that fitted ensemble. The held-out table, rather than the
+training objective alone, should guide interpretation of predictive
+performance.
 
 ## 6. Generating Predictions on New Data
 
@@ -325,23 +364,24 @@ rownames(final_matrix) <- paste0("Patient_", 1:6)
 
 print(round(final_matrix, 4))
 #>           Time_50 Time_100 Time_150 Time_200
-#> Patient_1  0.7910   0.5800   0.4053   0.2717
-#> Patient_2  0.9249   0.8344   0.7404   0.6473
-#> Patient_3  0.9054   0.8000   0.6948   0.5944
-#> Patient_4  0.8369   0.6624   0.5048   0.3720
-#> Patient_5  0.8552   0.6974   0.5504   0.4219
-#> Patient_6  0.7321   0.4865   0.3026   0.1775
+#> Patient_1  0.6948   0.4158   0.2433   0.1430
+#> Patient_2  0.6807   0.3997   0.2340   0.1423
+#> Patient_3  0.7720   0.5369   0.3643   0.2414
+#> Patient_4  0.9617   0.9093   0.8558   0.8017
+#> Patient_5  0.8404   0.6558   0.5018   0.3769
+#> Patient_6  0.9619   0.9132   0.8668   0.8217
 ```
 
 ### Understanding the Output Matrix:
 
-The [`predict()`](https://rdrr.io/r/stats/predict.html) function returns
-a list, but the most important element is `event.SL.predict`. \* **Rows
-($`N`$)**: Represent individual patients. \* **Columns ($`T`$)**:
-Represent the specific time points we defined in `new.times`. \*
-**Values**: The estimated probability that the patient will *survive*
-past that specific time point. As time increases (moving left to right
-across a row), the survival probability naturally decreases.
+With `type = "event"`,
+[`predict()`](https://rdrr.io/r/stats/predict.html) returns the
+event-survival probability matrix directly. \* **Rows ($`N`$)**:
+Represent individual patients. \* **Columns ($`T`$)**: Represent the
+specific time points we defined in `new.times`. \* **Values**: The
+estimated probability that the patient will *survive* past that specific
+time point. As time increases (moving left to right across a row), the
+survival probability naturally decreases.
 
 ## 7. Visualizing Patient-Specific Predictions
 
@@ -354,6 +394,9 @@ survival trajectories.
 [`plot_predict()`](https://yuelyu21.github.io/SuperSurv/reference/plot_predict.md)
 function to effortlessly translate this matrix into publication-ready
 survival curves for individual patients.
+
+This plotting example runs only when the optional `ggplot2` package is
+installed; fitting and numerical prediction do not require it.
 
 ``` r
 
@@ -372,8 +415,7 @@ plot_predict(
 You now know how to prepare data, define a model library, choose a
 meta-learner, and generate patient-specific survival curves.
 
-However, before deploying a model in clinical practice, you must
-rigorously prove that the ensemble actually outperforms the individual
-base learners. Head over to **Tutorial 2: Model Performance &
-Benchmarking** to learn how to generate time-dependent Brier Score, AUC,
-and Uno’s C-index plots!
+Before applying a model, evaluate the ensemble and its component
+learners on appropriately held-out data. Head to **Tutorial 2: Model
+Performance & Benchmarking** for numerical and graphical examples using
+time-dependent Brier score, AUC, and Uno’s C-index.

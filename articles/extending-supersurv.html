@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>11. Extending SuperSurv • SuperSurv</title>
+<title>10. Extending SuperSurv • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="11. Extending SuperSurv">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="10. Extending SuperSurv">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,8 +43,7 @@
     <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
-    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">10. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -63,7 +62,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>11. Extending SuperSurv</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>10. Extending SuperSurv</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/yuelyu21/SuperSurv/blob/master/vignettes/extending-supersurv.Rmd" class="external-link"><code>vignettes/extending-supersurv.Rmd</code></a></small>
@@ -162,6 +161,15 @@ prediction. When <code>control = list(saveFitLibrary = TRUE)</code>,
 <code><a href="../reference/SuperSurv.html">SuperSurv()</a></code> stores these fitted objects and
 <code><a href="../reference/predict.SuperSurv.html">predict.SuperSurv()</a></code> later calls <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on
 them.</p>
+<p>SuperSurv validates this contract at each cross-validation fold,
+during the full-data refit, and when predicting on new data. If a custom
+learner returns the wrong object type, omits <code>pred</code> or a
+required saved <code>fit</code>, returns a matrix with the wrong
+dimensions, or produces non-finite values or probabilities outside
+<code>[0, 1]</code>, the error identifies the learner, fitting stage,
+and expected shape. Screener outputs are similarly required to be
+complete logical vectors with one entry per input feature and at least
+one selected feature.</p>
 </div>
 <div class="section level2">
 <h2 id="prediction-method-contract">Prediction Method Contract<a class="anchor" aria-label="anchor" href="#prediction-method-contract"></a>
@@ -199,12 +207,123 @@ standard package prediction method that already returns survival curves
 or implement their own baseline-hazard calibration carefully.</p>
 </div>
 <div class="section level2">
+<h2 id="optional-additional-learners">Optional Additional Learners<a class="anchor" aria-label="anchor" href="#optional-additional-learners"></a>
+</h2>
+<p>The following adapters use the same wrapper contract and remain
+optional:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Wrapper</th>
+<th>Backend</th>
+<th>Prediction route</th>
+<th>Observation weights</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>surv.mboost</code></td>
+<td><code>mboost</code></td>
+<td>risk score plus weighted baseline-hazard calibration</td>
+<td>supported</td>
+</tr>
+<tr class="even">
+<td><code>surv.flexsurvspline</code></td>
+<td><code>flexsurv</code></td>
+<td>native flexible-parametric survival curve</td>
+<td>supported</td>
+</tr>
+<tr class="odd">
+<td><code>surv.flexsurvreg</code></td>
+<td><code>flexsurv</code></td>
+<td>native parametric survival curve, including generalized gamma</td>
+<td>supported</td>
+</tr>
+<tr class="even">
+<td><code>surv.survPen</code></td>
+<td><code>survPen</code></td>
+<td>native penalized smooth hazard survival curve</td>
+<td>uniform only</td>
+</tr>
+<tr class="odd">
+<td><code>surv.grf</code></td>
+<td><code>grf</code></td>
+<td>native generalized random-forest survival curve</td>
+<td>supported</td>
+</tr>
+<tr class="even">
+<td><code>surv.deepsurv</code></td>
+<td>
+<code>survivalmodels</code> and Python <code>pycox</code>
+</td>
+<td>native Cox neural-network survival curve</td>
+<td>uniform only</td>
+</tr>
+<tr class="odd">
+<td><code>surv.deephit</code></td>
+<td>
+<code>survivalmodels</code> and Python <code>pycox</code>
+</td>
+<td>native discrete-time neural-network survival curve</td>
+<td>uniform only</td>
+</tr>
+<tr class="even">
+<td><code>surv.coxtime</code></td>
+<td>
+<code>survivalmodels</code> and Python <code>pycox</code>
+</td>
+<td>native neural survival curve with time-dependent effects</td>
+<td>uniform only</td>
+</tr>
+</tbody>
+</table>
+<p>The DeepSurv, DeepHit, and Cox-Time adapters remain experimental;
+local smoke tests do not establish portability across R/Python
+configurations. Their backend spans R and Python. They require
+<code>survivalmodels</code>, <code>reticulate</code>, and importable
+Python modules <code>torch</code>, <code>torchtuples</code>, and
+<code>pycox</code>. SuperSurv never installs or changes a Python
+environment automatically. These adapters stop with an explicit error
+when the backend is unavailable or when nonuniform
+<code>obsWeights</code> are supplied; silently ignoring case weights
+would change the requested fit.</p>
+<p>Python fitted objects can be reused within the active R/Python
+session, but plain <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> is not a portable way to store
+them. Prediction after restoring an invalid Python reference gives an
+explicit error. Native neural curves are mapped as right-continuous
+steps to requested times; extending the grid past observed follow-up
+does not establish reliable extrapolation.</p>
+<p>All of these wrappers can be tuned through <code><a href="../reference/create_grid.html">create_grid()</a></code>
+in the same way as other learners. Test a small direct wrapper fit
+before launching cross-validation, especially for a Python-backed
+learner.</p>
+<p><code>surv.survPen</code> uses a smooth baseline log hazard and
+linear feature effects by default. Supply a one-sided formula for
+nonlinear or time-varying effects, using <code>.supersurv_time</code>
+for follow-up time. For example:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># X contains x1 and x2. Use screen.all if naming features explicitly.</span></span>
+<span><span class="va">smooth_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/surv.survPen.html">surv.survPen</a></span><span class="op">(</span></span>
+<span>  <span class="va">time</span>, <span class="va">event</span>, <span class="va">X</span>, <span class="va">newdata</span>, <span class="va">new.times</span>,</span>
+<span>  formula <span class="op">=</span> <span class="op">~</span> <span class="fu">tensor</span><span class="op">(</span><span class="va">.supersurv_time</span>, <span class="va">x1</span>, df <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">x2</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The smooth-model adapter rejects nonuniform observation weights
+because its backend does not expose case-weighted fitting. It is
+restricted to overall single-event, right-censored survival, not
+relative survival or left truncation. The quadrature order
+<code>n.legendre</code> controls numerical integration accuracy.</p>
+</div>
+<div class="section level2">
 <h2 id="minimal-custom-learner">Minimal Custom Learner<a class="anchor" aria-label="anchor" href="#minimal-custom-learner"></a>
 </h2>
 <p>The following learner ignores covariates and fits a weighted
 Kaplan-Meier curve. It is intentionally simple, but it satisfies the
 full <code><a href="../reference/SuperSurv.html">SuperSurv()</a></code> learner contract.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my.surv.km</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span>, <span class="va">X</span>, <span class="va">newdata</span>, <span class="va">new.times</span>,</span>
 <span>                       <span class="va">obsWeights</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">id</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">obsWeights</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -246,7 +365,7 @@ full <code><a href="../reference/SuperSurv.html">SuperSurv()</a></code> learner 
 <span><span class="op">}</span></span></code></pre></div>
 <p>You can test the wrapper outside the ensemble before adding it to a
 library:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"metabric"</span>, package <span class="op">=</span> <span class="st">"SuperSurv"</span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">metabric</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">40</span>, <span class="op">]</span></span>
 <span><span class="va">x_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^x"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
@@ -266,7 +385,7 @@ library:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">wrapper_out</span><span class="op">[[</span><span class="st">"fit"</span><span class="op">]</span><span class="op">]</span>, newdata <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span>, new.times <span class="op">=</span> <span class="va">times</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 5 3</span></span></code></pre></div>
 <p>The custom learner can be mixed with built-in learners:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">event</span>,</span>
@@ -286,7 +405,7 @@ library:</p>
 <p>Screening methods are also supplied by name. A screener should accept
 the same basic training inputs and return a logical vector with one
 value per column of <code>X</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my.screen.first3</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span>, <span class="va">X</span>, <span class="va">obsWeights</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">id</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">keep</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
@@ -294,7 +413,7 @@ value per column of <code>X</code>:</p>
 <span>  <span class="va">keep</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Use a list entry to pair a learner with one or more screeners:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">event</span>,</span>
@@ -316,6 +435,7 @@ value per column of <code>X</code>:</p>
 <code>pred</code> is a numeric matrix with dimensions
 <code>nrow(newdata)</code> by <code>length(new.times)</code>,</li>
 <li>predictions are on the survival-probability scale,</li>
+<li>all prediction entries are finite and in <code>[0, 1]</code>,</li>
 <li>
 <code>predict(wrapper_out[["fit"]], newdata, new.times)</code>
 returns the same shape when saved fits are needed,</li>
@@ -340,7 +460,7 @@ added without changing the SuperSurv ensemble machinery.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

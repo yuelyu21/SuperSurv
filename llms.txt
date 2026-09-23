@@ -87,14 +87,18 @@ and screening methods within a unified interface.
 
 ### Prediction learners
 
-- **Machine learning:** random forests, gradient boosting, XGBoost,
-  support vector machines, BART, ranger
+- **Machine learning:** random forests, generalized random forests,
+  gradient boosting, XGBoost, support vector machines, BART, ranger,
+  DeepSurv, DeepHit
 - **Penalized/high-dimensional:** elastic net, ridge regression,
-  CoxBoost
+  CoxBoost, component-wise Cox boosting
 - **Tree-based:** RPART
 - **Classical/parametric:** Cox proportional hazards, Weibull,
-  exponential, log-logistic, log-normal, generic parametric models
-- **Smoothing/splines:** generalized additive models
+  exponential, log-logistic, log-normal, generic parametric models, and
+  generalized gamma/Gompertz/gamma through `surv.flexsurvreg`
+- **Smoothing/splines:** generalized additive models, flexible
+  parametric spline models, and penalized smooth hazard models through
+  `surv.survPen`
 - **Baseline models:** Kaplan–Meier
 
 ### Screening methods
@@ -108,24 +112,34 @@ and screening methods within a unified interface.
 The framework is extensible, and users can add custom learners and
 screeners. See the extensibility vignette for details.
 
+DeepSurv, DeepHit, and Cox-Time are experimental optional adapters. They
+require `survivalmodels`, `reticulate`, and a user-managed Python
+environment containing `torch`, `torchtuples`, and `pycox`; they
+currently accept only uniform observation weights. They support
+prediction from fitted objects in the active R/Python session; plain
+[`saveRDS()`](https://rdrr.io/r/base/readRDS.html) does not preserve
+their Python model objects. `surv.survPen` also accepts only uniform
+observation weights. Its one-sided formula interface allows nonlinear
+and time-varying effects; `surv.flexsurvreg` supports native observation
+weights. All of these backends remain optional.
+
 ------------------------------------------------------------------------
 
 ## 📖 Documentation
 
 The package website includes tutorials covering:
 
-- **0. Installation & Setup**
-- **1. The SuperSurv Ensemble**
-- **2. Model Performance**
-- **3. Selection vs. Ensemble**
-- **4. Screening Methods**
-- **5. Hyperparameter Tuning**
-- **6. Random Forests**
-- **7. Parametric Models**
-- **8. SHAP Interpretability**
-- **9. Causal Inference (RMST)**
-- **10. Parallel Processing**
-- **11. Extending SuperSurv**
+- **00. Installation & Setup**
+- **01. The SuperSurv Ensemble**
+- **02. Model Performance**
+- **03. Selection vs. Ensemble**
+- **04. Screening Methods**
+- **05. Hyperparameter Tuning**
+- **06. Random Forests**
+- **07. Parametric Models**
+- **08. SHAP Interpretability**
+- **09. Causal Inference (RMST)**
+- **10. Extending SuperSurv**
 
 ------------------------------------------------------------------------
 
@@ -193,20 +207,34 @@ Journal of the American Statistical Association.
   : Wrapper function for Component-Wise Boosting (CoxBoost)
 - [`surv.coxph()`](https://yuelyu21.github.io/SuperSurv/reference/surv.coxph.md)
   : Wrapper for standard Cox Proportional Hazards
+- [`surv.coxtime()`](https://yuelyu21.github.io/SuperSurv/reference/surv.coxtime.md)
+  : Experimental Cox-Time Neural Survival Learner
+- [`surv.deephit()`](https://yuelyu21.github.io/SuperSurv/reference/surv.deephit.md)
+  : Experimental DeepHit Learner
+- [`surv.deepsurv()`](https://yuelyu21.github.io/SuperSurv/reference/surv.deepsurv.md)
+  : Experimental DeepSurv Learner
 - [`surv.exponential()`](https://yuelyu21.github.io/SuperSurv/reference/surv.exponential.md)
   : Parametric Survival Prediction Wrapper (Exponential)
+- [`surv.flexsurvreg()`](https://yuelyu21.github.io/SuperSurv/reference/surv.flexsurvreg.md)
+  : Flexible Parametric Distribution Survival Learner
+- [`surv.flexsurvspline()`](https://yuelyu21.github.io/SuperSurv/reference/surv.flexsurvspline.md)
+  : Flexible Parametric Spline Survival Learner
 - [`surv.gam()`](https://yuelyu21.github.io/SuperSurv/reference/surv.gam.md)
   : Wrapper for Generalized Additive Cox Regression (GAM)
 - [`surv.gbm()`](https://yuelyu21.github.io/SuperSurv/reference/surv.gbm.md)
   : Wrapper function for Gradient Boosting (GBM) prediction algorithm
 - [`surv.glmnet()`](https://yuelyu21.github.io/SuperSurv/reference/surv.glmnet.md)
   : Wrapper function for Penalized Cox Regression (GLMNET)
+- [`surv.grf()`](https://yuelyu21.github.io/SuperSurv/reference/surv.grf.md)
+  : Generalized Random Survival Forest Learner
 - [`surv.km()`](https://yuelyu21.github.io/SuperSurv/reference/surv.km.md)
   : Kaplan-Meier Prediction Algorithm
 - [`surv.loglogistic()`](https://yuelyu21.github.io/SuperSurv/reference/surv.loglogistic.md)
   : Parametric Survival Prediction Wrapper (Log-Logistic)
 - [`surv.lognormal()`](https://yuelyu21.github.io/SuperSurv/reference/surv.lognormal.md)
   : Parametric Survival Prediction Wrapper (Log-Normal)
+- [`surv.mboost()`](https://yuelyu21.github.io/SuperSurv/reference/surv.mboost.md)
+  : Component-Wise Cox Boosting Learner
 - [`surv.parametric()`](https://yuelyu21.github.io/SuperSurv/reference/surv.parametric.md)
   : Universal Parametric Survival Wrapper
 - [`surv.ranger()`](https://yuelyu21.github.io/SuperSurv/reference/surv.ranger.md)
@@ -217,6 +245,8 @@ Journal of the American Statistical Association.
   : Wrapper for Ridge Regression (Penalized Cox)
 - [`surv.rpart()`](https://yuelyu21.github.io/SuperSurv/reference/surv.rpart.md)
   : Wrapper for Survival Regression Trees (rpart)
+- [`surv.survPen()`](https://yuelyu21.github.io/SuperSurv/reference/surv.survPen.md)
+  : Penalized Smooth Hazard Survival Learner
 - [`surv.svm()`](https://yuelyu21.github.io/SuperSurv/reference/surv.svm.md)
   : Wrapper for Survival Support Vector Machine (survivalsvm)
 - [`surv.weibull()`](https://yuelyu21.github.io/SuperSurv/reference/surv.weibull.md)
@@ -240,10 +270,14 @@ Journal of the American Statistical Association.
 
 ## Evaluation and interpretation
 
+- [`eval_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/eval_benchmark.md)
+  : Evaluate survival predictions across models and times
 - [`eval_brier()`](https://yuelyu21.github.io/SuperSurv/reference/eval_brier.md)
   : IPCW Brier Score and Integrated Brier Score (IBS)
 - [`eval_cindex()`](https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.md)
   : Calculate Concordance Index (Harrell's or Uno's)
+- [`eval_logloss()`](https://yuelyu21.github.io/SuperSurv/reference/eval_logloss.md)
+  : IPCW Log-Loss and Integrated IPCW Log-Loss
 - [`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)
   : Evaluate SuperSurv predictions on test data
 - [`eval_timeROC()`](https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.md)
@@ -279,7 +313,7 @@ Journal of the American Statistical Association.
 - [`get_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/get_rmst.md)
   : Calculate Restricted Mean Survival Time (RMST)
 
-## Data
+## Example data
 
 - [`metabric`](https://yuelyu21.github.io/SuperSurv/reference/metabric.md)
   : METABRIC Breast Cancer Dataset
@@ -301,7 +335,7 @@ S3 methods for fitted base-learner wrapper objects.
   Estimating absolute treatment effects and covariate-adjusted group
   differences using G-computation.
 
-- [11. Extending
+- [10. Extending
   SuperSurv](https://yuelyu21.github.io/SuperSurv/articles/extending-supersurv.md):
 
 - [05. Advanced Hyperparameter Tuning & Grid
@@ -315,9 +349,6 @@ S3 methods for fitted base-learner wrapper objects.
 
 - [07. Parametric Survival
   Models](https://yuelyu21.github.io/SuperSurv/articles/parametric-models.md):
-
-- [10. Scaling Up with Parallel
-  Processing](https://yuelyu21.github.io/SuperSurv/articles/scaleup-parallel.md):
 
 - [04. High-Dimensional Data & Variable
   Screening](https://yuelyu21.github.io/SuperSurv/articles/screening-methods.md):

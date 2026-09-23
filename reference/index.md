@@ -37,20 +37,34 @@
   : Wrapper function for Component-Wise Boosting (CoxBoost)
 - [`surv.coxph()`](https://yuelyu21.github.io/SuperSurv/reference/surv.coxph.md)
   : Wrapper for standard Cox Proportional Hazards
+- [`surv.coxtime()`](https://yuelyu21.github.io/SuperSurv/reference/surv.coxtime.md)
+  : Experimental Cox-Time Neural Survival Learner
+- [`surv.deephit()`](https://yuelyu21.github.io/SuperSurv/reference/surv.deephit.md)
+  : Experimental DeepHit Learner
+- [`surv.deepsurv()`](https://yuelyu21.github.io/SuperSurv/reference/surv.deepsurv.md)
+  : Experimental DeepSurv Learner
 - [`surv.exponential()`](https://yuelyu21.github.io/SuperSurv/reference/surv.exponential.md)
   : Parametric Survival Prediction Wrapper (Exponential)
+- [`surv.flexsurvreg()`](https://yuelyu21.github.io/SuperSurv/reference/surv.flexsurvreg.md)
+  : Flexible Parametric Distribution Survival Learner
+- [`surv.flexsurvspline()`](https://yuelyu21.github.io/SuperSurv/reference/surv.flexsurvspline.md)
+  : Flexible Parametric Spline Survival Learner
 - [`surv.gam()`](https://yuelyu21.github.io/SuperSurv/reference/surv.gam.md)
   : Wrapper for Generalized Additive Cox Regression (GAM)
 - [`surv.gbm()`](https://yuelyu21.github.io/SuperSurv/reference/surv.gbm.md)
   : Wrapper function for Gradient Boosting (GBM) prediction algorithm
 - [`surv.glmnet()`](https://yuelyu21.github.io/SuperSurv/reference/surv.glmnet.md)
   : Wrapper function for Penalized Cox Regression (GLMNET)
+- [`surv.grf()`](https://yuelyu21.github.io/SuperSurv/reference/surv.grf.md)
+  : Generalized Random Survival Forest Learner
 - [`surv.km()`](https://yuelyu21.github.io/SuperSurv/reference/surv.km.md)
   : Kaplan-Meier Prediction Algorithm
 - [`surv.loglogistic()`](https://yuelyu21.github.io/SuperSurv/reference/surv.loglogistic.md)
   : Parametric Survival Prediction Wrapper (Log-Logistic)
 - [`surv.lognormal()`](https://yuelyu21.github.io/SuperSurv/reference/surv.lognormal.md)
   : Parametric Survival Prediction Wrapper (Log-Normal)
+- [`surv.mboost()`](https://yuelyu21.github.io/SuperSurv/reference/surv.mboost.md)
+  : Component-Wise Cox Boosting Learner
 - [`surv.parametric()`](https://yuelyu21.github.io/SuperSurv/reference/surv.parametric.md)
   : Universal Parametric Survival Wrapper
 - [`surv.ranger()`](https://yuelyu21.github.io/SuperSurv/reference/surv.ranger.md)
@@ -61,6 +75,8 @@
   : Wrapper for Ridge Regression (Penalized Cox)
 - [`surv.rpart()`](https://yuelyu21.github.io/SuperSurv/reference/surv.rpart.md)
   : Wrapper for Survival Regression Trees (rpart)
+- [`surv.survPen()`](https://yuelyu21.github.io/SuperSurv/reference/surv.survPen.md)
+  : Penalized Smooth Hazard Survival Learner
 - [`surv.svm()`](https://yuelyu21.github.io/SuperSurv/reference/surv.svm.md)
   : Wrapper for Survival Support Vector Machine (survivalsvm)
 - [`surv.weibull()`](https://yuelyu21.github.io/SuperSurv/reference/surv.weibull.md)
@@ -84,10 +100,14 @@
 
 ## Evaluation and interpretation
 
+- [`eval_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/eval_benchmark.md)
+  : Evaluate survival predictions across models and times
 - [`eval_brier()`](https://yuelyu21.github.io/SuperSurv/reference/eval_brier.md)
   : IPCW Brier Score and Integrated Brier Score (IBS)
 - [`eval_cindex()`](https://yuelyu21.github.io/SuperSurv/reference/eval_cindex.md)
   : Calculate Concordance Index (Harrell's or Uno's)
+- [`eval_logloss()`](https://yuelyu21.github.io/SuperSurv/reference/eval_logloss.md)
+  : IPCW Log-Loss and Integrated IPCW Log-Loss
 - [`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)
   : Evaluate SuperSurv predictions on test data
 - [`eval_timeROC()`](https://yuelyu21.github.io/SuperSurv/reference/eval_timeROC.md)
@@ -123,7 +143,7 @@
 - [`get_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/get_rmst.md)
   : Calculate Restricted Mean Survival Time (RMST)
 
-## Data
+## Example data
 
 - [`metabric`](https://yuelyu21.github.io/SuperSurv/reference/metabric.md)
   : METABRIC Breast Cancer Dataset

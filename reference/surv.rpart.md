@@ -18,6 +18,8 @@ surv.rpart(
   cp = 0.01,
   minsplit = 20,
   maxdepth = 30,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 ```
@@ -63,6 +65,16 @@ surv.rpart(
 - maxdepth:
 
   Maximum depth of any node of the final tree (default: 30).
+
+- ties:
+
+  Tied-event approximation used for risk-score calibration: `"breslow"`
+  (default) or `"efron"`.
+
+- survival_transform:
+
+  Transformation from calibrated hazard increments to survival
+  probabilities: `"exponential"` (default) or `"product_limit"`.
 
 - ...:
 

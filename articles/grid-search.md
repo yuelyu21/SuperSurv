@@ -102,9 +102,9 @@ fit_tuned <- SuperSurv(
 round(event_weights(fit_tuned), 3)
 ```
 
-By leveraging
+By using
 [`create_grid()`](https://yuelyu21.github.io/SuperSurv/reference/create_grid.md),
-you can easily execute a massive hyperparameter search space across
-XGBoost, SVMs, or Random Forests, mathematically guaranteeing that your
-final ensemble minimizes the cross-validated risk without any manual
-trial-and-error!
+you can define candidate hyperparameter configurations systematically.
+The meta-learner estimates weights for the resulting candidate library
+under the selected cross-validated objective; performance should still
+be assessed on held-out data.

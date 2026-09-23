@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>01. SuperSurv with Ensemble • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="01. SuperSurv with Ensemble">
 </head>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,8 +43,7 @@
     <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
-    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">10. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -76,8 +75,8 @@
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>The core feature of the <code>SuperSurv</code> package is its ability
-to combine multiple base survival learners into a highly predictive
-meta-ensemble. This tutorial walks through preparing data, defining a
+to combine multiple base survival learners using cross-validated
+ensemble weights. This tutorial walks through preparing data, defining a
 library of models, fitting the Super Learner, and generating predictions
 for new patients.</p>
 </div>
@@ -93,13 +92,17 @@ the covariates and performing a standard 80/20 train-test split.</p>
 <span><span class="co"># Load built-in METABRIC data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"metabric"</span>, package <span class="op">=</span> <span class="st">"SuperSurv"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Quick 80/20 Train-Test split</span></span>
+<span><span class="co"># Use a fixed teaching subset so the package vignette remains quick to rebuild.</span></span>
+<span><span class="co"># The full-data comparison used in the manuscript is provided separately in the</span></span>
+<span><span class="co"># replication materials.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">n_total</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">metabric</span><span class="op">)</span></span>
+<span><span class="va">example_idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">metabric</span><span class="op">)</span><span class="op">)</span>, <span class="fl">400</span><span class="op">)</span></span>
+<span><span class="va">metabric_example</span> <span class="op">&lt;-</span> <span class="va">metabric</span><span class="op">[</span><span class="va">example_idx</span>, <span class="op">]</span></span>
+<span><span class="va">n_total</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">metabric_example</span><span class="op">)</span></span>
 <span><span class="va">train_idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_total</span>, <span class="fl">0.8</span> <span class="op">*</span> <span class="va">n_total</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">train</span> <span class="op">&lt;-</span> <span class="va">metabric</span><span class="op">[</span><span class="va">train_idx</span>, <span class="op">]</span></span>
-<span><span class="va">test</span>  <span class="op">&lt;-</span> <span class="va">metabric</span><span class="op">[</span><span class="op">-</span><span class="va">train_idx</span>, <span class="op">]</span></span>
+<span><span class="va">train</span> <span class="op">&lt;-</span> <span class="va">metabric_example</span><span class="op">[</span><span class="va">train_idx</span>, <span class="op">]</span></span>
+<span><span class="va">test</span>  <span class="op">&lt;-</span> <span class="va">metabric_example</span><span class="op">[</span><span class="op">-</span><span class="va">train_idx</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="co"># Extract just the X covariates (assuming they are named x0, x1, etc.)</span></span>
 <span><span class="va">x_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^x"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">metabric</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -107,16 +110,24 @@ the covariates and performing a standard 80/20 train-test split.</p>
 <span><span class="va">X_te</span> <span class="op">&lt;-</span> <span class="va">test</span><span class="op">[</span>, <span class="va">x_cols</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># Define the prediction time grid (e.g., survival at 50, 100, 150, 200 months)</span></span>
-<span><span class="va">new.times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">100</span>, <span class="fl">150</span>, <span class="fl">200</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">new.times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">100</span>, <span class="fl">150</span>, <span class="fl">200</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">common_control</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  event.t.grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">train</span><span class="op">$</span><span class="va">duration</span><span class="op">[</span><span class="va">train</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">40</span><span class="op">)</span>,</span>
+<span>  cens.t.grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">train</span><span class="op">$</span><span class="va">duration</span><span class="op">[</span><span class="va">train</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="define-the-ensemble-library">2. Define the Ensemble Library<a class="anchor" aria-label="anchor" href="#define-the-ensemble-library"></a>
 </h2>
-<p>We define a library of base survival models. For this quick
-demonstration, we use lightning-fast parametric and tree-based
-models.</p>
+<p>We define a small library of parametric and tree-based survival
+models for a reproducible demonstration.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rpart"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">has_rpart</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">my_library</span>, <span class="st">"surv.rpart"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="train-the-supersurv-metalearner">3. Train the SuperSurv Metalearner<a class="anchor" aria-label="anchor" href="#train-the-supersurv-metalearner"></a>
@@ -175,16 +186,18 @@ library as your event models, or a simpler one.</li>
 </h3>
 <ul>
 <li>
-<strong><code>metalearner</code></strong>: The optimization
-algorithm used to calculate the final ensemble weights.
-<code>SuperSurv</code> offers two distinct approaches:
+<strong><code>metalearner</code></strong>: The objective used to
+calculate the final ensemble weights. <code>SuperSurv</code> offers two
+supported approaches:
 <ul>
 <li>
-<code>"brier"</code> (Default): Optimizes weights by minimizing the
-IPCW Brier score. Excellent for overall prediction accuracy.</li>
+<code>"brier"</code> (default): minimizes the IPCW pseudo-outcome
+squared criterion described in the package methodology.</li>
 <li>
-<code>"logloss"</code>: Optimizes weights by minimizing the negative
-log-likelihood. Excellent for improving hazard discrimination.</li>
+<code>"logloss"</code>: minimizes a two-term IPCW log-loss. It
+penalizes overconfident incorrect probabilities more strongly than
+squared loss, but neither objective is expected to dominate in every
+dataset.</li>
 </ul>
 </li>
 <li>
@@ -207,6 +220,7 @@ progress.</li>
 meta-learner choice affects the final ensemble weights.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Fit 1: Least Squares Meta-learner</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="va">fit_ls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">event</span>,</span>
@@ -216,13 +230,14 @@ meta-learner choice affects the final ensemble weights.</p>
 <span>  event.library <span class="op">=</span> <span class="va">my_library</span>,</span>
 <span>  cens.library <span class="op">=</span> <span class="va">my_library</span>,</span>
 <span>  metalearner <span class="op">=</span> <span class="st">"brier"</span>, </span>
-<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
-<span>  verbose <span class="op">=</span> <span class="cn">T</span>,             <span class="co"># Turn to TRUE in practice to see progress!</span></span>
+<span>  control <span class="op">=</span> <span class="va">common_control</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  selection <span class="op">=</span> <span class="st">"ensemble"</span>,</span>
-<span>  nFolds <span class="op">=</span> <span class="fl">5</span>                   <span class="co"># 5-fold CV for the meta-learner</span></span>
+<span>  nFolds <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fit 2: Negative Log-Likelihood Meta-learner</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span> <span class="co"># Reuse the same cross-validation folds for a fair comparison.</span></span>
 <span><span class="va">fit_nll</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">event</span>,</span>
@@ -232,10 +247,10 @@ meta-learner choice affects the final ensemble weights.</p>
 <span>  event.library <span class="op">=</span> <span class="va">my_library</span>,</span>
 <span>  cens.library <span class="op">=</span> <span class="va">my_library</span>,</span>
 <span>  metalearner <span class="op">=</span> <span class="st">"logloss"</span>,       <span class="co"># Swap to nloglik</span></span>
-<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
+<span>  control <span class="op">=</span> <span class="va">common_control</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  selection <span class="op">=</span> <span class="st">"ensemble"</span>,</span>
-<span>  nFolds <span class="op">=</span> <span class="fl">5</span></span>
+<span>  nFolds <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -251,11 +266,11 @@ for common fitted-model details.</p>
 <span><span class="co">#&gt;   Selection: ensemble </span></span>
 <span><span class="co">#&gt;   Event learners: 3 </span></span>
 <span><span class="co">#&gt;   Censoring learners: 3 </span></span>
-<span><span class="co">#&gt;   Predictions: 381 observations x 4 times</span></span>
+<span><span class="co">#&gt;   Predictions: 80 observations x 4 times</span></span>
 <span><span class="co">#&gt;   Evaluation times: 4 values from 50 to 200 </span></span>
 <span><span class="co">#&gt;   Nonzero event weights:</span></span>
 <span><span class="co">#&gt; surv.weibull_screen.all   surv.coxph_screen.all   surv.rpart_screen.all </span></span>
-<span><span class="co">#&gt;                  0.5906                  0.2344                  0.1750</span></span>
+<span><span class="co">#&gt;                  0.5387                  0.3600                  0.1013</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_ls</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Summary of SuperSurv fit</span></span>
@@ -264,30 +279,30 @@ for common fitted-model details.</p>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; SuperSurv(time = train$duration, event = train$event, X = X_tr, </span></span>
 <span><span class="co">#&gt;     newdata = X_te, new.times = new.times, event.library = my_library, </span></span>
-<span><span class="co">#&gt;     cens.library = my_library, verbose = T, control = list(saveFitLibrary = TRUE), </span></span>
-<span><span class="co">#&gt;     metalearner = "brier", selection = "ensemble", nFolds = 5)</span></span>
+<span><span class="co">#&gt;     cens.library = my_library, verbose = FALSE, control = common_control, </span></span>
+<span><span class="co">#&gt;     metalearner = "brier", selection = "ensemble", nFolds = 3)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Event ensemble:</span></span>
 <span><span class="co">#&gt;                  learner weight   risk status</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.5906 0.4854     ok</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.2344 0.4856     ok</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.1750 0.4958     ok</span></span>
+<span><span class="co">#&gt;  surv.weibull_screen.all 0.5387 0.8656     ok</span></span>
+<span><span class="co">#&gt;    surv.coxph_screen.all 0.3600 0.8656     ok</span></span>
+<span><span class="co">#&gt;    surv.rpart_screen.all 0.1013 0.8981     ok</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Censoring ensemble:</span></span>
 <span><span class="co">#&gt;                  learner weight   risk status</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.0689 1.0627     ok</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.5611 1.0720     ok</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.3700 1.0754     ok</span></span>
+<span><span class="co">#&gt;  surv.weibull_screen.all 0.6631 0.8174     ok</span></span>
+<span><span class="co">#&gt;    surv.coxph_screen.all 0.0947 0.8181     ok</span></span>
+<span><span class="co">#&gt;    surv.rpart_screen.all 0.2423 0.8303     ok</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Predictions: 381 observations x 4 times</span></span>
+<span><span class="co">#&gt; Predictions: 80 observations x 4 times</span></span>
 <span><span class="co">#&gt; Evaluation times: 4 values from 50 to 200 </span></span>
 <span><span class="co">#&gt; Elapsed time (seconds):</span></span>
 <span><span class="co">#&gt; everything      train    predict </span></span>
-<span><span class="co">#&gt;      3.836      3.589      0.241</span></span>
+<span><span class="co">#&gt;      5.062      4.956      0.104</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/event_weights.html">event_weights</a></span><span class="op">(</span><span class="va">fit_ls</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all </span></span>
-<span><span class="co">#&gt;               0.2344382               0.5906097               0.1749521</span></span>
+<span><span class="co">#&gt;               0.3600037               0.5386712               0.1013251</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/learner_names.html">learner_names</a></span><span class="op">(</span><span class="va">fit_ls</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "surv.coxph_screen.all"   "surv.weibull_screen.all"</span></span>
@@ -300,13 +315,13 @@ for common fitted-model details.</p>
 <span><span class="co">#&gt; [1] "x0" "x1" "x2" "x3" "x4" "x5" "x6" "x7" "x8"</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="inspect-the-ensemble-weights-and-risks">5. Inspect the Ensemble Weights and Risks<a class="anchor" aria-label="anchor" href="#inspect-the-ensemble-weights-and-risks"></a>
+<h2 id="compare-the-fitting-objectives">5. Compare the Fitting Objectives<a class="anchor" aria-label="anchor" href="#compare-the-fitting-objectives"></a>
 </h2>
-<p>The defining feature of the Super Learner is that it does not just
-pick the single “best” model; it finds the optimal weighted combination
-of all models based on their cross-validated performance.</p>
-<p>Let’s inspect the weights and cross-validated risks for both of our
-meta-learners.</p>
+<p>With <code>selection = "ensemble"</code>, the meta-learner estimates
+a convex combination of the candidate predictions under the selected
+cross-validated objective. The two objectives can produce different
+weights.</p>
+<p>First inspect the fitted weights and algorithm summaries.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n--- LEAST SQUARES METALEARNER ---\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -318,26 +333,26 @@ meta-learners.</p>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; SuperSurv(time = train$duration, event = train$event, X = X_tr, </span></span>
 <span><span class="co">#&gt;     newdata = X_te, new.times = new.times, event.library = my_library, </span></span>
-<span><span class="co">#&gt;     cens.library = my_library, verbose = T, control = list(saveFitLibrary = TRUE), </span></span>
-<span><span class="co">#&gt;     metalearner = "brier", selection = "ensemble", nFolds = 5)</span></span>
+<span><span class="co">#&gt;     cens.library = my_library, verbose = FALSE, control = common_control, </span></span>
+<span><span class="co">#&gt;     metalearner = "brier", selection = "ensemble", nFolds = 3)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Event ensemble:</span></span>
 <span><span class="co">#&gt;                  learner weight   risk status</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.5906 0.4854     ok</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.2344 0.4856     ok</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.1750 0.4958     ok</span></span>
+<span><span class="co">#&gt;  surv.weibull_screen.all 0.5387 0.8656     ok</span></span>
+<span><span class="co">#&gt;    surv.coxph_screen.all 0.3600 0.8656     ok</span></span>
+<span><span class="co">#&gt;    surv.rpart_screen.all 0.1013 0.8981     ok</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Censoring ensemble:</span></span>
 <span><span class="co">#&gt;                  learner weight   risk status</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.0689 1.0627     ok</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.5611 1.0720     ok</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.3700 1.0754     ok</span></span>
+<span><span class="co">#&gt;  surv.weibull_screen.all 0.6631 0.8174     ok</span></span>
+<span><span class="co">#&gt;    surv.coxph_screen.all 0.0947 0.8181     ok</span></span>
+<span><span class="co">#&gt;    surv.rpart_screen.all 0.2423 0.8303     ok</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Predictions: 381 observations x 4 times</span></span>
+<span><span class="co">#&gt; Predictions: 80 observations x 4 times</span></span>
 <span><span class="co">#&gt; Evaluation times: 4 values from 50 to 200 </span></span>
 <span><span class="co">#&gt; Elapsed time (seconds):</span></span>
 <span><span class="co">#&gt; everything      train    predict </span></span>
-<span><span class="co">#&gt;      3.836      3.589      0.241</span></span>
+<span><span class="co">#&gt;      5.062      4.956      0.104</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n--- NLOGLIK METALEARNER ---\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -349,46 +364,57 @@ meta-learners.</p>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; SuperSurv(time = train$duration, event = train$event, X = X_tr, </span></span>
 <span><span class="co">#&gt;     newdata = X_te, new.times = new.times, event.library = my_library, </span></span>
-<span><span class="co">#&gt;     cens.library = my_library, verbose = FALSE, control = list(saveFitLibrary = TRUE), </span></span>
-<span><span class="co">#&gt;     metalearner = "logloss", selection = "ensemble", nFolds = 5)</span></span>
+<span><span class="co">#&gt;     cens.library = my_library, verbose = FALSE, control = common_control, </span></span>
+<span><span class="co">#&gt;     metalearner = "logloss", selection = "ensemble", nFolds = 3)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Event ensemble:</span></span>
 <span><span class="co">#&gt;                  learner weight   risk status</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.9929 0.4520     ok</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.0042 0.4583     ok</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.0029 0.4800     ok</span></span>
+<span><span class="co">#&gt;  surv.weibull_screen.all 0.6619 0.5515     ok</span></span>
+<span><span class="co">#&gt;    surv.coxph_screen.all 0.3358 0.5541     ok</span></span>
+<span><span class="co">#&gt;    surv.rpart_screen.all 0.0023 0.7276     ok</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Censoring ensemble:</span></span>
 <span><span class="co">#&gt;                  learner weight   risk status</span></span>
-<span><span class="co">#&gt;    surv.coxph_screen.all 0.0563 1.0840     ok</span></span>
-<span><span class="co">#&gt;    surv.rpart_screen.all 0.4646 1.0848     ok</span></span>
-<span><span class="co">#&gt;  surv.weibull_screen.all 0.4790 1.0932     ok</span></span>
+<span><span class="co">#&gt;  surv.weibull_screen.all 0.7401 0.8510     ok</span></span>
+<span><span class="co">#&gt;    surv.coxph_screen.all 0.0154 0.8519     ok</span></span>
+<span><span class="co">#&gt;    surv.rpart_screen.all 0.2445 0.8639     ok</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Predictions: 381 observations x 4 times</span></span>
+<span><span class="co">#&gt; Predictions: 80 observations x 4 times</span></span>
 <span><span class="co">#&gt; Evaluation times: 4 values from 50 to 200 </span></span>
 <span><span class="co">#&gt; Elapsed time (seconds):</span></span>
 <span><span class="co">#&gt; everything      train    predict </span></span>
-<span><span class="co">#&gt;     14.414     14.167      0.244</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="how-to-interpret-this">How to Interpret This:<a class="anchor" aria-label="anchor" href="#how-to-interpret-this"></a>
-</h3>
-<ul>
-<li>
-<strong><code>event_weights(fit)</code></strong>: These are the
-final weights assigned to each base learner. A weight of <code>0</code>
-means the meta-learner completely dropped that model because it did not
-contribute to overall predictive accuracy. A high weight means that
-model heavily influences the final ensemble prediction. Notice how the
-<code>least_squares</code> and <code>nloglik</code> algorithms might
-distribute these weights differently based on their optimization
-goals!</li>
-<li>
-<strong><code>summary(fit)</code></strong>: This reports the
-cross-validated risk for each individual base learner. The meta-learner
-uses these risks to calculate the optimal weights. Lower risk always
-indicates better performance.</li>
-</ul>
-</div>
+<span><span class="co">#&gt;     75.662     75.567      0.094</span></span></code></pre></div>
+<p>Then evaluate both fitted ensembles on the same held-out observations
+using both IPCW Brier score and IPCW log-loss. This comparison
+illustrates the objectives without assuming in advance that one must
+perform better.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">benchmark_ls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/eval_benchmark.html">eval_benchmark</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit_ls</span>, <span class="va">X_te</span>, <span class="va">test</span><span class="op">$</span><span class="va">duration</span>, <span class="va">test</span><span class="op">$</span><span class="va">event</span>, <span class="va">new.times</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">benchmark_nll</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/eval_benchmark.html">eval_benchmark</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit_nll</span>, <span class="va">X_te</span>, <span class="va">test</span><span class="op">$</span><span class="va">duration</span>, <span class="va">test</span><span class="op">$</span><span class="va">event</span>, <span class="va">new.times</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">objective_comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span>
+<span>    <span class="va">benchmark_ls</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="va">benchmark_ls</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">Model</span> <span class="op">==</span> <span class="st">"SuperSurv_Ensemble"</span>, <span class="op">]</span>,</span>
+<span>    Fitting_Objective <span class="op">=</span> <span class="st">"Brier"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span></span>
+<span>    <span class="va">benchmark_nll</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="va">benchmark_nll</span><span class="op">$</span><span class="va">summary</span><span class="op">$</span><span class="va">Model</span> <span class="op">==</span> <span class="st">"SuperSurv_Ensemble"</span>, <span class="op">]</span>,</span>
+<span>    Fitting_Objective <span class="op">=</span> <span class="st">"Log-loss"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">objective_comparison</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Fitting_Objective"</span>, <span class="st">"IBS"</span>, <span class="st">"IPCW_LogLoss"</span>, <span class="st">"Uno_C"</span>, <span class="st">"iAUC"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;   Fitting_Objective       IBS IPCW_LogLoss     Uno_C      iAUC</span></span>
+<span><span class="co">#&gt; 1             Brier 0.2062459    0.5970542 0.6163364 0.6616964</span></span>
+<span><span class="co">#&gt; 2          Log-loss 0.2084490    0.6021272 0.6134644 0.6553774</span></span></code></pre></div>
+<p><code>event_weights(fit)</code> reports each learner’s contribution
+to the final convex combination. A zero weight means that the learner
+does not contribute to that fitted ensemble. The held-out table, rather
+than the training objective alone, should guide interpretation of
+predictive performance.</p>
 </div>
 <div class="section level2">
 <h2 id="generating-predictions-on-new-data">6. Generating Predictions on New Data<a class="anchor" aria-label="anchor" href="#generating-predictions-on-new-data"></a>
@@ -400,7 +426,7 @@ model once and then predict on brand new patients months later.</p>
 <p>Because we set <code>control = list(saveFitLibrary = TRUE)</code>
 during training, we can use the standard R <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>
 method.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Select 3 brand new patients from our test set</span></span>
 <span><span class="va">new_patients</span> <span class="op">&lt;-</span> <span class="va">X_te</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="op">]</span></span>
 <span></span>
@@ -421,17 +447,17 @@ method.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">final_matrix</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           Time_50 Time_100 Time_150 Time_200</span></span>
-<span><span class="co">#&gt; Patient_1  0.7910   0.5800   0.4053   0.2717</span></span>
-<span><span class="co">#&gt; Patient_2  0.9249   0.8344   0.7404   0.6473</span></span>
-<span><span class="co">#&gt; Patient_3  0.9054   0.8000   0.6948   0.5944</span></span>
-<span><span class="co">#&gt; Patient_4  0.8369   0.6624   0.5048   0.3720</span></span>
-<span><span class="co">#&gt; Patient_5  0.8552   0.6974   0.5504   0.4219</span></span>
-<span><span class="co">#&gt; Patient_6  0.7321   0.4865   0.3026   0.1775</span></span></code></pre></div>
+<span><span class="co">#&gt; Patient_1  0.6948   0.4158   0.2433   0.1430</span></span>
+<span><span class="co">#&gt; Patient_2  0.6807   0.3997   0.2340   0.1423</span></span>
+<span><span class="co">#&gt; Patient_3  0.7720   0.5369   0.3643   0.2414</span></span>
+<span><span class="co">#&gt; Patient_4  0.9617   0.9093   0.8558   0.8017</span></span>
+<span><span class="co">#&gt; Patient_5  0.8404   0.6558   0.5018   0.3769</span></span>
+<span><span class="co">#&gt; Patient_6  0.9619   0.9132   0.8668   0.8217</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="understanding-the-output-matrix">Understanding the Output Matrix:<a class="anchor" aria-label="anchor" href="#understanding-the-output-matrix"></a>
 </h3>
-<p>The <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> function returns a list, but the most
-important element is <code>event.SL.predict</code>. * <strong>Rows
+<p>With <code>type = "event"</code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> returns the
+event-survival probability matrix directly. * <strong>Rows
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>)</strong>:
 Represent individual patients. * <strong>Columns
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>)</strong>:
@@ -454,7 +480,10 @@ the actual survival trajectories.</p>
 <code><a href="../reference/plot_predict.html">plot_predict()</a></code> function to effortlessly translate this
 matrix into publication-ready survival curves for individual
 patients.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>This plotting example runs only when the optional
+<code>ggplot2</code> package is installed; fitting and numerical
+prediction do not require it.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the predicted survival curves for our 3 new patients (Rows 1, 2, and 3)</span></span>
 <span><span class="fu"><a href="../reference/plot_predict.html">plot_predict</a></span><span class="op">(</span></span>
 <span>  preds <span class="op">=</span> <span class="va">ensemble_preds</span>,</span>
@@ -468,11 +497,11 @@ patients.</p>
 </h2>
 <p>You now know how to prepare data, define a model library, choose a
 meta-learner, and generate patient-specific survival curves.</p>
-<p>However, before deploying a model in clinical practice, you must
-rigorously prove that the ensemble actually outperforms the individual
-base learners. Head over to <strong>Tutorial 2: Model Performance &amp;
-Benchmarking</strong> to learn how to generate time-dependent Brier
-Score, AUC, and Uno’s C-index plots!</p>
+<p>Before applying a model, evaluate the ensemble and its component
+learners on appropriately held-out data. Head to <strong>Tutorial 2:
+Model Performance &amp; Benchmarking</strong> for numerical and
+graphical examples using time-dependent Brier score, AUC, and Uno’s
+C-index.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -485,7 +514,7 @@ Score, AUC, and Uno’s C-index plots!</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

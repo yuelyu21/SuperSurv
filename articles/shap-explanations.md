@@ -2,14 +2,13 @@
 
 ## Introduction
 
-Machine learning models are notoriously criticized as “black boxes.”
-While they often achieve superior predictive performance, clinicians
-need to know *why* a model is making a specific prediction.
+Flexible machine learning models can be difficult to interpret, so users
+may want summaries of how features contribute to a specific prediction.
 
-`SuperSurv` solves this using **SHAP (SHapley Additive exPlanations)**.
-Because Shapley values possess the mathematical property of linearity,
-`SuperSurv` can calculate the SHAP values for every active base learner
-and seamlessly combine them using the meta-learner’s weights.
+`SuperSurv` provides an optional **SHAP (SHapley Additive
+exPlanations)** workflow through `kernelshap`. The explanation is
+computed for the fitted ensemble prediction function and should be
+interpreted for the selected prediction target and background sample.
 
 This tutorial covers Global feature importance, Local (patient-level)
 explanations, and Time-Dependent survival analysis using the `survex`
@@ -34,8 +33,13 @@ test  <- metabric[-train_idx, ]
 X_tr <- train[, grep("^x", names(metabric))]
 X_te <- test[, grep("^x", names(metabric))]
 new.times <- seq(50, 200, by = 25)
+X_explain_subset <- X_te[1:10, ]
+X_background_subset <- X_tr[1:30, ]
 
-my_library <- c("surv.coxph", "surv.weibull", "surv.rfsrc")
+my_library <- c("surv.coxph", "surv.weibull")
+if (has_rfsrc) {
+  my_library <- c(my_library, "surv.rfsrc")
+}
 
 fit_sl <- SuperSurv(
   time = train$duration,
@@ -53,22 +57,22 @@ fit_sl <- SuperSurv(
 
 ## 2. Global Explanations (Kernel SHAP)
 
-To calculate static risk SHAP values, we need an `X_explain` dataset
-(the patients we want to explain) and an `X_background` dataset (a
-reference population used to calculate the baseline average risk).
+We explain event probability by 100 months, `1 - S(100 | X)`. An
+explicit `eval_time` keeps every learner on the same probability scale.
+`X_explain` contains the patients to explain; `X_background` defines the
+reference population. All positive ensemble weights are retained, and
+the stored survival prediction methods apply the same screening and
+calibration used for ordinary prediction.
 
 ``` r
 
-# Explain the first 50 test patients using 100 training patients as the background
-X_explain_subset <- X_te[1:50, ]
-X_background_subset <- X_tr[1:100, ]
-
-# Calculate weighted Ensemble SHAP values using Kernel SHAP
+# Explain the ensemble event probability at one common horizon.
 shap_vals <- explain_kernel(
   model = fit_sl, 
   X_explain = X_explain_subset, 
   X_background = X_background_subset, 
-  nsim = 20
+  nsim = 20,
+  eval_time = 100
 )
 ```
 
@@ -155,8 +159,11 @@ feature importance across the entire survival curve $`S(t)`$.
 
 library(survex)
 
-# 1. Create the true survival object for the explanation subset
-y_explain <- survival::Surv(test$duration[1:50], test$event[1:50])
+# 1. Create the true survival object for the same explanation subset
+y_explain <- survival::Surv(
+  test$duration[seq_len(nrow(X_explain_subset))],
+  test$event[seq_len(nrow(X_explain_subset))]
+)
 
 # 2. Build the survex explainer using our custom function
 surv_explainer <- explain_survex(
@@ -169,6 +176,10 @@ surv_explainer <- explain_survex(
 
 Once the explainer is created, you have full access to the `survex`
 ecosystem. Let’s look at three powerful time-dependent visualizations.
+
+The following specialist analyses are shown as code but are not executed
+during the package vignette build because their runtime and accepted
+prediction representations depend on the installed `survex` release.
 
 ### A. Dynamic Feature Importance
 
@@ -184,9 +195,8 @@ time_importance <- model_parts(surv_explainer)
 plot(time_importance)
 ```
 
-![](shap-explanations_files/figure-html/survex-importance-1.png)*Interpretation:
-If a feature’s curve rises over time, it means that biomarker becomes
-more critical for predicting long-term survival.*
+*Interpretation: If a feature’s curve rises over time, it means that
+biomarker becomes more critical for predicting long-term survival.*
 
 ### B. Time-Dependent Partial Dependence Profiles
 
@@ -201,9 +211,8 @@ pdp_time <- model_profile(surv_explainer, variables = "x0")
 plot(pdp_time)
 ```
 
-![](shap-explanations_files/figure-html/survex-profile-1.png)*Interpretation:
-This generates a 3D-like profile showing how different values of `x0`
-shift the entire survival curve.*
+*Interpretation: This generates a 3D-like profile showing how different
+values of `x0` shift the entire survival curve.*
 
 ### C. SurvSHAP(t): Local Explanations Over Time
 
@@ -222,11 +231,10 @@ survshap_t <- predict_parts(surv_explainer, new_observation = patient_1_data, ty
 plot(survshap_t)
 ```
 
-![](shap-explanations_files/figure-html/survex-survshap-1.png)*Interpretation:
-The solid black line is the model’s average survival curve. The colored
-areas show how Patient 1’s specific covariates (like their specific age
-or tumor grade) dragged their personal survival curve above or below the
-average over time.*
+*Interpretation: The solid black line is the model’s average survival
+curve. The colored areas show how Patient 1’s specific covariates (like
+their specific age or tumor grade) dragged their personal survival curve
+above or below the average over time.*
 
 ### D. Ecosystem Compatibility: Global Model Performance
 
@@ -236,25 +244,37 @@ creates a standard explainer object, you aren’t just limited to SHAP
 values. You can utilize the entire `survex` ecosystem, including their
 built-in performance metrics.
 
-While `SuperSurv` provides its own comprehensive benchmarking suite
-(`plot_benchmark`), you can easily cross-validate your ensemble’s
-Time-Dependent Brier Score and AUC using `survex`’s native functions:
+`SuperSurv` provides lightweight benchmark summaries through
+[`eval_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/eval_benchmark.md)
+and
+[`plot_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/plot_benchmark.md).
+The `survex` ecosystem offers complementary performance and explanation
+tools:
 
 ``` r
 
-# Calculate time-dependent performance metrics via survex
-survex_perf <- model_performance(surv_explainer)
+# Optional packages can change their accepted prediction representation across
+# releases, so keep this complementary illustration failure-tolerant.
+survex_perf <- tryCatch(
+  model_performance(surv_explainer),
+  error = function(e) {
+    message("The installed survex version could not evaluate this explainer: ",
+            conditionMessage(e))
+    NULL
+  }
+)
 
 # Plot the Brier score and AUC curves
-plot(survex_perf)
+if (!is.null(survex_perf)) {
+  plot(survex_perf)
+}
 ```
 
-![](shap-explanations_files/figure-html/survex-performance-1.png)*Note:
-The Brier score should ideally stay as low as possible over time, while
-the AUC should remain high. This serves as an excellent independent
-validation of the results generated by `SuperSurv`’s native
-[`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)!*
+The two interfaces may use different defaults, so comparisons should
+align the prediction horizon, censoring estimator, and metric
+definition.
 
-By utilizing these tools, `SuperSurv` ensures that your advanced machine
-learning ensembles remain completely transparent, dynamically
-interpretable, and ready for clinical deployment.
+These tools provide complementary views of fitted predictions. Their
+results should be interpreted in the context of the selected prediction
+target, background sample, censoring assumptions, and intended
+application.

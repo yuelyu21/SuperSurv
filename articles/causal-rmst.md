@@ -3,16 +3,17 @@
 ## Moving Beyond the Hazard Ratio
 
 In clinical trials and observational studies, researchers often wish to
-compare survival outcomes between two groups. Historically, this is
-answered using the Hazard Ratio (HR) from a Cox Proportional Hazards
-model. However, the HR is non-collapsible—meaning the omission of
-unmeasured covariates will mathematically bias the effect toward the
-null—and strictly relies on the proportional hazards assumption. If
-survival curves cross, the HR becomes mathematically invalid.
+compare survival outcomes between two groups. A Cox proportional hazards
+model summarizes relative hazards under its model assumptions.
+Conditional and marginal hazard ratios can differ even without
+confounding, and a single hazard ratio may be difficult to interpret
+under non-proportional hazards. These issues motivate complementary
+summaries on an absolute survival-time scale.
 
-`SuperSurv` solves this by evaluating group differences on the absolute
-time scale using the **Restricted Mean Survival Time (RMST)** via
-G-computation (Standardization) on top of our Ensemble Super Learner.
+`SuperSurv` provides a model-based standardized contrast in **Restricted
+Mean Survival Time (RMST)** using the fitted survival ensemble. This
+does not by itself establish a causal effect or remove model-estimation
+uncertainty.
 
 RMST calculates the area under the survival curve up to a specific time
 horizon, $`\tau`$. By comparing the expected RMST if *everyone* in the
@@ -29,19 +30,18 @@ How you interpret this $`\Delta \text{RMST}`$ depends entirely on the
 nature of your exposure variable. The math of G-computation is identical
 for both, but the statistical terminology must be used responsibly.
 
-1.  **Causal Average Treatment Effect (ATE):** You can claim a *Causal
-    Effect* if your variable is a **manipulable intervention**. Examples
-    include administering a drug, performing a surgery, or applying a
-    policy.
+1.  **Causal Average Treatment Effect (ATE):** A causal interpretation
+    requires a well-defined intervention, consistency, conditional
+    exchangeability, positivity, appropriate censoring assumptions, and
+    adequate estimation of the relevant survival functions. A
+    manipulable exposure alone is not sufficient.
     - *Interpretation:* “Administering this drug causally adds an
       average of 4.2 months of life over a 5-year period compared to the
       placebo.”
-2.  **Adjusted Marginal Contrast:** You must claim an *Adjusted Marginal
-    Contrast* if your variable is an **immutable trait or biological
-    group**. Examples include biological sex, race, or a genetic
-    biomarker. Because you cannot “causally” intervene to change
-    someone’s genetics, we are simply comparing two groups while
-    rigorously adjusting for all other confounding variables.
+2.  **Adjusted Marginal Contrast:** Without justified causal
+    identification, report a covariate-standardized model-based group
+    contrast. Standardization over the recorded covariates does not
+    guarantee that all confounding has been controlled.
     - *Interpretation:* “After adjusting for all baseline clinical
       covariates, the presence of this biomarker is marginally
       associated with 4.2 additional months of survival over a 5-year
@@ -75,13 +75,18 @@ G-computation prediction phase.
 
 ``` r
 
+event_library <- c("surv.coxph", "surv.weibull")
+if (has_rfsrc) {
+  event_library <- c("surv.coxph", "surv.rfsrc")
+}
+
 fit <- SuperSurv(
   time = metabric$duration,
   event = metabric$event,
   X = X,
   newdata = X,
   new.times = new.times,
-  event.library = c("surv.coxph", "surv.rfsrc"),
+  event.library = event_library,
   cens.library = c("surv.coxph"),
   control = list(saveFitLibrary = TRUE) 
 )
@@ -108,12 +113,12 @@ results <- estimate_marginal_rmst(
   times = new.times, 
   tau = 100
 )
-#> Adjusted Delta RMST at tau = 100: -1.27 time units
+#> Adjusted Delta RMST at tau = 100: -1.234 time units
 
 
 
 print(results$ATE_RMST)
-#> [1] -1.269855
+#> [1] -1.233647
 ```
 
 **Interpretation:** If the resulting $`\Delta`$RMST value is `-1.24`,
@@ -123,51 +128,21 @@ distribution using the fitted Super Learner ensemble, the group with
 restricted mean survival than the group with `x4 = 0` over a 100-month
 horizon.
 
-**Uncertainty:** To quantify uncertainty,
-[`estimate_marginal_rmst()`](https://yuelyu21.github.io/SuperSurv/reference/estimate_marginal_rmst.md)
-can optionally apply a perturbation-based inference procedure
-conditional on the fitted ensemble. This returns a perturbation-based
-standard error, confidence interval, and Wald-type p-value.
-
-``` r
-
-rmst_results_inf <- estimate_marginal_rmst(
-  fit = fit,
-  data = metabric,
-  trt_col = "x4",
-  times = new.times,
-  tau = 100,
-  inference = TRUE,
-  B = 100,
-  seed = 123
-)
-#> Adjusted Delta RMST at tau = 100: -1.27 time units | SE = 0.026 | 95% CI = [-1.32, -1.219]
-
-rmst_results_inf$ATE_RMST
-#> [1] -1.269855
-rmst_results_inf$SE_RMST
-#> [1] 0.02571039
-rmst_results_inf$CI_RMST
-#>     lower     upper 
-#> -1.320246 -1.219464
-format.pval(rmst_results_inf$p_value, digits = 3, eps = 1e-16)
-#> [1] "<1e-16"
-```
-
-*Note:* Because this perturbation procedure conditions on the final
-fitted SuperSurv model and does not refit the learner library or
-ensemble weights, the resulting confidence interval reflects conditional
-uncertainty for the standardized RMST contrast and may be relatively
-narrow.
+**Uncertainty:** This function reports a model-based point contrast.
+Formal inference would need to account for tuning, cross-validation,
+learner fitting, censoring estimation, and ensemble-weight estimation
+using a justified inference procedure. This version does not provide
+such a procedure.
 
 ### 3. Visualizing the Effect Over Time
 
 The difference between groups might be near zero early on but
-substantial later. We can visualize how the adjusted RMST contrast
+substantial later. We can visualize how the adjusted RMST point contrast
 evolves across different restriction times using
 [`plot_marginal_rmst_curve()`](https://yuelyu21.github.io/SuperSurv/reference/plot_marginal_rmst_curve.md).
-When `inference = TRUE`, the function also displays perturbation-based
-confidence intervals as a ribbon.
+
+The plotting examples below run only when the optional `ggplot2` package
+is installed; the numerical RMST estimates above do not require it.
 
 ``` r
 
@@ -178,27 +153,23 @@ plot_marginal_rmst_curve(
   data = metabric, 
   trt_col = "x4", 
   times = new.times, 
-  tau_seq = tau_grid,
-  inference = TRUE, 
-  B = 100, 
-  seed = 123, 
-  ci_level = 0.95
+  tau_seq = tau_grid
 )
-#> Adjusted Delta RMST at tau = 20: -0.01 time units | SE = 0 | 95% CI = [-0.01, -0.009]
-#> Adjusted Delta RMST at tau = 50: -0.204 time units | SE = 0.005 | 95% CI = [-0.214, -0.194]
-#> Adjusted Delta RMST at tau = 80: -0.781 time units | SE = 0.014 | 95% CI = [-0.807, -0.754]
-#> Adjusted Delta RMST at tau = 110: -1.567 time units | SE = 0.027 | 95% CI = [-1.619, -1.514]
-#> Adjusted Delta RMST at tau = 140: -2.649 time units | SE = 0.045 | 95% CI = [-2.737, -2.56]
+#> Adjusted Delta RMST at tau = 20: -0.009 time units
+#> Adjusted Delta RMST at tau = 50: -0.194 time units
+#> Adjusted Delta RMST at tau = 80: -0.756 time units
+#> Adjusted Delta RMST at tau = 110: -1.525 time units
+#> Adjusted Delta RMST at tau = 140: -2.597 time units
 ```
 
 ![](causal-rmst_files/figure-html/plot-curve-1.png)
 
 ### 4. Diagnostic: Predicted RMST vs. Observed Time
 
-To evaluate how well our model’s restricted expectations align with
-reality, we can plot the predicted RMST for the observed data against
-their true survival times. Patients who experienced the event should lie
-close to the diagonal line up to $`\tau`$.
+This descriptive plot compares predicted conditional mean restricted
+survival with observed follow-up. A realized event time need not lie
+near its conditional mean, and censored follow-up is not the true event
+time. The plot is not a formal calibration test.
 
 ``` r
 
@@ -208,7 +179,7 @@ plot_rmst_vs_obs(
   time_col = "duration", 
   event_col = "event", 
   times = new.times, 
-  tau = 350
+  tau = 100
 )
 ```
 

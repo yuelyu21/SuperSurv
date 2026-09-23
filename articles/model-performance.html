@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>02. Model Performance &amp; Benchmarking • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="02. Model Performance &amp; Benchmarking">
 </head>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,8 +43,7 @@
     <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
-    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">10. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -75,10 +74,11 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Once a <code>SuperSurv</code> ensemble is trained, we must rigorously
-prove that it outperforms the individual base learners. Because survival
-data involves right-censoring, we cannot use standard classification
-metrics like simple accuracy.</p>
+<p>Once a <code>SuperSurv</code> ensemble is trained, its predictive
+performance should be evaluated on data not used to fit the model. An
+ensemble is not guaranteed to outperform every component learner in
+every sample. Because survival outcomes may be right-censored, ordinary
+classification accuracy is not an appropriate summary.</p>
 <p>Instead, we evaluate the model across three critical dimensions: 1.
 <strong>Calibration:</strong> Does the predicted survival probability
 match the actual observed survival rate? 2. <strong>Discrimination (AUC
@@ -124,7 +124,10 @@ evaluation grid within the limits of your observed data!</p>
 <p>We will fit an ensemble consisting of a Cox model, a Weibull model,
 and a Survival Tree using the default Least Squares meta-learner.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span>, <span class="st">"surv.rpart"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">has_rpart</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">my_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">my_library</span>, <span class="st">"surv.rpart"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">fit_supersurv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">train</span><span class="op">$</span><span class="va">duration</span>,</span>
@@ -142,20 +145,40 @@ and a Survival Tree using the default Least Squares meta-learner.</p>
 <div class="section level2">
 <h2 id="extracting-integrated-metrics">3. Extracting Integrated Metrics<a class="anchor" aria-label="anchor" href="#extracting-integrated-metrics"></a>
 </h2>
-<p>The <code><a href="../reference/eval_summary.html">eval_summary()</a></code> function automatically generates
-predictions on your test set and returns a clean, comparative table of
-the <em>integrated</em> metrics across your entire time grid.</p>
+<p>The <code><a href="../reference/eval_benchmark.html">eval_benchmark()</a></code> function generates predictions on
+the test set and returns both integrated and time-specific numerical
+results. The built-in evaluator uses a marginal reverse Kaplan–Meier
+censoring estimate. For conditional censoring models, resampling,
+inference, or formal model comparisons, use specialist software such as
+<code><a href="https://rdrr.io/pkg/riskRegression/man/Score.html" class="external-link">riskRegression::Score()</a></code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Evaluate performance directly using the fitted model and test data</span></span>
-<span><span class="va">performance_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/eval_summary.html">eval_summary</a></span><span class="op">(</span></span>
+<span><span class="va">performance_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/eval_benchmark.html">eval_benchmark</a></span><span class="op">(</span></span>
 <span>  object <span class="op">=</span> <span class="va">fit_supersurv</span>,</span>
 <span>  newdata <span class="op">=</span> <span class="va">X_te</span>,</span>
 <span>  time <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">test</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  eval_times <span class="op">=</span> <span class="va">new.times</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><em>Note: Look for the model with the lowest IBS (Integrated Brier
-Score) and the highest iAUC/Uno’s C-index.</em></p>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">performance_results</span><span class="op">$</span><span class="va">summary</span></span>
+<span><span class="co">#&gt;                     Model       IBS IPCW_LogLoss     Uno_C      iAUC</span></span>
+<span><span class="co">#&gt; 1      SuperSurv_Ensemble 0.2056052    0.5986356 0.6317163 0.6657561</span></span>
+<span><span class="co">#&gt; 2   surv.coxph_screen.all 0.2070730    0.6044041 0.6290759 0.6620635</span></span>
+<span><span class="co">#&gt; 3 surv.weibull_screen.all 0.2068304    0.6039515 0.6289231 0.6616319</span></span>
+<span><span class="co">#&gt; 4   surv.rpart_screen.all 0.2156195    0.6198497 0.5931278 0.6268625</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">performance_results</span><span class="op">$</span><span class="va">by_time</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Time              Model     Brier   LogLoss    CD_AUC   C_Index</span></span>
+<span><span class="co">#&gt; 1   50 SuperSurv_Ensemble 0.1427394 0.4590400 0.6387032 0.6322948</span></span>
+<span><span class="co">#&gt; 2   75 SuperSurv_Ensemble 0.1864146 0.5616281 0.6117365 0.6319181</span></span>
+<span><span class="co">#&gt; 3  100 SuperSurv_Ensemble 0.2158827 0.6233480 0.6323065 0.6319049</span></span>
+<span><span class="co">#&gt; 4  125 SuperSurv_Ensemble 0.2218279 0.6339276 0.6675448 0.6317163</span></span>
+<span><span class="co">#&gt; 5  150 SuperSurv_Ensemble 0.2187880 0.6262853 0.6990790 0.6316829</span></span>
+<span><span class="co">#&gt; 6  175 SuperSurv_Ensemble 0.2179843 0.6231089 0.6992792 0.6316231</span></span></code></pre></div>
+<p>The compatibility function <code><a href="../reference/eval_summary.html">eval_summary()</a></code> returns the
+earlier compact table. Lower IBS and IPCW log-loss indicate better
+probabilistic prediction under their respective definitions; higher iAUC
+and Uno’s C-index indicate better discrimination.</p>
 </div>
 <div class="section level2">
 <h2 id="visualizing-longitudinal-benchmarks">4. Visualizing Longitudinal Benchmarks<a class="anchor" aria-label="anchor" href="#visualizing-longitudinal-benchmarks"></a>
@@ -164,8 +187,13 @@ Score) and the highest iAUC/Uno’s C-index.</em></p>
 models excel at different follow-up periods (e.g., a Cox model might
 dominate short-term survival, while a Random Forest dominates
 long-term).</p>
-<p>The <code><a href="../reference/plot_benchmark.html">plot_benchmark()</a></code> function generates a stacked
-dashboard to visualize this dynamic performance over time.</p>
+<p>The <code><a href="../reference/plot_benchmark.html">plot_benchmark()</a></code> function visualizes the
+time-specific results. If the optional <code>patchwork</code> package is
+unavailable, it returns a named list of individual plots rather than
+failing.</p>
+<p>The plotting examples below run only when the optional
+<code>ggplot2</code> package is installed; numerical evaluation above
+remains available without it.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_benchmark.html">plot_benchmark</a></span><span class="op">(</span></span>
 <span>  object <span class="op">=</span> <span class="va">fit_supersurv</span>,</span>
@@ -232,7 +260,7 @@ survival (being too optimistic).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

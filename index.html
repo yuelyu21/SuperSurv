@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>A Unified Framework for Machine Learning Ensembles in Survival Analysis • SuperSurv</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A Unified Framework for Machine Learning Ensembles in Survival Analysis">
 <meta name="description" content="Implements a Super Learner framework for right-censored survival data. The package fits convex combinations of parametric, semiparametric, and machine learning survival learners by minimizing cross-validated risk using inverse probability of censoring weighting (IPCW). It provides tools for automated hyperparameter grid search, high-dimensional variable screening, and evaluation of prediction performance using metrics such as the Brier score, Uno's C-index, and time-dependent area under the curve (AUC). Additional utilities support model interpretation for survival ensembles, including Shapley additive explanations (SHAP), and estimation of covariate-adjusted restricted mean survival time (RMST) contrasts. The methodology is related to treatment-specific survival curve estimation using machine learning described by Westling et al. (2024) &lt;doi:10.1080/01621459.2023.2205060&gt;, and the unified ensemble framework described in Lyu et al. (2026) &lt;doi:10.64898/2026.03.11.711010&gt;.">
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,8 +46,7 @@
     <li><a class="dropdown-item" href="articles/parametric-models.html">07. Parametric Models</a></li>
     <li><a class="dropdown-item" href="articles/shap-explanations.html">08. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
-    <li><a class="dropdown-item" href="articles/scaleup-parallel.html">10. Parallel Processing</a></li>
-    <li><a class="dropdown-item" href="articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
+    <li><a class="dropdown-item" href="articles/extending-supersurv.html">10. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -115,15 +114,17 @@
 </h3>
 <ul>
 <li>
-<strong>Machine learning:</strong> random forests, gradient boosting, XGBoost, support vector machines, BART, ranger</li>
+<strong>Machine learning:</strong> random forests, generalized random forests, gradient boosting, XGBoost, support vector machines, BART, ranger, DeepSurv, DeepHit</li>
 <li>
-<strong>Penalized/high-dimensional:</strong> elastic net, ridge regression, CoxBoost</li>
+<strong>Penalized/high-dimensional:</strong> elastic net, ridge regression, CoxBoost, component-wise Cox boosting</li>
 <li>
 <strong>Tree-based:</strong> RPART</li>
 <li>
-<strong>Classical/parametric:</strong> Cox proportional hazards, Weibull, exponential, log-logistic, log-normal, generic parametric models</li>
+<strong>Classical/parametric:</strong> Cox proportional hazards, Weibull, exponential, log-logistic, log-normal, generic parametric models, and generalized gamma/Gompertz/gamma through <code>surv.flexsurvreg</code>
+</li>
 <li>
-<strong>Smoothing/splines:</strong> generalized additive models</li>
+<strong>Smoothing/splines:</strong> generalized additive models, flexible parametric spline models, and penalized smooth hazard models through <code>surv.survPen</code>
+</li>
 <li>
 <strong>Baseline models:</strong> Kaplan–Meier</li>
 </ul>
@@ -139,6 +140,7 @@
 <li>random forest variable hunting</li>
 </ul>
 <p>The framework is extensible, and users can add custom learners and screeners. See the extensibility vignette for details.</p>
+<p>DeepSurv, DeepHit, and Cox-Time are experimental optional adapters. They require <code>survivalmodels</code>, <code>reticulate</code>, and a user-managed Python environment containing <code>torch</code>, <code>torchtuples</code>, and <code>pycox</code>; they currently accept only uniform observation weights. They support prediction from fitted objects in the active R/Python session; plain <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> does not preserve their Python model objects. <code>surv.survPen</code> also accepts only uniform observation weights. Its one-sided formula interface allows nonlinear and time-varying effects; <code>surv.flexsurvreg</code> supports native observation weights. All of these backends remain optional.</p>
 <hr>
 </div>
 </div>
@@ -147,18 +149,17 @@
 </h2>
 <p>The package website includes tutorials covering:</p>
 <ul>
-<li><strong>0. Installation &amp; Setup</strong></li>
-<li><strong>1. The SuperSurv Ensemble</strong></li>
-<li><strong>2. Model Performance</strong></li>
-<li><strong>3. Selection vs. Ensemble</strong></li>
-<li><strong>4. Screening Methods</strong></li>
-<li><strong>5. Hyperparameter Tuning</strong></li>
-<li><strong>6. Random Forests</strong></li>
-<li><strong>7. Parametric Models</strong></li>
-<li><strong>8. SHAP Interpretability</strong></li>
-<li><strong>9. Causal Inference (RMST)</strong></li>
-<li><strong>10. Parallel Processing</strong></li>
-<li><strong>11. Extending SuperSurv</strong></li>
+<li><strong>00. Installation &amp; Setup</strong></li>
+<li><strong>01. The SuperSurv Ensemble</strong></li>
+<li><strong>02. Model Performance</strong></li>
+<li><strong>03. Selection vs. Ensemble</strong></li>
+<li><strong>04. Screening Methods</strong></li>
+<li><strong>05. Hyperparameter Tuning</strong></li>
+<li><strong>06. Random Forests</strong></li>
+<li><strong>07. Parametric Models</strong></li>
+<li><strong>08. SHAP Interpretability</strong></li>
+<li><strong>09. Causal Inference (RMST)</strong></li>
+<li><strong>10. Extending SuperSurv</strong></li>
 </ul>
 <hr>
 </div>
@@ -220,7 +221,7 @@ Journal of the American Statistical Association.<br><a href="https://doi.org/10.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -87,14 +87,18 @@ and screening methods within a unified interface.
 
 ### Prediction learners
 
-- **Machine learning:** random forests, gradient boosting, XGBoost,
-  support vector machines, BART, ranger
+- **Machine learning:** random forests, generalized random forests,
+  gradient boosting, XGBoost, support vector machines, BART, ranger,
+  DeepSurv, DeepHit
 - **Penalized/high-dimensional:** elastic net, ridge regression,
-  CoxBoost
+  CoxBoost, component-wise Cox boosting
 - **Tree-based:** RPART
 - **Classical/parametric:** Cox proportional hazards, Weibull,
-  exponential, log-logistic, log-normal, generic parametric models
-- **Smoothing/splines:** generalized additive models
+  exponential, log-logistic, log-normal, generic parametric models, and
+  generalized gamma/Gompertz/gamma through `surv.flexsurvreg`
+- **Smoothing/splines:** generalized additive models, flexible
+  parametric spline models, and penalized smooth hazard models through
+  `surv.survPen`
 - **Baseline models:** Kaplan–Meier
 
 ### Screening methods
@@ -108,24 +112,34 @@ and screening methods within a unified interface.
 The framework is extensible, and users can add custom learners and
 screeners. See the extensibility vignette for details.
 
+DeepSurv, DeepHit, and Cox-Time are experimental optional adapters. They
+require `survivalmodels`, `reticulate`, and a user-managed Python
+environment containing `torch`, `torchtuples`, and `pycox`; they
+currently accept only uniform observation weights. They support
+prediction from fitted objects in the active R/Python session; plain
+[`saveRDS()`](https://rdrr.io/r/base/readRDS.html) does not preserve
+their Python model objects. `surv.survPen` also accepts only uniform
+observation weights. Its one-sided formula interface allows nonlinear
+and time-varying effects; `surv.flexsurvreg` supports native observation
+weights. All of these backends remain optional.
+
 ------------------------------------------------------------------------
 
 ## 📖 Documentation
 
 The package website includes tutorials covering:
 
-- **0. Installation & Setup**
-- **1. The SuperSurv Ensemble**
-- **2. Model Performance**
-- **3. Selection vs. Ensemble**
-- **4. Screening Methods**
-- **5. Hyperparameter Tuning**
-- **6. Random Forests**
-- **7. Parametric Models**
-- **8. SHAP Interpretability**
-- **9. Causal Inference (RMST)**
-- **10. Parallel Processing**
-- **11. Extending SuperSurv**
+- **00. Installation & Setup**
+- **01. The SuperSurv Ensemble**
+- **02. Model Performance**
+- **03. Selection vs. Ensemble**
+- **04. Screening Methods**
+- **05. Hyperparameter Tuning**
+- **06. Random Forests**
+- **07. Parametric Models**
+- **08. SHAP Interpretability**
+- **09. Causal Inference (RMST)**
+- **10. Extending SuperSurv**
 
 ------------------------------------------------------------------------
 

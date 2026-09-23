@@ -79,10 +79,16 @@ and screening:
 
 my_screen_library <- list(
   c("surv.coxph", "screen.all"),         # Baseline: Cox model with ALL variables
-  c("surv.coxph", "screen.marg"),        # Screen by marginal association, then fit Cox
-  c("surv.weibull", "screen.elasticnet"),# Screen via Elastic Net, then fit Weibull
-  c("surv.rpart", "screen.var")          # Drop zero-variance noise, then fit a Tree
+  c("surv.coxph", "screen.marg")         # Screen by marginal association, then fit Cox
 )
+
+if (has_glmnet) {
+  my_screen_library[[length(my_screen_library) + 1L]] <- c("surv.weibull", "screen.elasticnet")
+}
+
+if (has_rpart) {
+  my_screen_library[[length(my_screen_library) + 1L]] <- c("surv.rpart", "screen.var")
+}
 
 # For the censoring library, we use an unscreened approach 
 cens_library <- c("surv.coxph")
@@ -164,8 +170,8 @@ selected_features <- selected_variables(fit_highdim, learner = 2)
 
 cat("Total features evaluated:", ncol(X_tr), "\n")
 #> Total features evaluated: 29
-cat("Features retained by Elastic Net:", length(selected_features), "\n\n")
-#> Features retained by Elastic Net: 10
+cat("Features retained by learner 2:", length(selected_features), "\n\n")
+#> Features retained by learner 2: 10
 
 cat("Selected Features:\n")
 #> Selected Features:

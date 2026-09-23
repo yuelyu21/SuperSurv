@@ -55,6 +55,9 @@ rf_pred_matrix <- rf_standalone[["pred"]]
 Because our plotting functions are universally compatible, we can plot
 individual patient curves directly from this standalone matrix:
 
+Plotting examples run only when both `randomForestSRC` and the optional
+`ggplot2` package are installed.
+
 ``` r
 
 # Plot the first 3 patients in our training set
@@ -138,7 +141,7 @@ plot_benchmark(
 
 ![](base-learner-rfsrc_files/figure-html/plot-ensemble-benchmark-1.png)
 
-By incorporating advanced machine learning algorithms into your library,
-`SuperSurv` mathematically guarantees that your final predictions adapt
-to the complexity of your data, achieving the lowest possible Brier
-Score.
+Including flexible learners broadens the candidate library and may
+improve adaptation to nonlinear or non-proportional-hazards structure.
+Their contribution is determined by the selected cross-validated
+objective and should be evaluated on held-out data.

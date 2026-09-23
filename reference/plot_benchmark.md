@@ -22,23 +22,29 @@ plot_benchmark(
 
 - object:
 
-  A fitted SuperSurv object OR a fitted standalone learner.
+  A fitted SuperSurv object, a fitted standalone learner, or a benchmark
+  returned by
+  [`eval_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/eval_benchmark.md).
+  A benchmark is plotted without recomputing predictions or metrics.
 
 - newdata:
 
-  A data.frame of test covariates.
+  A data.frame of test covariates. Omit when `object` is a benchmark.
 
 - time:
 
-  Numeric vector of observed follow-up times for the test set.
+  Numeric vector of observed follow-up times for the test set. Omit when
+  `object` is a benchmark.
 
 - event:
 
-  Numeric vector of event indicators for the test set.
+  Numeric vector of event indicators for the test set. Omit when
+  `object` is a benchmark.
 
 - eval_times:
 
-  Numeric vector of times at which to evaluate predictions.
+  Numeric vector of times at which to evaluate predictions. Omit when
+  `object` is a benchmark.
 
 - metrics:
 
@@ -51,13 +57,15 @@ plot_benchmark(
 
 ## Value
 
-A combined patchwork ggplot object, or a single ggplot if only one
-metric is selected.
+A combined patchwork object when patchwork is installed, a single ggplot
+when one metric is selected, or a named list of ggplots when multiple
+metrics are requested without patchwork.
 
 ## Examples
 
 ``` r
-if (requireNamespace("glmnet", quietly = TRUE)) {
+if (requireNamespace("ranger", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:120, ]
   x_cols <- grep("^x", names(dat))[1:5]

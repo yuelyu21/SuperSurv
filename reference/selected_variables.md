@@ -8,6 +8,9 @@ fitted event or censoring learners.
 ``` r
 selected_variables(object, ...)
 
+# Default S3 method
+selected_variables(object, ...)
+
 # S3 method for class 'SuperSurv'
 selected_variables(object, type = c("event", "censoring"), learner = NULL, ...)
 ```

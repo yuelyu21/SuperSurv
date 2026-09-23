@@ -14,12 +14,12 @@ ways to utilize the cross-validated risks of your base algorithms:
     (and all others `0.0`). This is a “hard selection” or
     “winner-take-all” approach.
 
-While the Ensemble is asymptotically optimal, selecting the single best
-model is incredibly useful when interpretability is strictly tied to one
-specific algorithm family. Instead of manually cherry-picking the best
-model—which introduces researcher bias and invalidates post-selection
-inference—`SuperSurv` automates the selection using rigorous, internal
-cross-validation.
+Selecting one learner can be useful when interpretation requires a
+single model family. `SuperSurv` automates this selection using its
+internal cross-validation criterion rather than inspection of test-set
+outcomes. Selection does not by itself justify post-selection inference,
+and no oracle or convergence theorem for the complete alternating
+algorithm is claimed here.
 
 You can easily toggle between these two paradigms using the `selection`
 argument.
@@ -47,7 +47,10 @@ X_te <- test[, grep("^x", names(metabric))]
 new.times <- seq(50, 200, by = 25)
 
 # Define a diverse library of base learners
-my_library <- c("surv.coxph", "surv.weibull", "surv.rpart")
+my_library <- c("surv.coxph", "surv.weibull")
+if (has_rpart) {
+  my_library <- c(my_library, "surv.rpart")
+}
 ```
 
 ## 2. Fit Both Super Learners
@@ -102,7 +105,7 @@ cat("\n--- ENSEMBLE WEIGHTS (selection = 'ensemble') ---\n")
 #> --- ENSEMBLE WEIGHTS (selection = 'ensemble') ---
 print(round(event_weights(fit_ensemble), 4))
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
-#>                  0.5152                  0.1680                  0.3167
+#>                  0.5253                  0.1581                  0.3167
 
 cat("\n--- BEST MODEL WEIGHTS (selection = 'best') ---\n")
 #> 
@@ -150,7 +153,6 @@ eval_summary(fit_best, newdata = X_te, time = test$duration,
 #> 4   surv.rpart_screen.all 0.2068 0.6083 0.6541
 ```
 
-By comparing the resulting Brier scores and C-indices, you can
-empirically justify whether the “soft selection” of the ensemble is
-mathematically necessary for your specific dataset, or if the “hard
-selection” of a single model is sufficient.
+Comparing held-out Brier scores and C-indices helps assess whether the
+fitted convex ensemble or the selected single learner is preferable for
+the application at hand.

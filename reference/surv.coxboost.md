@@ -16,6 +16,8 @@ surv.coxboost(
   id,
   stepno = 100,
   penalty = 100,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 ```
@@ -58,6 +60,16 @@ surv.coxboost(
 - penalty:
 
   Penalty value for the update (default: 100).
+
+- ties:
+
+  Tied-event approximation used for risk-score calibration: `"breslow"`
+  (default) or `"efron"`.
+
+- survival_transform:
+
+  Transformation from calibrated hazard increments to survival
+  probabilities: `"exponential"` (default) or `"product_limit"`.
 
 - ...:
 

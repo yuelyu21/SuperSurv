@@ -9,7 +9,7 @@ in machine learning-based survival curve estimation (Westling et al.,
 2024) and unified ensemble modeling for survival analysis (Lyu et al.,
 2026).
 
-However, installing 19 different machine learning engines at once can
+However, installing every optional machine learning engine at once can
 take a long time and cause dependency conflicts on some operating
 systems.
 
@@ -45,7 +45,7 @@ modeling and screening wrappers:
 
 library(SuperSurv)
 
-# See all 19 prediction models and 6 screening algorithms!
+# See all 24 prediction models and 6 screening algorithms.
 list_wrappers()
 ```
 
@@ -69,11 +69,13 @@ ml_packages <- c(
   "survival",        # Classical Cox models
   "randomForestSRC", # Random Survival Forests
   "ranger",          # Fast Random Forests
+  "grf",             # Generalized Random Forests
   "xgboost",         # Extreme Gradient Boosting
   "glmnet",          # Elastic Net & Penalized Regression
+  "mboost",          # Component-Wise Cox Boosting
+  "flexsurv",        # Flexible Parametric Survival Models
   "rpart",           # Decision Trees
-  "survex",          # Time-Dependent XAI (Interpretability)
-  "fastshap"         # Kernel SHAP support
+  "survex"           # Time-Dependent XAI (Interpretability)
 )
 
 # Identify which ones you are missing
@@ -87,7 +89,11 @@ if(length(missing_pkgs)) install.packages(missing_pkgs)
 
 A few wrappers require specialized packages that you might only need for
 niche use cases: \* `surv.svm`: Requires `survivalsvm` \* `surv.gam`:
-Requires `mgcv` \* `surv.coxboost`: Requires `CoxBoost`
+Requires `mgcv` \* `surv.coxboost`: Requires `CoxBoost` \*
+`surv.deepsurv` and `surv.deephit`: Require the R packages
+`survivalmodels` and `reticulate`, plus importable Python modules
+`torch`, `torchtuples`, and `pycox`. SuperSurv does not install or
+modify Python environments automatically.
 
 ------------------------------------------------------------------------
 

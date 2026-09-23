@@ -7,6 +7,9 @@ Returns the covariate names used to fit a `SuperSurv` object.
 ``` r
 training_variables(object, ...)
 
+# Default S3 method
+training_variables(object, ...)
+
 # S3 method for class 'SuperSurv'
 training_variables(object, ...)
 ```

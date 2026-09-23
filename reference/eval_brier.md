@@ -7,7 +7,15 @@ Score over a grid of times, and computes the Integrated Brier Score
 ## Usage
 
 ``` r
-eval_brier(time, event, S_mat, times, tmin = min(times), tmax = max(times))
+eval_brier(
+  time,
+  event,
+  S_mat,
+  times,
+  tmin = min(times),
+  tmax = max(times),
+  ipcw_floor = 1e-06
+)
 ```
 
 ## Arguments
@@ -36,6 +44,11 @@ eval_brier(time, event, S_mat, times, tmin = min(times), tmax = max(times))
 - tmax:
 
   Numeric. Upper bound for IBS integration. Defaults to `max(times)`.
+
+- ipcw_floor:
+
+  Positive numeric lower bound applied to the marginal Kaplan-Meier
+  estimate of the censoring survival function before inversion.
 
 ## Value
 

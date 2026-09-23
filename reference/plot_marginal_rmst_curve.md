@@ -47,35 +47,20 @@ plot_marginal_rmst_curve(
 
 - inference:
 
-  Logical; if `TRUE`, compute perturbation-based confidence intervals.
-  Defaults to `FALSE`.
+  Deprecated compatibility argument. Must remain `FALSE`.
 
-- B:
+- B, seed, ci_level:
 
-  Integer. Number of perturbation replicates used when
-  `inference = TRUE`. Defaults to `200`.
-
-- seed:
-
-  Optional integer seed for reproducibility.
-
-- ci_level:
-
-  Numeric scalar in `(0,1)` specifying the confidence level for the
-  confidence interval. Defaults to `0.95`.
+  Deprecated compatibility arguments; ignored.
 
 ## Value
 
 A `ggplot` object visualizing the adjusted marginal RMST contrast curve.
 
-## Details
-
-If `inference = TRUE`, the function additionally displays
-perturbation-based Wald confidence intervals at each value of `tau`.
-
 ## Examples
 
 ``` r
+if (requireNamespace("ggplot2", quietly = TRUE)) {
 data("metabric", package = "SuperSurv")
 dat <- metabric[1:80, ]
 x_cols <- grep("^x", names(dat), value = TRUE)[1:5]
@@ -88,7 +73,7 @@ fit <- SuperSurv(
   X = X,
   newdata = X,
   new.times = new.times,
-  event.library = c("surv.coxph", "surv.glmnet"),
+  event.library = c("surv.coxph"),
   cens.library = c("surv.coxph"),
   control = list(saveFitLibrary = TRUE)
 )
@@ -99,15 +84,13 @@ plot_marginal_rmst_curve(
   data = dat,
   trt_col = "x4",
   times = new.times,
-  tau_seq = tau_grid,
-  inference = TRUE,
-  B = 100,
-  seed = 123
+  tau_seq = tau_grid
 )
-#> Adjusted Delta RMST at tau = 40: -0.124 time units | SE = 0.007 | 95% CI = [-0.137, -0.11]
-#> Adjusted Delta RMST at tau = 60: -0.544 time units | SE = 0.023 | 95% CI = [-0.59, -0.499]
-#> Adjusted Delta RMST at tau = 80: -1.29 time units | SE = 0.044 | 95% CI = [-1.376, -1.204]
-#> Adjusted Delta RMST at tau = 100: -2.141 time units | SE = 0.059 | 95% CI = [-2.257, -2.025]
-#> Adjusted Delta RMST at tau = 120: -3.183 time units | SE = 0.077 | 95% CI = [-3.333, -3.033]
+}
+#> Adjusted Delta RMST at tau = 40: -0.158 time units
+#> Adjusted Delta RMST at tau = 60: -0.694 time units
+#> Adjusted Delta RMST at tau = 80: -1.643 time units
+#> Adjusted Delta RMST at tau = 100: -2.728 time units
+#> Adjusted Delta RMST at tau = 120: -4.056 time units
 
 ```

@@ -11,7 +11,7 @@
   Estimating absolute treatment effects and covariate-adjusted group
   differences using G-computation.
 
-- [11. Extending
+- [10. Extending
   SuperSurv](https://yuelyu21.github.io/SuperSurv/articles/extending-supersurv.md):
 
 - [05. Advanced Hyperparameter Tuning & Grid
@@ -25,9 +25,6 @@
 
 - [07. Parametric Survival
   Models](https://yuelyu21.github.io/SuperSurv/articles/parametric-models.md):
-
-- [10. Scaling Up with Parallel
-  Processing](https://yuelyu21.github.io/SuperSurv/articles/scaleup-parallel.md):
 
 - [04. High-Dimensional Data & Variable
   Screening](https://yuelyu21.github.io/SuperSurv/articles/screening-methods.md):

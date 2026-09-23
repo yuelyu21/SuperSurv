@@ -15,6 +15,8 @@ surv.ridge(
   obsWeights = NULL,
   id = NULL,
   nfolds = 10,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 ```
@@ -54,10 +56,20 @@ surv.ridge(
   Number of folds for internal cross-validation to select lambda.
   Default is 10.
 
+- ties:
+
+  Tied-event approximation used for risk-score calibration: `"breslow"`
+  (default) or `"efron"`.
+
+- survival_transform:
+
+  Transformation from calibrated hazard increments to survival
+  probabilities: `"exponential"` (default) or `"product_limit"`.
+
 - ...:
 
   Additional arguments passed to
-  [`cv.glmnet`](https://rdrr.io/pkg/glmnet/man/cv.glmnet.html).
+  [`cv.glmnet`](https://glmnet.stanford.edu/reference/cv.glmnet.html).
 
 ## Value
 
@@ -92,5 +104,9 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
 
   dim(fit[["pred"]])
 }
+#> Warning: Starting in glmnet 5.1, the default Cox tie-handling method will change from 'breslow' to 'efron' (matching survival::coxph). To silence this message and lock in the v5.0 default, pass cox.ties = 'breslow' explicitly. To preview the v5.1 behavior, pass cox.ties = 'efron'.
+#> Warning: Starting in glmnet 5.1, the default Cox tie-handling method will change from 'breslow' to 'efron' (matching survival::coxph). To silence this message and lock in the v5.0 default, pass cox.ties = 'breslow' explicitly. To preview the v5.1 behavior, pass cox.ties = 'efron'.
+#> Warning: Starting in glmnet 5.1, the default Cox tie-handling method will change from 'breslow' to 'efron' (matching survival::coxph). To silence this message and lock in the v5.0 default, pass cox.ties = 'breslow' explicitly. To preview the v5.1 behavior, pass cox.ties = 'efron'.
+#> Warning: Starting in glmnet 5.1, the default Cox tie-handling method will change from 'breslow' to 'efron' (matching survival::coxph). To silence this message and lock in the v5.0 default, pass cox.ties = 'breslow' explicitly. To preview the v5.1 behavior, pass cox.ties = 'efron'.
 #> [1] 5 3
 ```

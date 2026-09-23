@@ -7,6 +7,9 @@ Returns the time grid used for the fitted `SuperSurv` predictions.
 ``` r
 eval_times(object, ...)
 
+# Default S3 method
+eval_times(object, ...)
+
 # S3 method for class 'SuperSurv'
 eval_times(object, ...)
 ```

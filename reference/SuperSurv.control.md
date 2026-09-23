@@ -12,7 +12,14 @@ SuperSurv.control(
   saveFitLibrary = TRUE,
   initWeightAlg = "surv.coxph",
   initWeight = "censoring",
-  ...
+  tol = 1e-05,
+  traceIter = FALSE,
+  ipcw.floor = 1e-04,
+  ipcw.cap = 100,
+  logloss.eps = 1e-10,
+  optimizer.tol = 1e-08,
+  optimizer.maxit = 10000L,
+  truncation.warn.fraction = 0.05
 )
 ```
 
@@ -42,9 +49,41 @@ SuperSurv.control(
 
   Whether to start by fitting "censoring" or "event" weights.
 
-- ...:
+- tol:
 
-  Additional ignored arguments.
+  Positive convergence tolerance for the maximum change in the
+  out-of-fold event and censoring ensemble predictions.
+
+- traceIter:
+
+  Logical. If TRUE, reports iteration diagnostics.
+
+- ipcw.floor:
+
+  Smallest censoring or event survival probability used in an IPCW
+  denominator.
+
+- ipcw.cap:
+
+  Largest inverse-probability weight used in an IPCW loss.
+
+- logloss.eps:
+
+  Probability clipping constant used only while evaluating logarithms in
+  the IPCW log-loss.
+
+- optimizer.tol:
+
+  Positive convergence tolerance for metalearner optimization.
+
+- optimizer.maxit:
+
+  Maximum number of metalearner optimization iterations.
+
+- truncation.warn.fraction:
+
+  Fraction of IPCW rows stabilized by flooring or truncation above which
+  a warning is issued.
 
 ## Value
 

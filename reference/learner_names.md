@@ -7,6 +7,9 @@ Returns the fitted learner names from a `SuperSurv` object.
 ``` r
 learner_names(object, ...)
 
+# Default S3 method
+learner_names(object, ...)
+
 # S3 method for class 'SuperSurv'
 learner_names(object, type = c("event", "censoring", "both"), ...)
 ```

@@ -2,10 +2,11 @@
 
 ## Introduction
 
-Once a `SuperSurv` ensemble is trained, we must rigorously prove that it
-outperforms the individual base learners. Because survival data involves
-right-censoring, we cannot use standard classification metrics like
-simple accuracy.
+Once a `SuperSurv` ensemble is trained, its predictive performance
+should be evaluated on data not used to fit the model. An ensemble is
+not guaranteed to outperform every component learner in every sample.
+Because survival outcomes may be right-censored, ordinary classification
+accuracy is not an appropriate summary.
 
 Instead, we evaluate the model across three critical dimensions: 1.
 **Calibration:** Does the predicted survival probability match the
@@ -55,7 +56,10 @@ a Survival Tree using the default Least Squares meta-learner.
 
 ``` r
 
-my_library <- c("surv.coxph", "surv.weibull", "surv.rpart")
+my_library <- c("surv.coxph", "surv.weibull")
+if (has_rpart) {
+  my_library <- c(my_library, "surv.rpart")
+}
 
 fit_supersurv <- SuperSurv(
   time = train$duration,
@@ -74,25 +78,46 @@ fit_supersurv <- SuperSurv(
 ## 3. Extracting Integrated Metrics
 
 The
-[`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)
-function automatically generates predictions on your test set and
-returns a clean, comparative table of the *integrated* metrics across
-your entire time grid.
+[`eval_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/eval_benchmark.md)
+function generates predictions on the test set and returns both
+integrated and time-specific numerical results. The built-in evaluator
+uses a marginal reverse Kaplan–Meier censoring estimate. For conditional
+censoring models, resampling, inference, or formal model comparisons,
+use specialist software such as
+[`riskRegression::Score()`](https://rdrr.io/pkg/riskRegression/man/Score.html).
 
 ``` r
 
 # Evaluate performance directly using the fitted model and test data
-performance_results <- eval_summary(
+performance_results <- eval_benchmark(
   object = fit_supersurv,
   newdata = X_te,
   time = test$duration,
   event = test$event,
   eval_times = new.times
 )
+
+performance_results$summary
+#>                     Model       IBS IPCW_LogLoss     Uno_C      iAUC
+#> 1      SuperSurv_Ensemble 0.2056052    0.5986356 0.6317163 0.6657561
+#> 2   surv.coxph_screen.all 0.2070730    0.6044041 0.6290759 0.6620635
+#> 3 surv.weibull_screen.all 0.2068304    0.6039515 0.6289231 0.6616319
+#> 4   surv.rpart_screen.all 0.2156195    0.6198497 0.5931278 0.6268625
+head(performance_results$by_time)
+#>   Time              Model     Brier   LogLoss    CD_AUC   C_Index
+#> 1   50 SuperSurv_Ensemble 0.1427394 0.4590400 0.6387032 0.6322948
+#> 2   75 SuperSurv_Ensemble 0.1864146 0.5616281 0.6117365 0.6319181
+#> 3  100 SuperSurv_Ensemble 0.2158827 0.6233480 0.6323065 0.6319049
+#> 4  125 SuperSurv_Ensemble 0.2218279 0.6339276 0.6675448 0.6317163
+#> 5  150 SuperSurv_Ensemble 0.2187880 0.6262853 0.6990790 0.6316829
+#> 6  175 SuperSurv_Ensemble 0.2179843 0.6231089 0.6992792 0.6316231
 ```
 
-*Note: Look for the model with the lowest IBS (Integrated Brier Score)
-and the highest iAUC/Uno’s C-index.*
+The compatibility function
+[`eval_summary()`](https://yuelyu21.github.io/SuperSurv/reference/eval_summary.md)
+returns the earlier compact table. Lower IBS and IPCW log-loss indicate
+better probabilistic prediction under their respective definitions;
+higher iAUC and Uno’s C-index indicate better discrimination.
 
 ## 4. Visualizing Longitudinal Benchmarks
 
@@ -103,8 +128,12 @@ long-term).
 
 The
 [`plot_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/plot_benchmark.md)
-function generates a stacked dashboard to visualize this dynamic
-performance over time.
+function visualizes the time-specific results. If the optional
+`patchwork` package is unavailable, it returns a named list of
+individual plots rather than failing.
+
+The plotting examples below run only when the optional `ggplot2` package
+is installed; numerical evaluation above remains available without it.
 
 ``` r
 

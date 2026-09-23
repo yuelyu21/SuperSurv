@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>00. Installation &amp; Setup • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="00. Installation &amp; Setup">
 </head>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,8 +43,7 @@
     <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
-    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">10. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -81,8 +80,8 @@ ensemble learning techniques for right-censored data and is motivated by
 recent advances in machine learning-based survival curve estimation
 (Westling et al., 2024) and unified ensemble modeling for survival
 analysis (Lyu et al., 2026).</p>
-<p>However, installing 19 different machine learning engines at once can
-take a long time and cause dependency conflicts on some operating
+<p>However, installing every optional machine learning engine at once
+can take a long time and cause dependency conflicts on some operating
 systems.</p>
 <p>To make your experience as smooth as possible, <code>SuperSurv</code>
 uses a <strong>Modular Dependency Philosophy</strong>.</p>
@@ -110,7 +109,7 @@ modeling and screening wrappers:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/yuelyu21/SuperSurv" class="external-link">SuperSurv</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># See all 19 prediction models and 6 screening algorithms!</span></span>
+<span><span class="co"># See all 24 prediction models and 6 screening algorithms.</span></span>
 <span><span class="fu"><a href="../reference/list_wrappers.html">list_wrappers</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
@@ -131,11 +130,13 @@ used machine learning and interpretability engines:</p>
 <span>  <span class="st">"survival"</span>,        <span class="co"># Classical Cox models</span></span>
 <span>  <span class="st">"randomForestSRC"</span>, <span class="co"># Random Survival Forests</span></span>
 <span>  <span class="st">"ranger"</span>,          <span class="co"># Fast Random Forests</span></span>
+<span>  <span class="st">"grf"</span>,             <span class="co"># Generalized Random Forests</span></span>
 <span>  <span class="st">"xgboost"</span>,         <span class="co"># Extreme Gradient Boosting</span></span>
 <span>  <span class="st">"glmnet"</span>,          <span class="co"># Elastic Net &amp; Penalized Regression</span></span>
+<span>  <span class="st">"mboost"</span>,          <span class="co"># Component-Wise Cox Boosting</span></span>
+<span>  <span class="st">"flexsurv"</span>,        <span class="co"># Flexible Parametric Survival Models</span></span>
 <span>  <span class="st">"rpart"</span>,           <span class="co"># Decision Trees</span></span>
-<span>  <span class="st">"survex"</span>,          <span class="co"># Time-Dependent XAI (Interpretability)</span></span>
-<span>  <span class="st">"fastshap"</span>         <span class="co"># Kernel SHAP support</span></span>
+<span>  <span class="st">"survex"</span>           <span class="co"># Time-Dependent XAI (Interpretability)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Identify which ones you are missing</span></span>
@@ -150,7 +151,12 @@ used machine learning and interpretability engines:</p>
 for niche use cases: * <code>surv.svm</code>: Requires
 <code>survivalsvm</code> * <code>surv.gam</code>: Requires
 <code>mgcv</code> * <code>surv.coxboost</code>: Requires
-<code>CoxBoost</code></p>
+<code>CoxBoost</code> * <code>surv.deepsurv</code> and
+<code>surv.deephit</code>: Require the R packages
+<code>survivalmodels</code> and <code>reticulate</code>, plus importable
+Python modules <code>torch</code>, <code>torchtuples</code>, and
+<code>pycox</code>. SuperSurv does not install or modify Python
+environments automatically.</p>
 <hr>
 </div>
 </div>
@@ -184,7 +190,7 @@ bioRxiv.<br><a href="doi:10.64898/2026.03.11.711010" class="uri">doi:10.64898/20
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

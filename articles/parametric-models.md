@@ -86,20 +86,20 @@ summary(fit_parametric)
 #> 
 #> Event ensemble:
 #>                      learner weight   risk status
-#>        surv.coxph_screen.all 0.9979 8.8384     ok
-#>      surv.weibull_screen.all 0.0000 8.8420     ok
-#>    surv.lognormal_screen.all 0.0021 8.8444     ok
-#>  surv.exponential_screen.all 0.0000 8.8508     ok
+#>        surv.coxph_screen.all 0.9835 2.2768     ok
+#>      surv.weibull_screen.all 0.0000 2.2790     ok
+#>    surv.lognormal_screen.all 0.0165 2.2828     ok
+#>  surv.exponential_screen.all 0.0000 2.2843     ok
 #> 
 #> Censoring ensemble:
 #>                learner weight   risk status
-#>  surv.coxph_screen.all      1 1.0488     ok
+#>  surv.coxph_screen.all      1 1.1697     ok
 #> 
 #> Predictions: 572 observations x 7 times
 #> Evaluation times: 7 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      1.989      1.872      0.114
+#>      2.736      2.612      0.120
 ```
 
 ### Interpretation

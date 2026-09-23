@@ -51,8 +51,10 @@ eval_summary(
 
 ## Value
 
-An object of class `"SuperSurv_eval"` containing benchmark metrics for
-the ensemble and base learners.
+A data frame of integrated benchmark metrics for the ensemble and base
+learners. Use
+[`eval_benchmark()`](https://yuelyu21.github.io/SuperSurv/reference/eval_benchmark.md)
+to also obtain time-specific numerical results.
 
 ## Examples
 
@@ -80,7 +82,7 @@ res <- eval_summary(
 
 res
 #>                   Model    IBS  Uno_C   iAUC
-#> 1    SuperSurv_Ensemble 0.2272 0.5713 0.5988
+#> 1    SuperSurv_Ensemble 0.2282 0.5713 0.5988
 #> 2 surv.coxph_screen.all 0.2172 0.5713 0.5988
 #> 3    surv.km_screen.all 0.2306 0.5000 0.5000
 ```

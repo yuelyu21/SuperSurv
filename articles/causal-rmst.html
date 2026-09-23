@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>09. Causal Effects and Adjusted Marginal Contrasts (RMST) • SuperSurv</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="09. Causal Effects and Adjusted Marginal Contrasts (RMST)">
 <meta name="description" content="Estimating absolute treatment effects and covariate-adjusted group differences using G-computation.">
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">SuperSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,8 +46,7 @@
     <li><a class="dropdown-item" href="../articles/parametric-models.html">07. Parametric Models</a></li>
     <li><a class="dropdown-item" href="../articles/shap-explanations.html">08. SHAP Interpretability</a></li>
     <li><a class="dropdown-item" href="../articles/causal-rmst.html">09. Causal Inference (RMST)</a></li>
-    <li><a class="dropdown-item" href="../articles/scaleup-parallel.html">10. Parallel Processing</a></li>
-    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">11. Extending SuperSurv</a></li>
+    <li><a class="dropdown-item" href="../articles/extending-supersurv.html">10. Extending SuperSurv</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -79,16 +78,16 @@
 <h2 id="moving-beyond-the-hazard-ratio">Moving Beyond the Hazard Ratio<a class="anchor" aria-label="anchor" href="#moving-beyond-the-hazard-ratio"></a>
 </h2>
 <p>In clinical trials and observational studies, researchers often wish
-to compare survival outcomes between two groups. Historically, this is
-answered using the Hazard Ratio (HR) from a Cox Proportional Hazards
-model. However, the HR is non-collapsible—meaning the omission of
-unmeasured covariates will mathematically bias the effect toward the
-null—and strictly relies on the proportional hazards assumption. If
-survival curves cross, the HR becomes mathematically invalid.</p>
-<p><code>SuperSurv</code> solves this by evaluating group differences on
-the absolute time scale using the <strong>Restricted Mean Survival Time
-(RMST)</strong> via G-computation (Standardization) on top of our
-Ensemble Super Learner.</p>
+to compare survival outcomes between two groups. A Cox proportional
+hazards model summarizes relative hazards under its model assumptions.
+Conditional and marginal hazard ratios can differ even without
+confounding, and a single hazard ratio may be difficult to interpret
+under non-proportional hazards. These issues motivate complementary
+summaries on an absolute survival-time scale.</p>
+<p><code>SuperSurv</code> provides a model-based standardized contrast
+in <strong>Restricted Mean Survival Time (RMST)</strong> using the
+fitted survival ensemble. This does not by itself establish a causal
+effect or remove model-estimation uncertainty.</p>
 <p>RMST calculates the area under the survival curve up to a specific
 time horizon,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>.
@@ -107,10 +106,11 @@ G-computation is identical for both, but the statistical terminology
 must be used responsibly.</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Causal Average Treatment Effect (ATE):</strong> You can
-claim a <em>Causal Effect</em> if your variable is a <strong>manipulable
-intervention</strong>. Examples include administering a drug, performing
-a surgery, or applying a policy.
+<strong>Causal Average Treatment Effect (ATE):</strong> A causal
+interpretation requires a well-defined intervention, consistency,
+conditional exchangeability, positivity, appropriate censoring
+assumptions, and adequate estimation of the relevant survival functions.
+A manipulable exposure alone is not sufficient.
 <ul>
 <li>
 <em>Interpretation:</em> “Administering this drug causally adds an
@@ -119,13 +119,10 @@ placebo.”</li>
 </ul>
 </li>
 <li>
-<strong>Adjusted Marginal Contrast:</strong> You must claim an
-<em>Adjusted Marginal Contrast</em> if your variable is an
-<strong>immutable trait or biological group</strong>. Examples include
-biological sex, race, or a genetic biomarker. Because you cannot
-“causally” intervene to change someone’s genetics, we are simply
-comparing two groups while rigorously adjusting for all other
-confounding variables.
+<strong>Adjusted Marginal Contrast:</strong> Without justified
+causal identification, report a covariate-standardized model-based group
+contrast. Standardization over the recorded covariates does not
+guarantee that all confounding has been controlled.
 <ul>
 <li>
 <em>Interpretation:</em> “After adjusting for all baseline clinical
@@ -160,13 +157,18 @@ dataset. We will evaluate the effect of the binary biomarker
 <code>control = list(saveFitLibrary = TRUE)</code> so the models are
 saved for the G-computation prediction phase.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">event_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.weibull"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">has_rfsrc</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">event_library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.rfsrc"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SuperSurv.html">SuperSurv</a></span><span class="op">(</span></span>
 <span>  time <span class="op">=</span> <span class="va">metabric</span><span class="op">$</span><span class="va">duration</span>,</span>
 <span>  event <span class="op">=</span> <span class="va">metabric</span><span class="op">$</span><span class="va">event</span>,</span>
 <span>  X <span class="op">=</span> <span class="va">X</span>,</span>
 <span>  newdata <span class="op">=</span> <span class="va">X</span>,</span>
 <span>  new.times <span class="op">=</span> <span class="va">new.times</span>,</span>
-<span>  event.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span>, <span class="st">"surv.rfsrc"</span><span class="op">)</span>,</span>
+<span>  event.library <span class="op">=</span> <span class="va">event_library</span>,</span>
 <span>  cens.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"surv.coxph"</span><span class="op">)</span>,</span>
 <span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>saveFitLibrary <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -190,12 +192,12 @@ two standardized averages yields the adjusted RMST contrast.</p>
 <span>  times <span class="op">=</span> <span class="va">new.times</span>, </span>
 <span>  tau <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 100: -1.27 time units</span></span>
+<span><span class="co">#&gt; Adjusted Delta RMST at tau = 100: -1.234 time units</span></span>
 <span></span>
 <span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results</span><span class="op">$</span><span class="va">ATE_RMST</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -1.269855</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] -1.233647</span></span></code></pre></div>
 <p><strong>Interpretation:</strong> If the resulting
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>RMST
 value is <code>-1.24</code>, this indicates that, after standardizing
@@ -203,49 +205,23 @@ over the observed covariate distribution using the fitted Super Learner
 ensemble, the group with <code>x4 = 1</code> is predicted to have
 approximately 1.24 fewer months of restricted mean survival than the
 group with <code>x4 = 0</code> over a 100-month horizon.</p>
-<p><strong>Uncertainty:</strong> To quantify uncertainty,
-<code><a href="../reference/estimate_marginal_rmst.html">estimate_marginal_rmst()</a></code> can optionally apply a
-perturbation-based inference procedure conditional on the fitted
-ensemble. This returns a perturbation-based standard error, confidence
-interval, and Wald-type p-value.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">rmst_results_inf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_marginal_rmst.html">estimate_marginal_rmst</a></span><span class="op">(</span></span>
-<span>  fit <span class="op">=</span> <span class="va">fit</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">metabric</span>,</span>
-<span>  trt_col <span class="op">=</span> <span class="st">"x4"</span>,</span>
-<span>  times <span class="op">=</span> <span class="va">new.times</span>,</span>
-<span>  tau <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  inference <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  B <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">123</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 100: -1.27 time units | SE = 0.026 | 95% CI = [-1.32, -1.219]</span></span>
-<span></span>
-<span><span class="va">rmst_results_inf</span><span class="op">$</span><span class="va">ATE_RMST</span></span>
-<span><span class="co">#&gt; [1] -1.269855</span></span>
-<span><span class="va">rmst_results_inf</span><span class="op">$</span><span class="va">SE_RMST</span></span>
-<span><span class="co">#&gt; [1] 0.02571039</span></span>
-<span><span class="va">rmst_results_inf</span><span class="op">$</span><span class="va">CI_RMST</span></span>
-<span><span class="co">#&gt;     lower     upper </span></span>
-<span><span class="co">#&gt; -1.320246 -1.219464</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/format.pval.html" class="external-link">format.pval</a></span><span class="op">(</span><span class="va">rmst_results_inf</span><span class="op">$</span><span class="va">p_value</span>, digits <span class="op">=</span> <span class="fl">3</span>, eps <span class="op">=</span> <span class="fl">1e-16</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "&lt;1e-16"</span></span></code></pre></div>
-<p><em>Note:</em> Because this perturbation procedure conditions on the
-final fitted SuperSurv model and does not refit the learner library or
-ensemble weights, the resulting confidence interval reflects conditional
-uncertainty for the standardized RMST contrast and may be relatively
-narrow.</p>
+<p><strong>Uncertainty:</strong> This function reports a model-based
+point contrast. Formal inference would need to account for tuning,
+cross-validation, learner fitting, censoring estimation, and
+ensemble-weight estimation using a justified inference procedure. This
+version does not provide such a procedure.</p>
 </div>
 <div class="section level3">
 <h3 id="visualizing-the-effect-over-time">3. Visualizing the Effect Over Time<a class="anchor" aria-label="anchor" href="#visualizing-the-effect-over-time"></a>
 </h3>
 <p>The difference between groups might be near zero early on but
-substantial later. We can visualize how the adjusted RMST contrast
+substantial later. We can visualize how the adjusted RMST point contrast
 evolves across different restriction times using
-<code><a href="../reference/plot_marginal_rmst_curve.html">plot_marginal_rmst_curve()</a></code>. When
-<code>inference = TRUE</code>, the function also displays
-perturbation-based confidence intervals as a ribbon.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code><a href="../reference/plot_marginal_rmst_curve.html">plot_marginal_rmst_curve()</a></code>.</p>
+<p>The plotting examples below run only when the optional
+<code>ggplot2</code> package is installed; the numerical RMST estimates
+above do not require it.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot the Delta RMST across a sequence of tau values</span></span>
 <span><span class="va">tau_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">140</span>, by <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_marginal_rmst_curve.html">plot_marginal_rmst_curve</a></span><span class="op">(</span></span>
@@ -253,35 +229,30 @@ perturbation-based confidence intervals as a ribbon.</p>
 <span>  data <span class="op">=</span> <span class="va">metabric</span>, </span>
 <span>  trt_col <span class="op">=</span> <span class="st">"x4"</span>, </span>
 <span>  times <span class="op">=</span> <span class="va">new.times</span>, </span>
-<span>  tau_seq <span class="op">=</span> <span class="va">tau_grid</span>,</span>
-<span>  inference <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>  B <span class="op">=</span> <span class="fl">100</span>, </span>
-<span>  seed <span class="op">=</span> <span class="fl">123</span>, </span>
-<span>  ci_level <span class="op">=</span> <span class="fl">0.95</span></span>
+<span>  tau_seq <span class="op">=</span> <span class="va">tau_grid</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 20: -0.01 time units | SE = 0 | 95% CI = [-0.01, -0.009]</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 50: -0.204 time units | SE = 0.005 | 95% CI = [-0.214, -0.194]</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 80: -0.781 time units | SE = 0.014 | 95% CI = [-0.807, -0.754]</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 110: -1.567 time units | SE = 0.027 | 95% CI = [-1.619, -1.514]</span></span>
-<span><span class="co">#&gt; Adjusted Delta RMST at tau = 140: -2.649 time units | SE = 0.045 | 95% CI = [-2.737, -2.56]</span></span></code></pre></div>
+<span><span class="co">#&gt; Adjusted Delta RMST at tau = 20: -0.009 time units</span></span>
+<span><span class="co">#&gt; Adjusted Delta RMST at tau = 50: -0.194 time units</span></span>
+<span><span class="co">#&gt; Adjusted Delta RMST at tau = 80: -0.756 time units</span></span>
+<span><span class="co">#&gt; Adjusted Delta RMST at tau = 110: -1.525 time units</span></span>
+<span><span class="co">#&gt; Adjusted Delta RMST at tau = 140: -2.597 time units</span></span></code></pre></div>
 <p><img src="causal-rmst_files/figure-html/plot-curve-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="diagnostic-predicted-rmst-vs--observed-time">4. Diagnostic: Predicted RMST vs. Observed Time<a class="anchor" aria-label="anchor" href="#diagnostic-predicted-rmst-vs--observed-time"></a>
 </h3>
-<p>To evaluate how well our model’s restricted expectations align with
-reality, we can plot the predicted RMST for the observed data against
-their true survival times. Patients who experienced the event should lie
-close to the diagonal line up to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>This descriptive plot compares predicted conditional mean restricted
+survival with observed follow-up. A realized event time need not lie
+near its conditional mean, and censored follow-up is not the true event
+time. The plot is not a formal calibration test.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_rmst_vs_obs.html">plot_rmst_vs_obs</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">metabric</span>, </span>
 <span>  time_col <span class="op">=</span> <span class="st">"duration"</span>, </span>
 <span>  event_col <span class="op">=</span> <span class="st">"event"</span>, </span>
 <span>  times <span class="op">=</span> <span class="va">new.times</span>, </span>
-<span>  tau <span class="op">=</span> <span class="fl">350</span></span>
+<span>  tau <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="causal-rmst_files/figure-html/plot-obs-1.png" class="r-plt" alt="" width="700"></p>
 </div>
@@ -297,7 +268,7 @@ close to the diagonal line up to
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
