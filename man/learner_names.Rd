@@ -2,10 +2,13 @@
 % Please edit documentation in R/SuperSurv-methods.R
 \name{learner_names}
 \alias{learner_names}
+\alias{learner_names.default}
 \alias{learner_names.SuperSurv}
 \title{Access SuperSurv learner names}
 \usage{
 learner_names(object, ...)
+
+\method{learner_names}{default}(object, ...)
 
 \method{learner_names}{SuperSurv}(object, type = c("event", "censoring", "both"), ...)
 }

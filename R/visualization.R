@@ -7,22 +7,54 @@ utils::globalVariables(c(
   "Tau", "ATE", "Observed_Time", "Predicted_RMST", "Event"
 ))
 
+
+#' Combine benchmark plots when the optional patchwork package is available
+#' @noRd
+.combine_benchmark_plots <- function(plots, patchwork_available =
+                                       requireNamespace("patchwork", quietly = TRUE)) {
+  if (length(plots) == 1L) return(plots[[1L]])
+  if (!patchwork_available) {
+    class(plots) <- c("SuperSurv_plot_list", "list")
+    return(plots)
+  }
+  patchwork::wrap_plots(plots, nrow = 1) +
+    patchwork::plot_layout(guides = "collect") &
+    ggplot2::theme(
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.title = ggplot2::element_text(size = 16),
+      legend.text = ggplot2::element_text(size = 16)
+    ) &
+    ggplot2::guides(
+      fill = ggplot2::guide_legend(nrow = 3, byrow = TRUE),
+      color = ggplot2::guide_legend(nrow = 3, byrow = TRUE)
+    )
+}
+
 #' Plot Longitudinal Benchmark Metrics
 #'
 #' Generates time-dependent performance curves comparing the SuperSurv ensemble
 #' against its base learners, or evaluates a single standalone learner.
 #'
-#' @param object A fitted SuperSurv object OR a fitted standalone learner.
-#' @param newdata A data.frame of test covariates.
+#' @param object A fitted SuperSurv object, a fitted standalone learner, or a
+#'   benchmark returned by \code{eval_benchmark()}. A benchmark is plotted without
+#'   recomputing predictions or metrics.
+#' @param newdata A data.frame of test covariates. Omit when \code{object} is a benchmark.
 #' @param time Numeric vector of observed follow-up times for the test set.
+#'   Omit when \code{object} is a benchmark.
 #' @param event Numeric vector of event indicators for the test set.
+#'   Omit when \code{object} is a benchmark.
 #' @param eval_times Numeric vector of times at which to evaluate predictions.
+#'   Omit when \code{object} is a benchmark.
 #' @param metrics Character vector specifying which plots to return.
 #'   Options: "brier", "auc", "cindex". Defaults to all three.
 #' @param verbose Logical; if TRUE, progress messages are shown. Defaults to FALSE.
-#' @return A combined patchwork ggplot object, or a single ggplot if only one metric is selected.
+#' @return A combined patchwork object when \pkg{patchwork} is installed, a
+#'   single ggplot when one metric is selected, or a named list of ggplots when
+#'   multiple metrics are requested without \pkg{patchwork}.
 #' @examples
-#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#' if (requireNamespace("ranger", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
 #'   data("metabric", package = "SuperSurv")
 #'   dat <- metabric[1:120, ]
 #'   x_cols <- grep("^x", names(dat))[1:5]
@@ -54,71 +86,31 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
                            metrics = c("brier", "auc", "cindex"),
                            verbose = FALSE) {
 
-  requireNamespace("ggplot2", quietly = TRUE)
-  requireNamespace("patchwork", quietly = TRUE)
-
-  if (isTRUE(verbose)) {message("Generating predictions for benchmark plots...") }
-
-  preds <- predict(object, newdata = newdata, new.times = eval_times)
-
-  get_metrics_df <- function(model_name, S_mat) {
-    brier_vals <- eval_brier(time, event, S_mat, eval_times)$brier_scores
-    auc_vals <- suppressMessages(eval_timeROC(time, event, S_mat, eval_times)$AUC_curve)
-
-    cindex_vals <- vapply(eval_times, function(t) {
-      eval_cindex(time, event, S_mat, eval_times, eval_time = t, method = "uno")
-    }, numeric(1))
-
-    data.frame(
-      Time = eval_times,
-      Model = model_name,
-      Brier = brier_vals,
-      CD_AUC = auc_vals,
-      C_Index = cindex_vals,
-      stringsAsFactors = FALSE
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("Package 'ggplot2' is required for `plot_benchmark()`.", call. = FALSE)
+  }
+  if (inherits(object, "SuperSurv_benchmark")) {
+    if (!missing(newdata) || !missing(time) || !missing(event) ||
+        !missing(eval_times)) {
+      stop("When `object` is a benchmark, omit `newdata`, `time`, `event`, and `eval_times`.",
+           call. = FALSE)
+    }
+    benchmark <- object
+    required <- c("Model", "Time", "Brier", "CD_AUC", "C_Index")
+    if (!is.data.frame(benchmark$by_time) ||
+        !all(required %in% names(benchmark$by_time)) ||
+        nrow(benchmark$by_time) == 0L) {
+      stop("`object` must contain the nonempty `by_time` table returned by `eval_benchmark()`.",
+           call. = FALSE)
+    }
+  } else {
+    benchmark <- eval_benchmark(
+      object = object, newdata = newdata, time = time, event = event,
+      eval_times = eval_times, verbose = verbose
     )
   }
-
-  if (isTRUE(verbose)) {message("Calculating time-dependent metrics...") }
-
-  res_list <- list()
-
-  # SMART EXTRACTION LOGIC
-  if (is.list(preds) && !is.null(preds$event.predict)) {
-    # SuperSurv ensemble
-    k_models <- dim(preds$event.library.predict)[3]
-
-    model_names <- object$event.libraryNames
-    if (is.null(model_names) || length(model_names) != k_models) {
-      # fall back to dimnames if present
-      dn <- dimnames(preds$event.library.predict)[[3]]
-      if (!is.null(dn) && length(dn) == k_models) {
-        model_names <- dn
-      } else {
-        model_names <- paste0("Base_Learner_", seq_len(k_models))
-      }
-    }
-
-    all_names <- c("SuperSurv_Ensemble", model_names)
-
-    res_list[[1]] <- get_metrics_df("SuperSurv_Ensemble", preds$event.predict)
-    for (i in seq_len(k_models)) {
-      res_list[[i + 1]] <- get_metrics_df(model_names[i], preds$event.library.predict[, , i])
-    }
-
-  } else if (is.matrix(preds)) {
-    # Standalone learner
-    model_name <- class(object)[1]
-    if (is.null(model_name) || model_name %in% c("matrix")) model_name <- "Standalone_Model"
-
-    all_names <- model_name
-    res_list[[1]] <- get_metrics_df(model_name, preds)
-
-  } else {
-    stop("Unrecognized prediction format. Must be a SuperSurv object or a valid base learner with matrix predictions.")
-  }
-
-  plot_df <- do.call(rbind, res_list)
+  plot_df <- benchmark$by_time
+  all_names <- unique(plot_df$Model)
   plot_df$Model <- factor(plot_df$Model, levels = all_names)
 
   survex_colors <- c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3",
@@ -168,20 +160,7 @@ plot_benchmark <- function(object, newdata, time, event, eval_times,
   }
 
   if (length(plots) == 0) stop("No valid metrics selected.")
-  if (length(plots) == 1) return(plots[[1]])
-
-  patchwork::wrap_plots(plots, nrow = 1) +
-    patchwork::plot_layout(guides = "collect") &
-    ggplot2::theme(
-      legend.position = "bottom",
-      legend.direction = "horizontal",
-      legend.title = ggplot2::element_text(size = 16),
-      legend.text = ggplot2::element_text(size = 16)
-    ) &
-    ggplot2::guides(
-      fill = ggplot2::guide_legend(nrow = 3, byrow = TRUE),
-      color = ggplot2::guide_legend(nrow = 3, byrow = TRUE)
-    )
+  .combine_benchmark_plots(plots)
 }
 
 
@@ -360,4 +339,3 @@ plot_predict <- function(preds, eval_times, patient_idx = 1) {
       plot.title = ggplot2::element_text(face = "bold")
     )
 }
-

@@ -2,16 +2,22 @@
 % Please edit documentation in R/SuperSurv-methods.R
 \name{event_weights}
 \alias{event_weights}
+\alias{event_weights.default}
 \alias{event_weights.SuperSurv}
 \alias{censor_weights}
+\alias{censor_weights.default}
 \alias{censor_weights.SuperSurv}
 \title{Access SuperSurv ensemble weights}
 \usage{
 event_weights(object, ...)
 
+\method{event_weights}{default}(object, ...)
+
 \method{event_weights}{SuperSurv}(object, ...)
 
 censor_weights(object, ...)
+
+\method{censor_weights}{default}(object, ...)
 
 \method{censor_weights}{SuperSurv}(object, ...)
 }

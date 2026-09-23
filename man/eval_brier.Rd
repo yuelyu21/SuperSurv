@@ -4,7 +4,15 @@
 \alias{eval_brier}
 \title{IPCW Brier Score and Integrated Brier Score (IBS)}
 \usage{
-eval_brier(time, event, S_mat, times, tmin = min(times), tmax = max(times))
+eval_brier(
+  time,
+  event,
+  S_mat,
+  times,
+  tmin = min(times),
+  tmax = max(times),
+  ipcw_floor = 1e-06
+)
 }
 \arguments{
 \item{time}{Numeric vector of observed follow-up times.}
@@ -19,6 +27,9 @@ eval_brier(time, event, S_mat, times, tmin = min(times), tmax = max(times))
 \item{tmin}{Numeric. Lower bound for IBS integration. Defaults to \code{min(times)}.}
 
 \item{tmax}{Numeric. Upper bound for IBS integration. Defaults to \code{max(times)}.}
+
+\item{ipcw_floor}{Positive numeric lower bound applied to the marginal
+Kaplan-Meier estimate of the censoring survival function before inversion.}
 }
 \value{
 A list containing:

@@ -27,16 +27,9 @@ plot_marginal_rmst_curve(
 
 \item{tau_seq}{Numeric vector. A sequence of restriction times (\code{tau}) to evaluate and plot.}
 
-\item{inference}{Logical; if \code{TRUE}, compute perturbation-based confidence intervals.
-Defaults to \code{FALSE}.}
+\item{inference}{Deprecated compatibility argument. Must remain \code{FALSE}.}
 
-\item{B}{Integer. Number of perturbation replicates used when \code{inference = TRUE}.
-Defaults to \code{200}.}
-
-\item{seed}{Optional integer seed for reproducibility.}
-
-\item{ci_level}{Numeric scalar in \code{(0,1)} specifying the confidence level for the
-confidence interval. Defaults to \code{0.95}.}
+\item{B, seed, ci_level}{Deprecated compatibility arguments; ignored.}
 }
 \value{
 A \code{ggplot} object visualizing the adjusted marginal RMST contrast curve.
@@ -45,11 +38,8 @@ A \code{ggplot} object visualizing the adjusted marginal RMST contrast curve.
 Generates a curve showing how the adjusted marginal restricted mean survival
 time (RMST) contrast evolves across a sequence of restriction times.
 }
-\details{
-If \code{inference = TRUE}, the function additionally displays perturbation-based
-Wald confidence intervals at each value of \code{tau}.
-}
 \examples{
+if (requireNamespace("ggplot2", quietly = TRUE)) {
 data("metabric", package = "SuperSurv")
 dat <- metabric[1:80, ]
 x_cols <- grep("^x", names(dat), value = TRUE)[1:5]
@@ -62,7 +52,7 @@ fit <- SuperSurv(
   X = X,
   newdata = X,
   new.times = new.times,
-  event.library = c("surv.coxph", "surv.glmnet"),
+  event.library = c("surv.coxph"),
   cens.library = c("surv.coxph"),
   control = list(saveFitLibrary = TRUE)
 )
@@ -73,10 +63,8 @@ plot_marginal_rmst_curve(
   data = dat,
   trt_col = "x4",
   times = new.times,
-  tau_seq = tau_grid,
-  inference = TRUE,
-  B = 100,
-  seed = 123
+  tau_seq = tau_grid
 )
+}
 
 }

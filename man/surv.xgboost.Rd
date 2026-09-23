@@ -19,6 +19,8 @@ surv.xgboost(
   min_child_weight = 5,
   lambda = 10,
   subsample = 0.7,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 }
@@ -51,6 +53,13 @@ surv.xgboost(
 
 \item{subsample}{Subsample ratio of the training instances (default: 0.7).}
 
+\item{ties}{Tied-event approximation used for risk-score calibration:
+\code{"breslow"} (default) or \code{"efron"}.}
+
+\item{survival_transform}{Transformation from calibrated hazard increments
+to survival probabilities: \code{"exponential"} (default) or
+\code{"product_limit"}.}
+
 \item{...}{Additional arguments passed to \code{\link[xgboost]{xgb.train}}.}
 }
 \value{
@@ -67,7 +76,7 @@ Estimates a Cox proportional hazards model via XGBoost.
 Incorporates safe Breslow hazard calculation and matrix alignment to prevent C++ crashes.
 }
 \examples{
-if (requireNamespace("xgboost", quietly = TRUE)) {
+if (interactive() && requireNamespace("xgboost", quietly = TRUE)) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:30, ]
   x_cols <- grep("^x", names(dat))[1:3]
@@ -85,7 +94,8 @@ if (requireNamespace("xgboost", quietly = TRUE)) {
     id = NULL,
     nrounds = 5,
     early_stopping_rounds = 2,
-    max_depth = 1
+    max_depth = 1,
+    nthread = 1
   )
 
   dim(fit[["pred"]])

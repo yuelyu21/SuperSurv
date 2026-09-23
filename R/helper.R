@@ -7,10 +7,23 @@
 #' @param grid_params List of numeric/character vectors containing hyperparameter values.
 #' @return A character vector of class \code{"SuperSurv_grid"} containing the
 #'   newly generated function names.
+#' @details Generated functions are assigned to the calling environment. The
+#'   base learner is resolved there (with package functions as a fallback) when
+#'   the grid is created and retained by each generated function. Local base
+#'   learners and grids can therefore be used inside a function that calls
+#'   \code{SuperSurv()}, without modifying the global environment.
 #' @export
 #' @keywords internal
 create_grid <- function(base_learner, grid_params) {
-
+  if (!is.character(base_learner) || length(base_learner) != 1L ||
+      is.na(base_learner) || !nzchar(base_learner)) {
+    stop("`base_learner` must be one non-empty function name.", call. = FALSE)
+  }
+  base_fun <- .find_library_function(base_learner, parent.frame())
+  if (is.null(base_fun)) {
+    stop("`base_learner` contains an unknown function name: ", base_learner,
+         ". Define the function before calling `create_grid()`.", call. = FALSE)
+  }
   param_grid <- expand.grid(grid_params, stringsAsFactors = FALSE)
 
   generated_learners <- character(nrow(param_grid))
@@ -31,12 +44,10 @@ create_grid <- function(base_learner, grid_params) {
 
     new_fun <- local({
 
-      .base_learner <- base_learner
+      .base_fun <- base_fun
       .specific_params <- specific_params
 
       function(time, event, X, newdata, new.times, obsWeights = NULL, id = NULL, ...) {
-
-        base_fun <- get(.base_learner, mode = "function")
 
         args_to_pass <- list(
           time = time,
@@ -50,7 +61,7 @@ create_grid <- function(base_learner, grid_params) {
 
         call_args <- c(args_to_pass, .specific_params, list(...))
 
-        do.call(base_fun, call_args)
+        do.call(.base_fun, call_args)
       }
 
     })
@@ -67,59 +78,128 @@ create_grid <- function(base_learner, grid_params) {
 
 
 
-#' Calculate Baseline Survival using Breslow Estimator
-#'
-#' @param time Numeric vector of observed follow-up times.
-#' @param event Numeric vector of event indicators (0=censored, 1=event).
-#' @param risk_score Numeric vector of risk scores.
-#' @param new.times Numeric vector of times at which to evaluate the baseline hazard.
-#'
-#' @return A numeric vector of cumulative baseline hazard #' computes \deqn{\hat{S}(t)}.
-#' @keywords internal
+#' Fit a baseline cumulative-hazard calibration for a fixed risk score
 #' @noRd
-safe_breslow_step <- function(time, event, risk_score, new.times) {
-
-  # 1. Sort data by time
-  ord <- order(time, -event)
-  time_sorted <- time[ord]
-  event_sorted <- event[ord]
-
-  # Safety: Clamp huge scores to avoid Inf.
-  safe_score <- pmin(risk_score[ord], 700)
-  risk_sorted <- exp(safe_score)
-
-  # 2. Compute Risk Set Sums
-  risk_pool <- rev(cumsum(rev(risk_sorted)))
-
-  # 3. Compute Hazard contributions
-  is_event <- event_sorted == 1
-  if (!any(is_event)) return(rep(0, length(new.times)))
-
-  event_t <- time_sorted[is_event]
-  haz_contribution <- 1 / risk_pool[is_event]
-
-  # 4. Aggregate ties
-  unique_t <- unique(event_t)
-  if (length(unique_t) < length(event_t)) {
-    haz_contribution <- tapply(haz_contribution, event_t, sum)
-    event_t <- as.numeric(names(haz_contribution))
+.fit_risk_score_calibration <- function(time, event, risk_score,
+                                        obsWeights = NULL,
+                                        ties = c("breslow", "efron")) {
+  ties <- match.arg(ties)
+  if (is.null(obsWeights)) obsWeights <- rep(1, length(time))
+  if (!length(time) || length(event) != length(time) ||
+      length(risk_score) != length(time) || length(obsWeights) != length(time)) {
+    stop("Calibration inputs must have the same positive length.", call. = FALSE)
+  }
+  if (any(!is.finite(time)) || any(!is.finite(risk_score)) ||
+      any(!is.finite(obsWeights)) || any(obsWeights < 0)) {
+    stop("Calibration times, risk scores, and weights must be finite; weights must be non-negative.",
+         call. = FALSE)
+  }
+  if (any(!event %in% c(0, 1))) {
+    stop("Calibration event indicators must be zero or one.", call. = FALSE)
+  }
+  if (!any(event == 1)) {
+    return(list(
+      event.times = numeric(), hazard.increment = numeric(),
+      cumulative.hazard = numeric(), center = stats::weighted.mean(
+        risk_score, obsWeights
+      ), ties = ties
+    ))
   }
 
-  # 5. Cumulative Hazard
-  cum_haz <- cumsum(haz_contribution)
+  center <- stats::weighted.mean(risk_score, obsWeights)
+  centered_score <- risk_score - center
+  event_times <- sort(unique(time[event == 1]))
 
-  # 6. Interpolate (Step Function)
-  stats::approx(
-    x = event_t,
-    y = cum_haz,
-    xout = new.times,
-    method = "constant",
-    yleft = 0,
-    yright = max(cum_haz),
-    f = 0,
-    rule = 2,
-    ties = mean
-  )$y
+  if (ties == "breslow") {
+    hazard_increment <- vapply(event_times, function(event_time) {
+      weighted_events <- sum(obsWeights[time == event_time & event == 1])
+      risk_set <- time >= event_time
+      denominator <- sum(obsWeights[risk_set] * exp(centered_score[risk_set]))
+      weighted_events / denominator
+    }, numeric(1L))
+    cumulative_hazard <- cumsum(hazard_increment)
+  } else {
+    calibration_fit <- survival::coxph(
+      survival::Surv(time, event) ~ offset(centered_score),
+      weights = obsWeights,
+      ties = "efron",
+      model = FALSE,
+      x = FALSE,
+      y = FALSE
+    )
+    baseline <- survival::basehaz(calibration_fit, centered = FALSE)
+    cumulative_hazard <- vapply(event_times, function(event_time) {
+      values <- baseline$hazard[baseline$time <= event_time]
+      if (length(values)) utils::tail(values, 1L) else 0
+    }, numeric(1L))
+    hazard_increment <- diff(c(0, cumulative_hazard))
+  }
+
+  list(
+    event.times = event_times,
+    hazard.increment = pmax(hazard_increment, 0),
+    cumulative.hazard = cummax(pmax(cumulative_hazard, 0)),
+    center = center,
+    ties = ties
+  )
+}
+
+
+#' Convert calibrated proportional-hazards risk scores to survival curves
+#' @noRd
+.predict_risk_score_survival <- function(calibration, risk_score, new.times,
+                                         survival_transform = c(
+                                           "exponential", "product_limit"
+                                         )) {
+  survival_transform <- match.arg(survival_transform)
+  centered_score <- pmin(risk_score - calibration$center, 700)
+  relative_risk <- exp(centered_score)
+
+  if (!length(calibration$event.times)) {
+    return(matrix(1, nrow = length(risk_score), ncol = length(new.times)))
+  }
+
+  if (survival_transform == "exponential") {
+    cumulative_hazard <- vapply(new.times, function(eval_time) {
+      index <- which(calibration$event.times <= eval_time)
+      if (length(index)) calibration$cumulative.hazard[max(index)] else 0
+    }, numeric(1L))
+    prediction <- outer(
+      relative_risk, cumulative_hazard,
+      function(risk, hazard) exp(-risk * hazard)
+    )
+  } else {
+    prediction <- vapply(new.times, function(eval_time) {
+      index <- which(calibration$event.times <= eval_time)
+      if (!length(index)) return(rep(1, length(relative_risk)))
+      vapply(relative_risk, function(risk) {
+        factors <- pmax(1 - risk * calibration$hazard.increment[index], 0)
+        prod(factors)
+      }, numeric(1L))
+    }, numeric(length(relative_risk)))
+    prediction <- matrix(
+      prediction, nrow = length(relative_risk), ncol = length(new.times)
+    )
+  }
+
+  prediction <- pmin(pmax(prediction, 0), 1)
+  if (ncol(prediction) > 1L) prediction <- t(apply(prediction, 1, cummin))
+  prediction
+}
+
+
+#' Calculate the Breslow estimator of the cumulative baseline hazard
+#' @noRd
+safe_breslow_step <- function(time, event, risk_score, new.times,
+                              obsWeights = NULL) {
+  calibration <- .fit_risk_score_calibration(
+    time, event, risk_score, obsWeights, ties = "breslow"
+  )
+  if (!length(calibration$event.times)) return(rep(0, length(new.times)))
+  vapply(new.times, function(eval_time) {
+    index <- which(calibration$event.times <= eval_time)
+    if (length(index)) calibration$cumulative.hazard[max(index)] else 0
+  }, numeric(1L))
 }
 
 

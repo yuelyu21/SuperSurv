@@ -46,6 +46,9 @@ stopifnot(
   is.list(pred_both),
   is.matrix(pred_event),
   is.matrix(pred_censor),
+  is.list(fit$algorithm.diagnostics),
+  is.logical(fit$algorithm.diagnostics$converged),
+  identical(fit$algorithm.diagnostics$time.weighting, "uniform"),
   identical(pred_event, pred_both$event.predict),
   identical(pred_censor, pred_both$cens.predict),
   inherits(fit_summary, "summary.SuperSurv"),
@@ -55,6 +58,41 @@ stopifnot(
 
 print(fit)
 print(fit_summary)
+
+fit_only <- SuperSurv(
+  time = dat$duration,
+  event = dat$event,
+  X = X,
+  event.library = "surv.km",
+  cens.library = "surv.km",
+  control = list(
+    event.t.grid = seq(0, max(dat$duration), length.out = 20),
+    cens.t.grid = seq(0, max(dat$duration), length.out = 20)
+  ),
+  nFolds = 2,
+  verbose = FALSE
+)
+fit_only_prediction <- predict(
+  fit_only,
+  newdata = X[1:3, , drop = FALSE],
+  new.times = c(20, 40),
+  type = "event"
+)
+fit_only_missing_error <- tryCatch(
+  predict(fit_only),
+  error = function(error) conditionMessage(error)
+)
+stopifnot(
+  identical(fit_only$prediction.requested, FALSE),
+  is.null(fit_only$event.predict),
+  is.null(fit_only$cens.predict),
+  is.null(fit_only$eval.times),
+  identical(dim(fit_only_prediction), c(3L, 2L)),
+  grepl("Supply both `newdata` and `new.times`", fit_only_missing_error,
+        fixed = TRUE)
+)
+print(fit_only)
+print(summary(fit_only))
 
 safe_detect_cores <- getFromNamespace(".safe_detect_cores", "SuperSurv")
 

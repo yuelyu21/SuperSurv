@@ -33,18 +33,12 @@ evaluation grid used for survival prediction.}
 \item{tau}{Numeric scalar giving the restriction horizon for RMST. Must not
 exceed \code{max(times)}.}
 
-\item{inference}{Logical; if \code{TRUE}, compute perturbation-based standard
-errors, confidence intervals, and a Wald-type p-value. Defaults to
-\code{FALSE}.}
+\item{inference}{Deprecated compatibility argument. Formal inference is not
+provided; it requires a validated procedure accounting for model-estimation
+uncertainty. Must remain \code{FALSE}.}
 
-\item{B}{Integer giving the number of perturbation replicates when
-\code{inference = TRUE}. Defaults to \code{200}.}
-
-\item{seed}{Optional integer seed for reproducibility of the perturbation
-procedure.}
-
-\item{ci_level}{Numeric scalar in \code{(0, 1)} specifying the confidence
-level for the Wald-type confidence interval. Defaults to \code{0.95}.}
+\item{B, seed, ci_level}{Deprecated compatibility arguments; ignored when
+\code{inference = FALSE}.}
 }
 \value{
 A list containing:
@@ -62,18 +56,7 @@ RMST values under \code{A = 1}.
 RMST values under \code{A = 0}.
 \item \code{patient_delta_rmst}: Vector of individual-level predicted RMST
 contrasts.
-\item \code{inference}: Logical indicator for whether perturbation-based
-inference was requested.
-\item \code{B}: Number of perturbation replicates used when
-\code{inference = TRUE}; otherwise \code{NULL}.
-\item \code{SE_RMST}: Perturbation-based standard error of the RMST
-contrast; otherwise \code{NULL}.
-\item \code{CI_RMST}: Wald-type confidence interval for the RMST contrast;
-otherwise \code{NULL}.
-\item \code{z_value}: Wald-type test statistic; otherwise \code{NULL}.
-\item \code{p_value}: Two-sided Wald-type p-value; otherwise \code{NULL}.
-\item \code{perturb_reps}: Vector of perturbation replicate estimates;
-otherwise \code{NULL}.
+\item \code{inference}: Always \code{FALSE}; retained for compatibility.
 }
 }
 \description{
@@ -91,25 +74,15 @@ adjusted marginal contrast. When \code{trt_col} corresponds to a manipulable
 intervention and additional identification assumptions hold, the same
 standardized procedure may also support a causal interpretation.
 
-If \code{inference = TRUE}, the function additionally performs a
-perturbation-based inference procedure conditional on the fitted
-\code{SuperSurv} model. In this implementation, the fitted learner library,
-hyperparameters, base learners, and ensemble weights are held fixed, and
-random positive weights are applied to the individual-level RMST contrasts to
-estimate a perturbation-based standard error, Wald-type confidence interval,
-and p-value.
-
 The function uses the empirical distribution of the observed covariates in
 \code{data} as the standardization distribution. RMST is evaluated
 numerically from the predicted survival matrix using a left Riemann sum over
 the supplied grid \code{times}.
 
-The perturbation-based inference implemented here is conditional on the
-fitted \code{SuperSurv} model. It does not re-tune hyperparameters, reselect
-the learner library, or refit the base learners under each perturbation.
-Instead, it perturbs the aggregation of the individual-level predicted RMST
-contrasts. This yields a lightweight uncertainty quantification procedure for
-the standardized RMST contrast given the final fitted ensemble.
+The returned contrast is a model-based point estimate. Formal uncertainty
+quantification would need to account for nuisance estimation, tuning,
+cross-validation, learner fitting, and ensemble-weight estimation, for
+example through a validated full-pipeline refitting procedure.
 }
 \examples{
 \dontrun{
@@ -135,16 +108,10 @@ rmst_res <- estimate_marginal_rmst(
   data = metabric,
   trt_col = "x4",
   times = new.times,
-  tau = 100,
-  inference = TRUE,
-  B = 200,
-  seed = 123
+  tau = 100
 )
 
 rmst_res$ATE_RMST
-rmst_res$SE_RMST
-rmst_res$CI_RMST
-format.pval(rmst_res$p_value, digits = 3, eps = 1e-16)
 }
 
 }

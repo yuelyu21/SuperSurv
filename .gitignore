@@ -9,3 +9,5 @@ docs
 SuperSurv.Rcheck/
 AGENTS.md
 *.tar.gz
+/review/
+/tmp/

@@ -27,6 +27,7 @@ Evaluates the calibration of the causal RMST estimator by plotting the model's
 predicted RMST for each patient against their actual observed follow-up time.
 }
 \examples{
+if (requireNamespace("ggplot2", quietly = TRUE)) {
 data("metabric", package = "SuperSurv")
 dat <- metabric[1:80, ]
 x_cols <- grep("^x", names(dat))[1:5]
@@ -39,7 +40,7 @@ fit <- SuperSurv(
   X = X,
   newdata = X,
   new.times = new.times,
-  event.library = c("surv.coxph", "surv.glmnet"),
+  event.library = c("surv.coxph"),
   cens.library = c("surv.coxph"),
   control = list(saveFitLibrary = TRUE)
 )
@@ -50,6 +51,7 @@ plot_rmst_vs_obs(
   time_col = "duration",
   event_col = "event",
   times = new.times,
-  tau = 350
+  tau = 100
 )
+}
 }

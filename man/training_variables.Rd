@@ -2,10 +2,13 @@
 % Please edit documentation in R/SuperSurv-methods.R
 \name{training_variables}
 \alias{training_variables}
+\alias{training_variables.default}
 \alias{training_variables.SuperSurv}
 \title{Access SuperSurv training variable names}
 \usage{
 training_variables(object, ...)
+
+\method{training_variables}{default}(object, ...)
 
 \method{training_variables}{SuperSurv}(object, ...)
 }

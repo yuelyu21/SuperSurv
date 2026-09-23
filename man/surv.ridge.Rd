@@ -13,6 +13,8 @@ surv.ridge(
   obsWeights = NULL,
   id = NULL,
   nfolds = 10,
+  ties = c("breslow", "efron"),
+  survival_transform = c("exponential", "product_limit"),
   ...
 )
 }
@@ -32,6 +34,13 @@ surv.ridge(
 \item{id}{Optional cluster/individual ID indicator.}
 
 \item{nfolds}{Number of folds for internal cross-validation to select lambda. Default is 10.}
+
+\item{ties}{Tied-event approximation used for risk-score calibration:
+\code{"breslow"} (default) or \code{"efron"}.}
+
+\item{survival_transform}{Transformation from calibrated hazard increments
+to survival probabilities: \code{"exponential"} (default) or
+\code{"product_limit"}.}
 
 \item{...}{Additional arguments passed to \code{\link[glmnet]{cv.glmnet}}.}
 }

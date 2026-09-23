@@ -10,7 +10,8 @@ explain_kernel(
   X_background,
   nsim = 20,
   only_best = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  eval_time = NULL
 )
 }
 \arguments{
@@ -18,23 +19,37 @@ explain_kernel(
 
 \item{X_explain}{The dataset you want to explain (e.g., \code{X_test[1:10, ]}).}
 
-\item{X_background}{The reference dataset for fastshap (e.g., \code{X_train[1:100, ]}).}
+\item{X_background}{Reference data defining the Kernel SHAP background
+distribution (for example, \code{X_train[1:100, ]}).}
 
-\item{nsim}{Number of simulations. Defaults to 20.}
+\item{nsim}{Positive integer controlling the approximate coalition-sampling
+budget. It is converted to an even \code{m = 2 * nsim}; small feature sets
+are evaluated exactly by \pkg{kernelshap}. Defaults to 20.}
 
 \item{only_best}{Logical. If TRUE and model is SuperSurv, only explains the highest-weighted base learner.}
 
 \item{verbose}{Logical; if \code{TRUE}, progress messages are shown.}
+
+\item{eval_time}{One finite, non-negative prediction time. Required explicitly
+so that all explanations target event probability \code{1 - S(eval_time)}.}
 }
 \value{
 A data.frame of class \code{c("explain", "data.frame")} containing the calculated SHAP values. The columns correspond to the covariates in \code{X_explain}.
+Attributes include \code{baseline}, \code{predictions}, \code{eval_time},
+\code{target = "event_probability"}, and backend convergence information.
 }
 \description{
 Explain Predictions with Global SHAP (Kernel SHAP)
 }
+\details{
+The explained function uses the stored survival-prediction methods,
+including screening and calibration. All positive ensemble weights are used;
+small weights are not discarded. This replaces the earlier mixture of native
+learner scores, so SHAP values from earlier releases are not comparable.
+The background sample defines marginal, not conditional or causal, SHAP values.
+}
 \examples{
-if (requireNamespace("fastshap", quietly = TRUE) &&
-    requireNamespace("glmnet", quietly = TRUE)) {
+if (FALSE) {
   data("metabric", package = "SuperSurv")
   dat <- metabric[1:80, ]
   x_cols <- grep("^x", names(dat))[1:5]
@@ -56,7 +71,7 @@ if (requireNamespace("fastshap", quietly = TRUE) &&
     model = fit,
     X_explain = X[1:10, , drop = FALSE],
     X_background = X[11:40, , drop = FALSE],
-    nsim = 5
+    nsim = 5, eval_time = 100
   )
 
   dim(shap_values)

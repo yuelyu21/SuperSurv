@@ -14,10 +14,19 @@
 #' \code{fit}, the fitted object used for future prediction. If saved fits are
 #' needed, give \code{fit} a class and provide a corresponding
 #' \code{predict.<class>()} method that returns the same matrix shape.
+#' Wrapper outputs are validated before they enter the ensemble. Malformed
+#' prediction dimensions, non-finite values, values outside \code{[0, 1]}, or a
+#' missing saved fit produce an error naming the learner and fitting stage.
 #'
 #' Screening methods can also be supplied by name. A screener should accept the
 #' training inputs and return a logical vector aligned with the columns of
-#' \code{X}. See \code{vignette("extending-supersurv", package = "SuperSurv")}
+#' \code{X}. Learner and screener names are resolved in the calling environment
+#' first, with package functions as a fallback. The resolved functions are reused
+#' across folds and full-data fitting, including parallel cross-validation.
+#' Thus, locally defined wrappers and grids can be used without assigning them
+#' globally. Prediction methods for custom fitted-object classes must still be
+#' available through normal S3 dispatch when predicting from saved fits.
+#' See \code{vignette("extending-supersurv", package = "SuperSurv")}
 #' for a practical custom learner and screener example.
 #'
 #' @param time Observed follow-up time.
@@ -32,7 +41,10 @@
 #' @param control List of control parameters for the Super Learner.
 #' @param cvControl List of control parameters for cross-validation.
 #' @param obsWeights Observation weights.
-#' @param metalearner Character string specifying the optimizer (e.g., "brier" or "logloss").
+#' @param metalearner Character string specifying the optimizer. Supported
+#'   choices are \code{"brier"} and \code{"logloss"}. The legacy
+#'   \code{"entropy"} option is deprecated and retained temporarily for
+#'   backward compatibility.
 #' @param parallel Logical. If TRUE, uses future.apply for parallel execution.
 #' @param selection Character. Specifies how the meta-learner combines the base models.
 #'   Use \code{"ensemble"} (default) to calculate a weighted average (convex combination)
@@ -47,6 +59,8 @@
 #'   \item \code{eval.times}: Numeric vector of prediction evaluation times.
 #'   \item \code{event.coef}: Numeric vector of optimized ensemble weights for the event.
 #'   \item \code{cens.coef}: Numeric vector of optimized ensemble weights for censoring.
+#'   \item \code{algorithm.diagnostics}: Convergence, optimizer, and IPCW
+#'   stabilization diagnostics from the iterative metalearner.
 #'   \item \code{event.library.predict}: 3D array of cross-validated predictions from individual event learners.
 #'   \item \code{event.libraryNames}: Data frame detailing the algorithms and screeners used.
 #'   \item \code{event.fitLibrary}: List of the fitted base learner models (if \code{saveFitLibrary = TRUE}).
@@ -92,8 +106,38 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   time <- as.numeric(time)
   event <- as.numeric(event)
   if (is.null(obsWeights)) obsWeights <- rep(1, length(time))
-  if (is.null(newdata)) newdata <- X
+  prediction.requested <- !(missing(new.times) || is.null(new.times))
+  if (!prediction.requested && !missing(newdata) && !is.null(newdata)) {
+    stop("`new.times` must be supplied when `newdata` is supplied.", call. = FALSE)
+  }
+  if (prediction.requested && is.null(newdata)) newdata <- X
+  if (prediction.requested) {
+    new.times <- .validate_time_grid(new.times, "new.times")
+  }
+  if (!prediction.requested) {
+    newdata <- X
+    internal_grid_size <- min(100L, length(unique(time)))
+    new.times <- sort(unique(as.numeric(stats::quantile(
+      time,
+      probs = seq(0, 1, length.out = internal_grid_size),
+      names = FALSE
+    ))))
+  }
   metalearner <- match.arg(metalearner, choices = c("brier", "logloss", "entropy"))
+  selection <- match.arg(selection, choices = c("ensemble", "best"))
+  .validate_scalar_logical(parallel, "parallel")
+  if (!is.list(control)) {
+    stop("`control` must be a list.", call. = FALSE)
+  }
+  if (!is.list(cvControl)) {
+    stop("`cvControl` must be a list.", call. = FALSE)
+  }
+  if (identical(metalearner, "entropy")) {
+    warning(
+      "`metalearner = \"entropy\"` is deprecated; use \"brier\" or \"logloss\".",
+      call. = FALSE
+    )
+  }
 
   varNames <- colnames(X)
   N <- dim(X)[1L]
@@ -101,6 +145,12 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
 
   # Internal Checker (from internals.R)
   .checkInputs(time=time, event=event, X=X, newdata=newdata, id=id, obsWeights=obsWeights, verbose=verbose)
+  if (!is.numeric(nFolds) || length(nFolds) != 1L || !is.finite(nFolds) ||
+      nFolds != as.integer(nFolds) || nFolds < 2L || nFolds > N) {
+    stop("`nFolds` must be one integer between 2 and the number of observations.",
+         call. = FALSE)
+  }
+  nFolds <- as.integer(nFolds)
 
   # ----------------------------------------------------------------------------
   # 2. Parallel Setup
@@ -136,13 +186,10 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   }
 
   # ----------------------------------------------------------------------------
-  # 4. Time Grid Setup (Censoring) - With Left-Continuity & Memory Fix
+  # 4. Time Grid Setup (Censoring)
   # ----------------------------------------------------------------------------
   if (is.null(control$cens.t.grid)) {
     control$cens.t.grid <- seq(0, max(time[event == 0]), length.out = 250)
-    epsilon <- max(min(diff(sort(unique(time)))) / 2, 1e-5)
-    control$cens.t.grid <- control$cens.t.grid - epsilon
-    control$cens.t.grid <- c(0, control$cens.t.grid[control$cens.t.grid > 0])
   } else {
     control$cens.t.grid <- sort(unique(as.numeric(control$cens.t.grid)))
     if(any(is.na(control$cens.t.grid))) stop("No missing values allowed in cens.t.grid")
@@ -164,10 +211,13 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   control <- do.call("SuperSurv.control", control)
   cvControl <- do.call("SuperSurv.CV.control", cvControl)
 
-  .validate_library_argument(event.library, "event.library")
-  .validate_library_argument(cens.library, "cens.library")
+  caller_env <- parent.frame()
+  .validate_library_argument(event.library, "event.library", envir = caller_env)
+  .validate_library_argument(cens.library, "cens.library", envir = caller_env)
   event.library <- .createLibrary(event.library)
   cens.library <- .createLibrary(cens.library)
+  event.functions <- .resolve_library_functions(event.library, caller_env)
+  cens.functions <- .resolve_library_functions(cens.library, caller_env)
 
   event.k <- nrow(event.library$library)
   cens.k <- nrow(cens.library$library)
@@ -200,7 +250,8 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
                        validRows = validRows,
                        time = time, event = event, dataX = X, id = id, obsWeights = obsWeights,
                        t.grid = control$event.t.grid, library = event.library,
-                       kScreen = event.kScreen, k = event.k, p = p, verbose = verbose),
+                       kScreen = event.kScreen, k = event.k, p = p, verbose = verbose,
+                       functions = event.functions),
                   parallel_args)
 
 
@@ -223,7 +274,8 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
                       validRows = validRows,
                       time = time, event = 1-event, dataX = X, id = id, obsWeights = obsWeights,
                       t.grid = control$cens.t.grid, library = cens.library,
-                      kScreen = cens.kScreen, k = cens.k, p = p, verbose = verbose),
+                      kScreen = cens.kScreen, k = cens.k, p = p, verbose = verbose,
+                      functions = cens.functions),
                  parallel_args)
 
   cens.crossValFUN_out <- do.call(lapply_fun, cens_args)
@@ -253,6 +305,7 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   cens.coef <- getCoef$cens.coef
   event.cvRisks <- getCoef$event.cvRisks
   cens.cvRisks <- getCoef$cens.cvRisks
+  algorithm.diagnostics <- getCoef$diagnostics
 
   names(event.coef) <- names(event.cvRisks) <- apply(event.libraryNames, 1, paste, collapse = "_")
   names(cens.coef) <- names(cens.cvRisks) <- apply(cens.libraryNames, 1, paste, collapse = "_")
@@ -267,10 +320,12 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
 
   # --- SCREENING ---
   event.whichScreen <- do.call(rbind, lapply(event.library$screenAlgorithm, FUN = .screenFun,
-                                             list = list(time = time, event = event, id = id, X = X, obsWeights = obsWeights)))
+                                             list = list(time = time, event = event, id = id, X = X, obsWeights = obsWeights),
+                                             functions = event.functions))
 
   cens.whichScreen <- do.call(rbind, lapply(cens.library$screenAlgorithm, FUN = .screenFun,
-                                            list = list(time = time, event = 1 - event, id = id, X = X, obsWeights = obsWeights)))
+                                            list = list(time = time, event = 1 - event, id = id, X = X, obsWeights = obsWeights),
+                                            functions = cens.functions))
 
   # --- EVENT MODELS FIT ---
   event.pred <- lapply(seq(event.k), FUN = .predFun,
@@ -278,7 +333,7 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
                        dataX = X, newdata = newdata, t.grid = new.times,
                        whichScreen = event.whichScreen, id = id,
                        obsWeights = obsWeights, verbose = verbose, control = control,
-                       libraryNames = event.libraryNames)
+                       libraryNames = event.libraryNames, functions = event.functions)
 
 
 
@@ -301,7 +356,7 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
                       dataX = X, newdata = newdata, t.grid = new.times,
                       whichScreen = cens.whichScreen, id = id,
                       obsWeights = obsWeights, verbose = verbose, control = control,
-                      libraryNames = cens.libraryNames)
+                      libraryNames = cens.libraryNames, functions = cens.functions)
 
   cens.libraryPred <- array(NA, dim = c(nrow(newdata), length(new.times), cens.k))
 
@@ -331,9 +386,6 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
     cens.coef[best_idx_cens] <- 1
     if(verbose) message(paste0("  Censoring Winner: ", names(cens.cvRisks)[best_idx_cens]))
 
-  } else if (selection != "ensemble") {
-    # Safety catch in case the user types something like selection = "single"
-    stop("Invalid 'selection' argument. Please use 'ensemble' or 'best'.")
   }
 
   # ----------------------------------------------------------------------------
@@ -413,19 +465,21 @@ SuperSurv <- function(time, event, X, newdata = NULL, new.times,
   # ----------------------------------------------------------------------------
   out <- list(
     call = match.call(),
-    event.predict = event.predict,
-    cens.predict = cens.predict,
-    eval.times = new.times,
+    event.predict = if (prediction.requested) event.predict else NULL,
+    cens.predict = if (prediction.requested) cens.predict else NULL,
+    eval.times = if (prediction.requested) new.times else NULL,
+    prediction.requested = prediction.requested,
     event.coef = event.coef,
     cens.coef = cens.coef,
-    event.library.predict = event.libraryPred,
-    cens.library.predict = cens.libraryPred,
+    event.library.predict = if (prediction.requested) event.libraryPred else NULL,
+    cens.library.predict = if (prediction.requested) cens.libraryPred else NULL,
     event.libraryNames = event.libraryNames,
     cens.libraryNames = cens.libraryNames,
     event.library = event.library,
     cens.library = cens.library,
     event.cvRisks = event.cvRisks,
     cens.cvRisks = cens.cvRisks,
+    algorithm.diagnostics = algorithm.diagnostics,
     event.errorsInCVLibrary = event.errorsInCVLibrary,
     cens.errorsInCVLibrary = cens.errorsInCVLibrary,
     event.errorsInLibrary = event.errorsInLibrary,

@@ -10,4 +10,6 @@
 ^\.github$
 ^LICENSE\.md$
 ^AGENTS\.md$
-^build$
+^review$
+^figure$
+^tmp$

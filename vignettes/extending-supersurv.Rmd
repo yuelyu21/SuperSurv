@@ -1,8 +1,8 @@
 ---
-title: "11. Extending SuperSurv"
+title: "10. Extending SuperSurv"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{11. Extending SuperSurv}
+  %\VignetteIndexEntry{10. Extending SuperSurv}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -67,6 +67,14 @@ The returned `fit` can be any object needed for future prediction. When
 `control = list(saveFitLibrary = TRUE)`, `SuperSurv()` stores these fitted
 objects and `predict.SuperSurv()` later calls `predict()` on them.
 
+SuperSurv validates this contract at each cross-validation fold, during the
+full-data refit, and when predicting on new data. If a custom learner returns
+the wrong object type, omits `pred` or a required saved `fit`, returns a matrix
+with the wrong dimensions, or produces non-finite values or probabilities
+outside `[0, 1]`, the error identifies the learner, fitting stage, and expected
+shape. Screener outputs are similarly required to be complete logical vectors
+with one entry per input feature and at least one selected feature.
+
 ## Prediction Method Contract
 
 If a custom learner should support prediction on new data after fitting, store
@@ -99,6 +107,56 @@ Several built-in Cox-style wrappers follow this pattern. The internal helper
 custom wrappers should either use a standard package prediction method that
 already returns survival curves or implement their own baseline-hazard
 calibration carefully.
+
+## Optional Additional Learners
+
+The following adapters use the same wrapper contract and remain optional:
+
+| Wrapper | Backend | Prediction route | Observation weights |
+| --- | --- | --- | --- |
+| `surv.mboost` | `mboost` | risk score plus weighted baseline-hazard calibration | supported |
+| `surv.flexsurvspline` | `flexsurv` | native flexible-parametric survival curve | supported |
+| `surv.flexsurvreg` | `flexsurv` | native parametric survival curve, including generalized gamma | supported |
+| `surv.survPen` | `survPen` | native penalized smooth hazard survival curve | uniform only |
+| `surv.grf` | `grf` | native generalized random-forest survival curve | supported |
+| `surv.deepsurv` | `survivalmodels` and Python `pycox` | native Cox neural-network survival curve | uniform only |
+| `surv.deephit` | `survivalmodels` and Python `pycox` | native discrete-time neural-network survival curve | uniform only |
+| `surv.coxtime` | `survivalmodels` and Python `pycox` | native neural survival curve with time-dependent effects | uniform only |
+
+The DeepSurv, DeepHit, and Cox-Time adapters remain experimental; local smoke
+tests do not establish portability across R/Python configurations. Their backend spans
+R and Python. They require `survivalmodels`, `reticulate`, and importable Python
+modules `torch`, `torchtuples`, and `pycox`. SuperSurv never installs or changes
+a Python environment automatically. These adapters stop with an explicit error
+when the backend is unavailable or when nonuniform `obsWeights` are supplied;
+silently ignoring case weights would change the requested fit.
+
+Python fitted objects can be reused within the active R/Python session, but
+plain `saveRDS()` is not a portable way to store them. Prediction after restoring
+an invalid Python reference gives an explicit error. Native neural curves are
+mapped as right-continuous steps to requested times; extending the grid past
+observed follow-up does not establish reliable extrapolation.
+
+All of these wrappers can be tuned through `create_grid()` in the same way as other
+learners. Test a small direct wrapper fit before launching cross-validation,
+especially for a Python-backed learner.
+
+`surv.survPen` uses a smooth baseline log hazard and linear feature effects by
+default. Supply a one-sided formula for nonlinear or time-varying effects, using
+`.supersurv_time` for follow-up time. For example:
+
+```{r smooth-hazard-example, eval=FALSE}
+# X contains x1 and x2. Use screen.all if naming features explicitly.
+smooth_fit <- surv.survPen(
+  time, event, X, newdata, new.times,
+  formula = ~ tensor(.supersurv_time, x1, df = c(4, 4)) + x2
+)
+```
+
+The smooth-model adapter rejects nonuniform observation weights because its
+backend does not expose case-weighted fitting. It is restricted to overall
+single-event, right-censored survival, not relative survival or left truncation.
+The quadrature order `n.legendre` controls numerical integration accuracy.
 
 ## Minimal Custom Learner
 
@@ -224,6 +282,7 @@ Before using a custom wrapper in a large ensemble, check:
 - `pred` is a numeric matrix with dimensions `nrow(newdata)` by
   `length(new.times)`,
 - predictions are on the survival-probability scale,
+- all prediction entries are finite and in `[0, 1]`,
 - `predict(wrapper_out[["fit"]], newdata, new.times)` returns the same shape when saved
   fits are needed,
 - the wrapper tolerates `obsWeights = NULL` and `id = NULL`,
