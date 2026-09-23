@@ -64,4 +64,4 @@ Suggests:
     patchwork,
     knitr,
     rmarkdown
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
