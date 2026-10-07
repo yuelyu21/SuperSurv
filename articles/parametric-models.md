@@ -99,7 +99,7 @@ summary(fit_parametric)
 #> Evaluation times: 7 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      2.736      2.612      0.120
+#>      2.817      2.687      0.125
 ```
 
 ### Interpretation

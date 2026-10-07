@@ -204,7 +204,7 @@ summary(fit_ls)
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      5.062      4.956      0.104
+#>      5.095      4.987      0.106
 
 event_weights(fit_ls)
 #>   surv.coxph_screen.all surv.weibull_screen.all   surv.rpart_screen.all 
@@ -261,7 +261,7 @@ summary(fit_ls)
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>      5.062      4.956      0.104
+#>      5.095      4.987      0.106
 
 cat("\n--- NLOGLIK METALEARNER ---\n")
 #> 
@@ -292,7 +292,7 @@ summary(fit_nll)
 #> Evaluation times: 4 values from 50 to 200 
 #> Elapsed time (seconds):
 #> everything      train    predict 
-#>     75.662     75.567      0.094
+#>     76.463     76.367      0.095
 ```
 
 Then evaluate both fitted ensembles on the same held-out observations

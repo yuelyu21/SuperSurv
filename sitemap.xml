@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://yuelyu21.github.io/SuperSurv/404.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/CONTRIBUTING.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/LICENSE-text.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/LICENSE.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/base-learner-rfsrc.html</loc></url>
@@ -16,6 +17,7 @@
 <url><loc>https://yuelyu21.github.io/SuperSurv/articles/supersurv-ensemble.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/authors.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/index.html</loc></url>
+<url><loc>https://yuelyu21.github.io/SuperSurv/news/index.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.CV.control.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.control.html</loc></url>
 <url><loc>https://yuelyu21.github.io/SuperSurv/reference/SuperSurv.html</loc></url>
