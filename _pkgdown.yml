@@ -76,6 +76,8 @@ navbar:
 
     - text: "Reference"
       href: reference/index.html
+    - text: "Changelog"
+      href: news/index.html
   right:
     - icon: fa-github
       href: https://github.com/yuelyu21/SuperSurv
